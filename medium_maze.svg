@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<svg height="280" width="600" >
+ <g style="fill-opacity:1.0; stroke:black;
+  stroke-width:8;">
+  <line x1="586" y1="14" x2="578" y2="260" style="stroke:#000000;" />
+  <line x1="578" y1="260" x2="12" y2="268" style="stroke:#000000;" />
+  <line x1="12" y1="268" x2="16" y2="10" style="stroke:#000000;" />
+  <line x1="16" y1="10" x2="584" y2="14" style="stroke:#000000;" />
+  <line x1="482" y1="260" x2="116" y2="130" style="stroke:#000000;" />
+  <line x1="228" y1="14" x2="146" y2="84" style="stroke:#000000;" />
+  <line x1="260" y1="182" x2="214" y2="92" style="stroke:#000000;" />
+  <line x1="392" y1="16" x2="278" y2="102" style="stroke:#000000;" />
+  <line x1="438" y1="244" x2="364" y2="126" style="stroke:#000000;" />
+  <line x1="534" y1="18" x2="428" y2="126" style="stroke:#000000;" />
+  <line x1="542" y1="258" x2="474" y2="176" style="stroke:#000000;" />
+  <circle cx="540" cy="200" r="5"
+   stroke-width="4"  style="fill:#ffffff;"  />
+  <circle cx="60" cy="44" r="10"
+   stroke-width="4"  style="fill:#ffffff;"  />
+ </g>
+</svg>
