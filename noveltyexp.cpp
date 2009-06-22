@@ -158,6 +158,8 @@ int maze_fitness_realtime_loop(Population *pop) {
 (offspring_count=0;offspring_count<NEAT::pop_size*2001;offspring_count++) 
 {
     
+	if(offspring_count>=pop_size*1000 && firstflag)
+		break;
     if(offspring_count % (NEAT::pop_size*NEAT::print_every) == 0 )
 	{
 			cout << offspring_count << endl;
