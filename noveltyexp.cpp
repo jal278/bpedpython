@@ -19,6 +19,9 @@ using namespace std;
 enum novelty_measure_type { novelty_sample, novelty_accum };
 static novelty_measure_type novelty_measure = novelty_sample;
 
+enum fitness_measure_type { fitness_drift, fitness_std };
+static fitness_measure_type fitness_measure = fitness_std;
+
 static char output_dir[30]="";
 static Environment* env;
 static int param=-1;
@@ -164,7 +167,7 @@ int maze_fitness_realtime_loop(Population *pop) {
 	{
 			cout << offspring_count << endl;
 			char fname[30];
-			sprintf(fname,"%sfit_rtgen_%d",output_dir,offspring_count/250);
+			sprintf(fname,"%sgen_%d",output_dir,offspring_count/NEAT::pop_size);
 			pop->print_to_file_by_species(fname);
 
 
@@ -253,7 +256,7 @@ int maze_fitness_realtime_loop(Population *pop) {
 	if(!firstflag && (newrec->ToRec[3]>0.0 && newrec->ToRec[4]>0.0)) {
 		firstflag=true;
 		char filename[30];
-		sprintf(filename,"%sfit_rtgen_first",output_dir);
+		sprintf(filename,"%sgen_first",output_dir);
 		pop->print_to_file_by_species(filename);
 		cout << "Maze solved by indiv# " << indiv_counter << endl;	
 	}
@@ -408,12 +411,16 @@ int maze_novelty_realtime_loop(Population *pop) {
 			sprintf(fname,"%sarchive.dat",output_dir);
 			archive.Serialize(fname);		
 	
-			sprintf(fname,"%sfittest_%d",output_dir,offspring_count/250);
+			sprintf(fname,"%sfittest_%d",output_dir,offspring_count/NEAT::pop_size);
 			archive.serialize_fittest(fname);
 
-			sprintf(fname,"%srtgen_%d",output_dir,offspring_count/250);
+			sprintf(fname,"%sgen_%d",output_dir,offspring_count/NEAT::pop_size);
 			pop->print_to_file_by_species(fname);
-	}
+	
+
+                        sprintf(fname,"%srecord.dat",output_dir);
+                        Record.serialize(fname);
+      }
 	
     //Every pop_size reproductions, adjust the compat_thresh to better match the num_species_targer
     //and reassign the population to new species                                              
@@ -648,6 +655,8 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record)
 	*/
 
 	//calculate fitness as meeting minimal criteria
+	if(fitness_measure == fitness_drift)
+	{
 	if(newenv->reachgoal)
 	{
 		fitness=1.0;
@@ -656,7 +665,21 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record)
 	{
 		fitness=0.00001;
 	}
+	}
 
+        if(fitness_measure == fitness_std)
+        {
+          fitness=0.0;
+          if(newenv->reachgoal)
+		fitness+=250.0;
+          else
+                fitness+=250.0 - newenv->distance_to_target();
+
+           if(newenv->reachpoi)
+		fitness+=250.0;
+           else
+                fitness+=250.0 - newenv->closest_to_poi;
+        }
 	//fitness as novelty studies
 	//data.push_back(fitness);
 	

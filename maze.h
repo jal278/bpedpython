@@ -336,6 +336,7 @@ class Environment
 			update_radar(hero);
 			reachgoal=e.reachgoal;
                         reachpoi=e.reachpoi;
+			closest_to_poi = e.closest_to_poi;
 		}
 
 	void get_range(float &minx,float &miny, float &maxx, float& maxy)
@@ -376,6 +377,7 @@ class Environment
             poi.fromfile(inpfile);
 	    	reachpoi=0;
 		reachgoal=0;
+		closest_to_poi = 100000.0;
 			//read in line segments
             for(int i=0;i<num_lines;i++)
             {
@@ -420,6 +422,9 @@ class Environment
 				cout << "NAN Distance error..." << endl;
 				return 500.0;
 			}
+                        if(dist<closest_to_poi)
+				closest_to_poi=dist;
+
 			if(dist<5.0) reachpoi=1; //if within 5 units, success!
 			return dist;
 		}
@@ -600,7 +605,7 @@ class Environment
             for(int i=0;i<(int)lines.size();i++)
                 delete lines[i];
         }
-		
+        double closest_to_poi;		
         vector<Line*> lines; //maze line segments
         Character hero; //navigator
         Point end; //the goal
