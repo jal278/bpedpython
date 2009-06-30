@@ -635,7 +635,8 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record)
 	dc.clear();
 	dc.push_back(data);
 
-	if(novelty_measure == novelty_sample)
+	if(novelty_measure == novelty_sample || 
+           novelty_measure ==novelty_sample_free)
 		dc[0].reserve(timesteps/stepsize);
 	if(novelty_measure == novelty_accum)
 	{
@@ -660,7 +661,8 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record)
 	{
 		fitness+=mazesimStep(newenv,net,dc);
 		//if taking additional samples, collect during run
-		if(novelty_measure==novelty_sample)
+		if(novelty_measure==novelty_sample ||
+                   novelty_measure==novelty_sample_free)
 		if((timesteps-i-1)%stepsize==0)
 		{
 				dc[0].push_back(newenv->hero.location.x);
