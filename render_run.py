@@ -2,6 +2,7 @@
 #import svg_draw
 import numpy
 import sys
+from sys import argv
 import math
 import os
 import pygame
@@ -56,6 +57,11 @@ def readinrecord(fn):
 archive="new/archive.dat"
 maze="maze_explore.txt"
 
+argc = len(sys.argv)
+if(argc>1):
+  archive=argv[1]
+if(argc>2):
+  maze=argv[2]
 
 os.system("grep Novelty %s > nov_temp.dat" % archive)
 os.system("grep Point %s > pt_temp.dat" % archive)
@@ -75,7 +81,7 @@ p1=map(int,a[1].split(" "))
 p2=map(int,a[3].split(" "))
 p3=map(int,a[4].split(" "))
 lines=[map(int,x.split(" ")) for x in a[5:]]
-scale = 2
+scale = 1
 
 pygame.init()
 screen = pygame.display.set_mode((800, 600))

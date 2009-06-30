@@ -16,11 +16,31 @@
 
 using namespace std;
 
-enum novelty_measure_type { novelty_sample, novelty_accum };
+enum novelty_measure_type { novelty_sample, novelty_accum, novelty_sample_free };
 static novelty_measure_type novelty_measure = novelty_sample;
 
 enum fitness_measure_type { fitness_drift, fitness_std };
 static fitness_measure_type fitness_measure = fitness_std;
+
+static void set_fit_measure(string m)
+{
+if(m=="std")
+   fitness_measure=fitness_std;
+if(m=="drift")
+   fitness_measure=fitness_drift;
+cout << "Fitness measure " << fitness_measure << endl;
+}
+
+static void set_nov_measure(string m)
+{
+if(m=="std" || m=="sample")
+   novelty_measure=novelty_sample;
+if(m=="accum")
+   novelty_measure=novelty_accum;
+if(m=="sample_free")
+   novelty_measure=novelty_sample_free;
+cout << "Novelty measure " << novelty_measure << endl;
+}
 
 static char output_dir[30]="";
 static Environment* env;
@@ -59,12 +79,13 @@ float maze_novelty_metric(noveltyitem* x,noveltyitem* y)
 }
 
 //fitness simulation of maze navigation
-Population *maze_fitness_realtime(char* outputdir,const char *mazefile,int par) {
+Population *maze_fitness_realtime(char* outputdir,const char *mazefile,int par,string measure) {
     Population *pop;
     Genome *start_genome;
     char curword[20];
     int id;
-	
+
+set_fit_measure(measure);	
 	//create new maze environment
 	env=new Environment(mazefile);
 	if(outputdir!=NULL) strcpy(output_dir,outputdir);
@@ -275,13 +296,14 @@ int maze_fitness_realtime_loop(Population *pop) {
 }
 
 //novelty maze navigation run
-Population *maze_novelty_realtime(char* outputdir,const char* mazefile,int par) {
+Population *maze_novelty_realtime(char* outputdir,const char* mazefile,int par,string measure) {
 	
     Population *pop;
     Genome *start_genome;
     char curword[20];
     int id;
 
+    set_nov_measure(measure);
 	//crgate new maze environment
 	env=new Environment(mazefile);
 	//param=par;
@@ -372,8 +394,12 @@ int maze_novelty_realtime_loop(Population *pop) {
   archive.evaluate_population(pop,true);
   //add to archive
   archive.evaluate_population(pop,false);
+ 
   
-  //Get ready for real-time loop
+  for(curorg=(pop->organisms).begin();curorg!=(pop->organisms).end();++curorg) 
+	(*curorg)->fitness = 0.00000001;
+  
+//Get ready for real-time loop
   //Rank all the organisms from best to worst in each species
   pop->rank_within_species();                                                                            
 
@@ -490,7 +516,7 @@ int maze_novelty_realtime_loop(Population *pop) {
 	newrec->ToRec[6] = archive.get_set_size();
 	newrec->ToRec[RECSIZE-2] = new_org->noveltypoint->novelty;
 
-	if(!newrec->ToRec[3])
+	if(!newrec->ToRec[3] && novelty_measure != novelty_sample_free)
 	{
 		new_org->fitness = 0.00001;
                 //cout << "fail" << endl;

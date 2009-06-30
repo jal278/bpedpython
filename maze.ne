@@ -28,6 +28,6 @@ recur_only_prob 0.2
 pop_size 250
 dropoff_age 2000
 newlink_tries 40
-print_every 50
+print_every 500
 babies_stolen 0
 num_runs 1

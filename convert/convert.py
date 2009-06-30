@@ -39,8 +39,6 @@ def extract_point(d):
 
 
 
-sys.argv=["blah","easier5.xml"]
-
 doc = minidom.parse(sys.argv[1])
 
 lines = extract_lines(doc)
@@ -50,7 +48,7 @@ heading = extract_heading(doc)
 start_point = extract_specific_point(doc,"start_point")
 goal_point = extract_specific_point(doc,"goal_point")
 
-scale=1.00
+scale=0.65
 print len(lines)
 print str(int(scale*start_point[0])) + " " + str(int(scale*start_point[1]))
 print str(int(heading))

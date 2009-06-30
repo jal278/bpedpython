@@ -26,9 +26,9 @@ using namespace NEAT;
 
 //Walker novelty steady-state 
 int maze_novelty_realtime_loop(Population *pop);
-Population *maze_novelty_realtime(char* output_dir=NULL,const char* mazefile="maze.txt",int param=-1);
+Population *maze_novelty_realtime(char* output_dir=NULL,const char* mazefile="maze.txt",int param=-1,string measure="std");
 noveltyitem* maze_novelty_map(Organism *org,data_record* record=NULL);
-Population *maze_fitness_realtime(char* output_dir=NULL,const char* mazefile="maze.txt",int param=-1);
+Population *maze_fitness_realtime(char* output_dir=NULL,const char* mazefile="maze.txt",int param=-1,string measure="std");
 int maze_fitness_realtime_loop(Population *pop);
 
 double mazesimStep(Environment* newenv,Network *net,vector< vector<float> > &dc);

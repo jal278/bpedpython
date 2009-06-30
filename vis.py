@@ -42,17 +42,18 @@ else:
 
 p1=map(int,a[1].split(" "))
 p2=map(int,a[3].split(" "))
-lines=[map(int,x.split(" ")) for x in a[4:]]
+p3=map(int,a[4].split(" "))
+lines=[map(int,x.split(" ")) for x in a[5:]]
 
-scene = svg_draw.Scene("test",width=400,height=425)
-scale = 2
+scene = svg_draw.Scene("test",width=450,height=450)
+scale = 1
 
 
 for x in lines:
     scene.add(svg_draw.Line((x[0]*scale,x[1]*scale),(x[2]*scale,x[3]*scale),(0,0,0)))
 
 scene.add(svg_draw.Circle((p2[0]*scale,p2[1]*scale),5,(255,255,255),False))
-
+scene.add(svg_draw.Circle((p3[0]*scale,p3[1]*scale),3,(255,255,255),False))
 #cutoff=b.shape[0]
 for x in range(cutoff):
     color = 0

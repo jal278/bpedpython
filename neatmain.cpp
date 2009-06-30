@@ -58,9 +58,9 @@ int main(int argc, char **argv) {
 
   cout << "Maze: " << mazename << endl;
   if(!noveltySwitch.getValue())
-      p = maze_fitness_realtime(filename,mazename,param);
+      p = maze_fitness_realtime(filename,mazename,param,fit_measure.getValue());
   else
-      p = maze_novelty_realtime(filename,mazename,param);
+      p = maze_novelty_realtime(filename,mazename,param,nov_measure.getValue());
 
 
   return(0);
