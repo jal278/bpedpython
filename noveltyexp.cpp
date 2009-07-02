@@ -79,7 +79,7 @@ float maze_novelty_metric(noveltyitem* x,noveltyitem* y)
 }
 
 //fitness simulation of maze navigation
-Population *maze_fitness_realtime(char* outputdir,const char *mazefile,int par,string measure) {
+Population *maze_fitness_realtime(char* outputdir,const char *mazefile,int par,string measure,const char* genes) {
     Population *pop;
     Genome *start_genome;
     char curword[20];
@@ -92,7 +92,7 @@ set_fit_measure(measure);
 	param=par;
 	
 	//starter gene file
-    ifstream iFile("mazestartgenes",ios::in);
+    ifstream iFile(genes,ios::in);
 	
     cout<<"START MAZE NAVIGATOR FITNESS REAL-TIME EVOLUTION VALIDATION"<<endl;
 
@@ -296,7 +296,7 @@ int maze_fitness_realtime_loop(Population *pop) {
 }
 
 //novelty maze navigation run
-Population *maze_novelty_realtime(char* outputdir,const char* mazefile,int par,string measure) {
+Population *maze_novelty_realtime(char* outputdir,const char* mazefile,int par,string measure,const char* genes) {
 	
     Population *pop;
     Genome *start_genome;
@@ -311,7 +311,7 @@ Population *maze_novelty_realtime(char* outputdir,const char* mazefile,int par,s
 	if(outputdir!=NULL) strcpy(output_dir,outputdir);
 		
 	//starter genes file
-    ifstream iFile("mazestartgenes",ios::in);
+    ifstream iFile(genes,ios::in);
 	
     cout<<"START MAZE NAVIGATOR NOVELTY REAL-TIME EVOLUTION VALIDATION"<<endl;
 

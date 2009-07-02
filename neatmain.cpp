@@ -17,6 +17,9 @@ int main(int argc, char **argv) {
   ValueArg<string> maze("m","maze","Maze file",false,"maze.txt","string");
   cmd.add(maze);
 
+  ValueArg<string> genes("z","sg","Starter genes",false,"mazestartgenes","string");
+  cmd.add(genes);
+
   ValueArg<string> settings("s","settings","Settings file",false,"maze.ne","string");
   cmd.add(settings);
  
@@ -40,6 +43,7 @@ int main(int argc, char **argv) {
   char mazename[100]="hard_maze.txt";
   char filename[100]="./";
   char settingsname[100]="maze.ne";
+  char startgenes[100]="mazestartgenes";
   int param;
   NEAT::Population *p;
 
@@ -51,16 +55,17 @@ int main(int argc, char **argv) {
   strcpy(settingsname,settings.getValue().c_str());
   strcpy(mazename,maze.getValue().c_str());
   strcpy(filename,output.getValue().c_str());
-  
+  strcpy(startgenes,genes.getValue().c_str());
+
   NEAT::load_neat_params(settingsname,true);
   param = extra_param.getValue();
   cout<<"loaded"<<endl;
 
   cout << "Maze: " << mazename << endl;
   if(!noveltySwitch.getValue())
-      p = maze_fitness_realtime(filename,mazename,param,fit_measure.getValue());
+      p = maze_fitness_realtime(filename,mazename,param,fit_measure.getValue(),startgenes);
   else
-      p = maze_novelty_realtime(filename,mazename,param,nov_measure.getValue());
+      p = maze_novelty_realtime(filename,mazename,param,nov_measure.getValue(),startgenes);
 
 
   return(0);
