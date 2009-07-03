@@ -62,7 +62,9 @@ int main(int argc, char **argv) {
   cout<<"loaded"<<endl;
 
   cout << "Maze: " << mazename << endl;
-  if(!noveltySwitch.getValue())
+  cout << "Start genes: " << startgenes << endl;
+   
+if(!noveltySwitch.getValue())
       p = maze_fitness_realtime(filename,mazename,param,fit_measure.getValue(),startgenes);
   else
       p = maze_novelty_realtime(filename,mazename,param,nov_measure.getValue(),startgenes);
