@@ -38,6 +38,9 @@ int main(int argc, char **argv) {
   ValueArg<int> extra_param("p","parameter","Extra Parameter",false,0,"int");
   cmd.add(extra_param);
 
+  ValueArg<int> rng_seed("r","random_seed","Random Seed",false,-1,"int");
+  cmd.add(rng_seed);
+
   cmd.parse(argc,argv);
 
   char mazename[100]="hard_maze.txt";
@@ -51,6 +54,9 @@ int main(int argc, char **argv) {
   /* Seed the random-number generator with current time so that
       the numbers will be different every time we run.    */
   srand( (unsigned)time( NULL )  + getpid());
+ 
+  if(rng_seed.getValue()!=-1)
+	srand((unsigned)rng_seed.getValue());
 
   strcpy(settingsname,settings.getValue().c_str());
   strcpy(mazename,maze.getValue().c_str());
