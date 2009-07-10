@@ -23,29 +23,39 @@ Population::Population(Genome *g,int size, float power) {
 	clone(g, size, power);
 }
 
-//Population::Population(int size,int i,int o, int nmax, bool r, double linkprob) {    
-//int count;
-//Genome *new_genome; 
+//used for merging populations together
+Population::Population(std::vector<Organism*> organismList)
+{	
+	winnergen=0;
+	highest_fitness=0.0;
+	highest_last_changed=0;
+		
+	int count;
+	Organism *old_organism;
+	Organism *new_organism;
 
-//cout<<"Making a random pop"<<endl;
+	cur_node_id=0;
+	cur_innov_num=0;
 
-//winnergen=0;
-//highest_fitness=0.0;
-//highest_last_changed=0;
+	//Create size copies of the Genome
+	//Start with perturbed linkweights
+	for (std::vector<Organism*>::iterator iter = organismList.begin(); iter != organismList.end(); ++iter)
+	{
 
-//for(count=0;count<size;count++) {
-//new_genome=new Genome(count,i,o,randint(0,nmax),nmax,r,linkprob);
-//organisms.push_back(new Organism(0,new_genome,1));
-//}
+		old_organism=(*iter); 
+		new_organism=new Organism(*old_organism);
+		organisms.push_back(new_organism);
+	        int last_node = new_organism->gnome->get_last_node_id();
+		int last_inno = new_organism->gnome->get_last_gene_innovnum();
+		if(cur_node_id<last_node)
+			cur_node_id = last_node;
+		if(cur_innov_num<last_inno)
+			cur_innov_num = last_inno;
+	}
 
-//cur_node_id=i+o+nmax+1;;
-//cur_innov_num=(i+o+nmax)*(i+o+nmax)+1;
-
-//cout<<"Calling speciate"<<endl;
-//speciate(); 
-
-//}
-
+	//Separate the new Population into species
+	speciate();
+}
 
 //MSC Addition
 //Added the ability for a population to be spawned

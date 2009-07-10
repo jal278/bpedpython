@@ -118,7 +118,10 @@ namespace NEAT {
 
 		// Construct off of a single spawning Genome without mutation
 		Population(Genome *g,int size, float power);
-		
+	
+		//used for mergine populations together
+		Population(std::vector<Organism*> organismList);
+	
 		//MSC Addition
 		// Construct off of a vector of genomes with a mutation rate of "power"
 		Population(std::vector<Genome*> genomeList, float power);

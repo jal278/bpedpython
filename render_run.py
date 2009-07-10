@@ -54,8 +54,8 @@ def readinrecord(fn):
 #maze="maze2.txt" #sys.argv[1]
 #rec=sys.argv[1] #"o/n1record.dat"
 
-archive="new/archive.dat"
-maze="maze_explore.txt"
+archive=sys.argv[1] #"no_novcrit_13rtarchive.dat"
+maze="maze_explore2.txt"
 
 argc = len(sys.argv)
 if(argc>1):

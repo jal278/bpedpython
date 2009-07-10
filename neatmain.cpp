@@ -29,6 +29,9 @@ int main(int argc, char **argv) {
   SwitchArg noveltySwitch("n","novelty","Enable novelty search",false);
   cmd.add(noveltySwitch);
 
+  SwitchArg generationalSwitch("q","gen","Enable generational search",false);
+  cmd.add(generationalSwitch);
+
   ValueArg<string> nov_measure("g","nm","Novelty Measure",false,"std","string");
   cmd.add(nov_measure);
 
@@ -69,13 +72,21 @@ int main(int argc, char **argv) {
 
   cout << "Maze: " << mazename << endl;
   cout << "Start genes: " << startgenes << endl;
-   
+
+  set_fit_measure(fit_measure.getValue());
+  set_nov_measure(nov_measure.getValue());
+ 
+  if(!generationalSwitch.getValue())
+{
 if(!noveltySwitch.getValue())
-      p = maze_fitness_realtime(filename,mazename,param,fit_measure.getValue(),startgenes);
+      p = maze_fitness_realtime(filename,mazename,param,startgenes);
   else
-      p = maze_novelty_realtime(filename,mazename,param,nov_measure.getValue(),startgenes);
-
-
+      p = maze_novelty_realtime(filename,mazename,param,startgenes);
+}
+else
+{
+ p = maze_generational(filename,mazename,param,startgenes,100,noveltySwitch.getValue());
+}
   return(0);
  
 }

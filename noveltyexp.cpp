@@ -19,19 +19,21 @@ using namespace std;
 enum novelty_measure_type { novelty_sample, novelty_accum, novelty_sample_free };
 static novelty_measure_type novelty_measure = novelty_sample;
 
-enum fitness_measure_type { fitness_drift, fitness_std };
+enum fitness_measure_type { fitness_goal, fitness_drift, fitness_std };
 static fitness_measure_type fitness_measure = fitness_std;
 
-static void set_fit_measure(string m)
+void set_fit_measure(string m)
 {
 if(m=="std")
    fitness_measure=fitness_std;
 if(m=="drift")
    fitness_measure=fitness_drift;
+if(m=="goal")
+   fitness_measure=fitness_goal;
 cout << "Fitness measure " << fitness_measure << endl;
 }
 
-static void set_nov_measure(string m)
+void set_nov_measure(string m)
 {
 if(m=="std" || m=="sample")
    novelty_measure=novelty_sample;
@@ -79,13 +81,12 @@ float maze_novelty_metric(noveltyitem* x,noveltyitem* y)
 }
 
 //fitness simulation of maze navigation
-Population *maze_fitness_realtime(char* outputdir,const char *mazefile,int par,string measure,const char* genes) {
+Population *maze_fitness_realtime(char* outputdir,const char *mazefile,int par,const char* genes) {
     Population *pop;
     Genome *start_genome;
     char curword[20];
     int id;
 
-set_fit_measure(measure);	
 	//create new maze environment
 	env=new Environment(mazefile);
 	if(outputdir!=NULL) strcpy(output_dir,outputdir);
@@ -296,14 +297,13 @@ int maze_fitness_realtime_loop(Population *pop) {
 }
 
 //novelty maze navigation run
-Population *maze_novelty_realtime(char* outputdir,const char* mazefile,int par,string measure,const char* genes) {
+Population *maze_novelty_realtime(char* outputdir,const char* mazefile,int par,const char* genes) {
 	
     Population *pop;
     Genome *start_genome;
     char curword[20];
     int id;
 
-    set_nov_measure(measure);
 	//crgate new maze environment
 	env=new Environment(mazefile);
 	//param=par;
@@ -396,8 +396,7 @@ int maze_novelty_realtime_loop(Population *pop) {
   archive.evaluate_population(pop,false);
  
   
-  for(curorg=(pop->organisms).begin();curorg!=(pop->organisms).end();++curorg) 
-	(*curorg)->fitness = 0.00000001;
+  for(curorg=(pop->organisms).begin();curorg!=(pop->organisms).end();++curorg) (*curorg)->fitness = 0.00000001;
   
 //Get ready for real-time loop
   //Rank all the organisms from best to worst in each species
@@ -677,10 +676,11 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record)
 	}
 
 	//calculate fitness of individual as closeness to target
-	/*
+	if(fitness_measure = fitness_goal)
+        {
 	fitness=300.0 - newenv->distance_to_target();
 	if(fitness<0.1) fitness=0.1;
-	*/
+	}
 
 	//calculate fitness as meeting minimal criteria
 	if(fitness_measure == fitness_drift)
@@ -708,6 +708,7 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record)
            else
                 fitness+=250.0 - newenv->closest_to_poi;
         }
+
 	//fitness as novelty studies
 	//data.push_back(fitness);
 	
@@ -723,8 +724,8 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record)
 	}
 	*/
 	
-	if(novelty_measure==novelty_sample)	
-	if(param<=0)
+	if(novelty_measure==novelty_sample || novelty_measure==novelty_sample_free)	
+	if(false)
 	{
 	//novelty point is the ending location of the navigator
 	dc[0].push_back(x);
@@ -755,20 +756,8 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record)
 		record->ToRec[2]=newenv->hero.location.y;
 		record->ToRec[3]=newenv->reachgoal;
 		record->ToRec[4]=newenv->reachpoi;		
-
-		/*ADDTL INFO RECORDING */
-		/*
-		if(param>=0)
-		{
-			for(int x=0;x<(int)dc[0].size();x++)
-			{
-				if((10+x)<RECSIZE)
-					record->ToRec[10+x]=dc[0][x];
-			}
-		}
-		*/
-		/*ADDTL INFO RECORDING */
 	}
+
 	if(novelty_measure==novelty_accum)
 		delete accum;
 	delete newenv;
@@ -794,13 +783,18 @@ noveltyitem* maze_novelty_map(Organism *org,data_record* record)
 	//keep track of highest fitness so hard in record
 	if(record!=NULL)
 	{
+
+	//TODO: Perhaps remove non-viable organisms from merged populations
+	//or set their behavioral characterization to some null value..
 	if(!record->ToRec[3])
 		new_item->viable=false;
+
 		/*
 	record->ToRec[19]=org->gnome->parent1;
 	record->ToRec[18]=org->gnome->parent2;
 	record->ToRec[17]=org->gnome->struct_change;
 		*/
+
 	record->ToRec[RECSIZE-1]=highest_fitness;
 	}
 
@@ -810,3 +804,163 @@ noveltyitem* maze_novelty_map(Organism *org,data_record* record)
  	 new_item->fitness=fitness;
   return new_item;
 }
+
+
+//Perform evolution on single pole balacing, for gens generations
+Population *maze_generational(char* output_dir,const char* mazefile,int param,const char *genes, int gens,bool novelty) 
+{
+
+    float archive_thresh=1.0;
+    noveltyarchive archive(archive_thresh,*maze_novelty_metric,true,push_back_size);
+
+    Population *pop;
+
+    Genome *start_genome;
+    char curword[20];
+    int id;
+    data_rec Record;
+
+    ostringstream *fnamebuf;
+    int gen;
+
+    ifstream iFile(genes,ios::in);
+
+    env=new Environment(mazefile);
+    
+    cout<<"START GENERATIONAL MAZE EVOLUTION"<<endl;
+
+    cout<<"Reading in the start genome"<<endl;
+    //Read in the start Genome
+    iFile>>curword;
+    iFile>>id;
+    cout<<"Reading in Genome id "<<id<<endl;
+    start_genome=new Genome(id,iFile);
+    iFile.close();
+  
+      cout<<"Start Genome: "<<start_genome<<endl;
+      
+      //Spawn the Population
+      cout<<"Spawning Population off Genome"<<endl;
+      
+      pop=new Population(start_genome,NEAT::pop_size);
+      
+      cout<<"Verifying Spawned Pop"<<endl;
+      pop->verify();
+
+      for (gen=1;gen<=gens;gen++) {
+	cout<<"Generation "<<gen<<endl;
+	
+	maze_generational_epoch(pop,gen,Record,archive,novelty);
+	
+        }
+
+
+    return pop;
+
+}
+
+int maze_generational_epoch(Population *pop,int generation,data_rec& Record, noveltyarchive& archive, bool novelty) {
+  vector<Organism*>::iterator curorg;
+  vector<Species*>::iterator curspecies;
+  vector<Organism*> measure_pop;
+  //char cfilename[100];
+  //strncpy( cfilename, filename.c_str(), 100 );
+
+  //ofstream cfilename(filename.c_str());
+
+  bool win=false;
+  int winnernum;
+  int indiv_counter=0;
+ 
+  if(generation == 0)
+  {
+    for(curorg=(pop->organisms).begin();curorg!=(pop->organisms).end();++curorg) {
+       measure_pop.push_back(new Organism(*(*curorg))); 
+       //make it a copy so it dont get deleted
+    }
+  }
+  
+  //adjust target every so often
+  if((generation+1)%20)
+  {
+     //merge populations together...
+     //then make the measure_pop equal to the current population  
+  }
+
+  //Evaluate each organism on a test
+  for(curorg=(pop->organisms).begin();curorg!=(pop->organisms).end();++curorg) {
+        
+        data_record* newrec=new data_record();
+	newrec->indiv_number=indiv_counter;
+	//evaluate individual, get novelty point    
+	(*curorg)->noveltypoint = maze_novelty_map((*curorg),newrec);
+        (*curorg)->noveltypoint->indiv_number = indiv_counter;
+        (*curorg)->datarec = newrec;	
+	
+	
+        //add record of new indivdual to storage
+	Record.add_new(newrec);
+	indiv_counter++;
+	
+	//update fittest list
+	archive.update_fittest(*curorg);
+	
+        if(!novelty)
+    	   (*curorg)->fitness = (*curorg)->noveltypoint->fitness;
+  }
+
+  if(novelty)
+  {
+	//NEED TO CHANGE THESE TO GENERATIONAL EQUIVALENTS...
+	//assign fitness scores based on novelty
+ 	archive.evaluate_population(pop,true);
+	///now add to the archive (maybe remove & only add randomly?)
+	archive.evaluate_population(pop,false);
+        
+	//adjust novelty of infeasible individuals
+	/*
+	if(!newrec->ToRec[3] && novelty_measure != novelty_sample_free)
+	{
+		(*curorg)->fitness = 0.00001;
+	}
+	*/	
+  }
+
+  //Average and max their fitnesses for dumping to file and snapshot
+  for(curspecies=(pop->species).begin();curspecies!=(pop->species).end();++curspecies) {
+
+    //This experiment control routine issues commands to collect ave
+    //and max fitness, as opposed to having the snapshot do it, 
+    //because this allows flexibility in terms of what time
+    //to observe fitnesses at
+
+    (*curspecies)->compute_average_fitness();
+    (*curspecies)->compute_max_fitness();
+  }
+
+  //Take a snapshot of the population, so that it can be
+  //visualized later on
+  //if ((generation%1)==0)
+  //  pop->snapshot();
+
+  //Only print to file every print_every generations
+ // if  (win||
+ //      ((generation%(NEAT::print_every))==0))
+  //  pop->print_to_file_by_species(filename);
+
+  if (win) {
+    for(curorg=(pop->organisms).begin();curorg!=(pop->organisms).end();++curorg) {
+      if ((*curorg)->winner) {
+	winnernum=((*curorg)->gnome)->genome_id;
+	cout<<"WINNER IS #"<<((*curorg)->gnome)->genome_id<<endl;
+      }
+    }    
+  }
+
+  //Create the next generation
+  pop->epoch(generation);
+
+
+  return 0;
+}
+

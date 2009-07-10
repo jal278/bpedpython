@@ -3,7 +3,7 @@
 
 #include "genome.h"
 #include "species.h"
-
+#include "datarec.h"
 class noveltyitem;
 	
 namespace NEAT {
@@ -29,6 +29,7 @@ namespace NEAT {
 		Genome *gnome; //The Organism's genotype 
 		Species *species;  //The Organism's Species 
 		noveltyitem *noveltypoint; //The Organism's Novelty Point
+                data_record *datarec; 
 		double expected_offspring; //Number of children this Organism may have
 		int generation;  //Tells which generation this Organism is from
 		bool eliminate;  //Marker for destruction of inferior Organisms
@@ -42,6 +43,11 @@ namespace NEAT {
 		// Track its origin- for debugging or analysis- we can tell how the organism was born
 		bool mut_struct_baby;
 		bool mate_baby;
+
+		//added for generational ns
+		bool blacklist;
+		double closest;
+		noveltyitem* closest_pt;
 
 		// MetaData for the object
 		char metadata[128];

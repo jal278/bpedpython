@@ -16,11 +16,11 @@
 
 inline float scale(float lo, float hi, float x)
 {
-	if(x<lo)
-		return 0;
-	if(x>hi)
-		return 1;
-	return (x-lo)/(hi-lo);
+    if (x<lo)
+        return 0;
+    if (x>hi)
+        return 1;
+    return (x-lo)/(hi-lo);
 }
 
 using namespace std;
@@ -29,81 +29,81 @@ using namespace NEAT;
 class histogram_accumulator
 {
 public:
-long count;
-int *buffer;
-vector<int> dim;
+    long count;
+    int *buffer;
+    vector<int> dim;
 
-histogram_accumulator(vector<int> dims)
-{
-count=0;
-dim=dims;
-long size=1;
-for(int x=0;x<dim.size();x++)
-	size*=dim[x];
-buffer=(int*)malloc(sizeof(int)*size);
-}
+    histogram_accumulator(vector<int> dims)
+    {
+        count=0;
+        dim=dims;
+        long size=1;
+        for (int x=0;x<dim.size();x++)
+            size*=dim[x];
+        buffer=(int*)malloc(sizeof(int)*size);
+    }
 
-double query_point(float* v,bool increment=true)
-{
-long int index=0;
-long int multiplier=1;
-for(int x=0;x<dim.size();x++)
-{
-	int loc_index = v[x] * dim[x];
-	index+=multiplier*loc_index;
-	multiplier*=dim[x];
-}
+    double query_point(float* v,bool increment=true)
+    {
+        long int index=0;
+        long int multiplier=1;
+        for (int x=0;x<dim.size();x++)
+        {
+            int loc_index = v[x] * dim[x];
+            index+=multiplier*loc_index;
+            multiplier*=dim[x];
+        }
 
 //double novelty = 1.0-((double)buffer[index]) / (double)count;
-double novelty = 1.0/((double)buffer[index]+1);
+        double novelty = 1.0/((double)buffer[index]+1);
 
-if(increment)
-{
-	buffer[index]++;
-	count++;
-}
+        if (increment)
+        {
+            buffer[index]++;
+            count++;
+        }
 
-return novelty;
+        return novelty;
 
-}
+    }
 
-~histogram_accumulator()
-{
-free(buffer);
-}
+    ~histogram_accumulator()
+    {
+        free(buffer);
+    }
 
 };
 
 class histogram_multiple
 {
 public:
-vector<histogram_accumulator*> accums;
+    vector<histogram_accumulator*> accums;
 
-histogram_multiple(vector< vector< int> > dims)
-{
-for(int x=0;x<dims.size();x++)
-	accums.push_back(new histogram_accumulator(dims[x]));
-}
+    histogram_multiple(vector< vector< int> > dims)
+    {
+        for (int x=0;x<dims.size();x++)
+            accums.push_back(new histogram_accumulator(dims[x]));
+    }
 
-~histogram_multiple()
-{
-for(int x=0;x<accums.size();x++)
-	delete accums[x];
-}
+    ~histogram_multiple()
+    {
+        for (int x=0;x<accums.size();x++)
+            delete accums[x];
+    }
 
-double query_point(float* v,bool increment=true)
-{
-int cnt=0;
-double prob=1.0;
-for(int x=0;x<accums.size();x++)
-{
-double temp_prob = accums[x]->query_point(v+cnt,increment);
+    double query_point(float* v,bool increment=true)
+    {
+        int cnt=0;
+        double prob=1.0;
+        for (int x=0;x<accums.size();x++)
+        {
+            double temp_prob = accums[x]->query_point(v+cnt,increment);
 //cout << temp_prob << " ";
-prob*=temp_prob;
-}
+            prob*=temp_prob;
+        }
 //cout << endl;
-return prob;
-}
+        return prob;
+    }
 
 };
 
@@ -111,69 +111,67 @@ return prob;
 class noveltyitem
 {
 public:
-bool added;
-bool viable;
-int indiv_number;
+    bool added;
+    bool viable;
+    int indiv_number;
 //we can keep track of genotype & phenotype of novel item
-NEAT::Genome* genotype;
-NEAT::Network* phenotype;
+    NEAT::Genome* genotype;
+    NEAT::Network* phenotype;
 
 //used to collect data
-vector< vector<float> > data;
+    vector< vector<float> > data;
 
 //future use
-float age;
+    float age;
 
 //used for analysis purposes
-float novelty_scale;
-float novelty;
-float fitness;
-float generation;
+    float novelty_scale;
+    float novelty;
+    float fitness;
+    float generation;
 
 //this will write a novelty item to file
-bool Serialize(ofstream& ofile)
-{
-	genotype->print_to_file(ofile);
-	SerializeNoveltyPoint(ofile);
-	return true;
-}
+    bool Serialize(ofstream& ofile)
+    {
+        genotype->print_to_file(ofile);
+        SerializeNoveltyPoint(ofile);
+        return true;
+    }
 
 //serialize the novelty point itself to file
-bool SerializeNoveltyPoint(ofstream& ofile)
-{
-	ofile << "/* Novelty: " << novelty << " Fitness: " << fitness << " Generation: " << generation << " Indiv: " << indiv_number << " */" << endl;
-	ofile << "/* Point:";
-	for(int i=0;i<(int)data.size();i++)
-		for(int j=0;j<(int)data[i].size();j++)
-			ofile << " " << data[i][j];
-	ofile << " */" << endl;
-	return true;
-}
+    bool SerializeNoveltyPoint(ofstream& ofile)
+    {
+        ofile << "/* Novelty: " << novelty << " Fitness: " << fitness << " Generation: " << generation << " Indiv: " << indiv_number << " */" << endl;
+        ofile << "/* Point:";
+        for (int i=0;i<(int)data.size();i++)
+            for (int j=0;j<(int)data[i].size();j++)
+                ofile << " " << data[i][j];
+        ofile << " */" << endl;
+        return true;
+    }
 
-//copy constructor
-noveltyitem(const noveltyitem& item);
 
+    noveltyitem(const noveltyitem& item);
 //initialize...
-noveltyitem()
-{
+    noveltyitem()
+    {
+        viable=true;
+        novelty_scale=1.0;
+        added=false;
+        genotype=NULL;
+        phenotype=NULL;
+        age=0.0;
+        generation=0.0;
+        indiv_number=(-1);
+    }
 
-	viable=true;	
-	novelty_scale=1.0;
-	added=false;
-	genotype=NULL;
-	phenotype=NULL;
-	age=0.0;
-	generation=0.0;
-	indiv_number=(-1);
-}
-
-~noveltyitem()
-{
-	if(genotype)
-		delete genotype;
-	if(phenotype)
-		delete phenotype;
-}
+    ~noveltyitem()
+    {
+        if (genotype)
+            delete genotype;
+        if (phenotype)
+            delete phenotype;
+    }
 
 
 };
@@ -181,469 +179,479 @@ noveltyitem()
 //different comparison functions used for sorting
 bool cmp(const noveltyitem *a, const noveltyitem *b);
 bool cmp_fit(const noveltyitem *a, const noveltyitem *b);
- 
+
 
 //the novelty archive contains all of the novel items we have encountered thus far
 //Using a novelty metric we can determine how novel a new item is compared to everything
-//currently in the novelty set 
+//currently in the novelty set
 class noveltyarchive
 {
 
 private:
-histogram_multiple* hist;
-bool histogram;
+    histogram_multiple* hist;
+    bool histogram;
 
-	//are we collecting data?
-	bool record;
+    //are we collecting data?
+    bool record;
 
-	ofstream *datafile;
-	ofstream *novelfile;
-	typedef pair<float, noveltyitem*> sort_pair;
-	//all the novel items we have found so far
-	vector<noveltyitem*> novel_items;
-	vector<noveltyitem*> fittest;
+    ofstream *datafile;
+    ofstream *novelfile;
+    typedef pair<float, noveltyitem*> sort_pair;
+    //all the novel items we have found so far
+    vector<noveltyitem*> novel_items;
+    vector<noveltyitem*> fittest;
 
-	//current generation novelty items
-	vector<noveltyitem*> current_gen;
+    //current generation novelty items
+    vector<noveltyitem*> current_gen;
 
-	//novel items waiting addition to the set pending the end of the generation 
-	vector<noveltyitem*> add_queue;
-	//the measure of novelty
-	float (*novelty_metric)(noveltyitem*,noveltyitem*);
-	//minimum threshold for a "novel item"
-	float novelty_threshold;
-	float novelty_floor;
-	//counter to keep track of how many gens since we've added to the archive
-	int time_out;
-	//parameter for how many neighbors to look at for N-nearest neighbor distance novelty
-	int neighbors;
-	//radius for SOG-type (not currently used)
-	float radius;
-	int this_gen_index;
-	
-	//hall of fame mode, add an item each generation regardless of threshold
-	bool hall_of_fame;
-	//add new items according to threshold
-	bool threshold_add;
-	
-	//current generation
-	int generation;
+    //novel items waiting addition to the set pending the end of the generation
+    vector<noveltyitem*> add_queue;
+    //the measure of novelty
+    float (*novelty_metric)(noveltyitem*,noveltyitem*);
+    //minimum threshold for a "novel item"
+    float novelty_threshold;
+    float novelty_floor;
+    //counter to keep track of how many gens since we've added to the archive
+    int time_out;
+    //parameter for how many neighbors to look at for N-nearest neighbor distance novelty
+    int neighbors;
+    //radius for SOG-type (not currently used)
+    float radius;
+    int this_gen_index;
+
+    //hall of fame mode, add an item each generation regardless of threshold
+    bool hall_of_fame;
+    //add new items according to threshold
+    bool threshold_add;
+
+    //current generation
+    int generation;
 public:
 
-	//constructor
-	noveltyarchive(float threshold,float (*nm)(noveltyitem*,noveltyitem*),bool rec=true,int pbs=-1)
-	{
-		//how many nearest neighbors to consider for calculating novelty score?
-	//histogram adds
-	histogram=false;
+    //constructor
+    noveltyarchive(float threshold,float (*nm)(noveltyitem*,noveltyitem*),bool rec=true,int pbs=-1)
+    {
+        //how many nearest neighbors to consider for calculating novelty score?
+        //histogram adds
+        histogram=false;
         vector< vector<int> > k;
         vector< int> l;
-	
-	if(pbs==-1)
-		{
-		histogram=false;
-                pbs=5;
-		}
-        l.push_back(pbs);
-        l.push_back(pbs);
-	for(int x=0;x<1;x++)
-		k.push_back(l);
-   
-	hist = new histogram_multiple(k);
-	
-	neighbors=15;
-		generation=0;
-		time_out=0; //used for adaptive threshold
-		novelty_threshold=threshold;
-		novelty_metric=nm; //set the novelty metric via function pointer
-		novelty_floor=0.0; //lowest threshold is allowed to get
-		record=rec;
-		this_gen_index=ARCHIVE_SEED_AMOUNT;
-		hall_of_fame=false;
-		threshold_add=true;
-		
-		if(record)
-		{
-			datafile = new ofstream("runresults.dat");
-		}
-	}
 
-	~noveltyarchive()
-	{
-		if(record)
-		{
-			datafile->close();
-		}
-		//probably want to delete all the noveltyitems at this point
-	}
-	
+        if (pbs==-1)
+        {
+            histogram=false;
+            pbs=5;
+        }
+        l.push_back(pbs);
+        l.push_back(pbs);
+        for (int x=0;x<1;x++)
+            k.push_back(l);
+
+        hist = new histogram_multiple(k);
+
+        neighbors=15;
+        generation=0;
+        time_out=0; //used for adaptive threshold
+        novelty_threshold=threshold;
+        novelty_metric=nm; //set the novelty metric via function pointer
+        novelty_floor=0.0; //lowest threshold is allowed to get
+        record=rec;
+        this_gen_index=ARCHIVE_SEED_AMOUNT;
+        hall_of_fame=false;
+        threshold_add=true;
+
+        if (record)
+        {
+            datafile = new ofstream("runresults.dat");
+        }
+    }
+
+    ~noveltyarchive()
+    {
+        if (record)
+        {
+            datafile->close();
+        }
+        //probably want to delete all the noveltyitems at this point
+    }
+
 public:
-	float get_threshold() { return novelty_threshold; }
-	int get_set_size()
-	{
-		return (int)novel_items.size();
-	}
-	
-	//add novel item to archive
-	void add_novel_item(noveltyitem* item,bool aq=true)
-	{
-		if (histogram)
-			return;
-		item->added=true;
-		item->generation=generation;
-		novel_items.push_back(item);
-		if(aq)
-			add_queue.push_back(item);
-	}
 
-	#define MIN_ACCEPTABLE_NOVELTY 0.005
-	//not currently used
-	void add_randomly(Population* pop)
-	{
-		for(int i=0;i<(int)pop->organisms.size();i++)
-		{
-			if (((float)rand()/RAND_MAX)<(0.0005))
-			{
-				noveltyitem* newitem = new noveltyitem(*pop->organisms[i]->noveltypoint);
-				if(newitem->novelty > MIN_ACCEPTABLE_NOVELTY)
-					add_novel_item(newitem,false);
-				else delete newitem;
-			}
-		}
-	}
-	
-	noveltyitem *get_item(int i) { return novel_items[i]; }
-	
-	//re-evaluate entire population for novelty
-	void evaluate_population(Population* pop,bool fitness=true);
-	//evaluate single individual for novelty
-	void evaluate_individual(Organism* individual,Population* pop,bool fitness=true);
+    
+    float get_threshold() {
+        return novelty_threshold;
+    }
+    int get_set_size()
+    {
+        return (int)novel_items.size();
+    }
 
-	//maintain list of fittest organisms so far
-	void update_fittest(Organism* org)
-	{
-		int allowed_size=5;
-		if((int)fittest.size()<allowed_size)
-		{
-			if(org->noveltypoint!=NULL)
-			{
-			noveltyitem* x = new noveltyitem(*(org->noveltypoint));
-			fittest.push_back(x);
-			sort(fittest.begin(),fittest.end(),cmp_fit);
-			reverse(fittest.begin(),fittest.end());
-			}
-			else
-			{
-				cout<<"WHY NULL?" << endl;
-			}
-		}			
-		else
-		{
-			if(org->noveltypoint->fitness > fittest.back()->fitness)
-			{
-				noveltyitem* x = new noveltyitem(*(org->noveltypoint));
-				fittest.push_back(x);
-				
-				sort(fittest.begin(),fittest.end(),cmp_fit);
-				reverse(fittest.begin(),fittest.end());
-				
-				delete fittest.back();
-				fittest.pop_back();
-				
-			}
-		}
-	}
-	
-	//resort fittest list
-	void update_fittest(Population* pop)
-	{
+    //add novel item to archive
+    void add_novel_item(noveltyitem* item,bool aq=true)
+    {
+        if (histogram)
+            return;
+        item->added=true;
+        item->generation=generation;
+        novel_items.push_back(item);
+        if (aq)
+            add_queue.push_back(item);
+    }
 
-		sort(fittest.begin(),fittest.end(),cmp_fit);
-		reverse(fittest.begin(),fittest.end());
-		
-	}
-	
-	//write out fittest list
-	void serialize_fittest(char *fn)
-	{
-		ofstream outfile(fn);
-		for(int i=0;i<(int)fittest.size();i++)
-			fittest[i]->Serialize(outfile);
-		outfile.close();
-	}
-	
-	//adjust dynamic novelty threshold depending on how many have been added to
-	//archive recently
-	void add_pending()
-	{
-		if(record)
-		{
-			(*datafile) << novelty_threshold << " " << add_queue.size() << endl;
-		}
-		
-		if(hall_of_fame) 
-		{		
-		if(add_queue.size()==1) time_out++;
-		else time_out=0;
-		}
-		else 
-		{
-		if(add_queue.size()==0)	time_out++;
-		else time_out=0;
-		}
-		
-		//if no individuals have been added for 10 generations
-		//lower threshold
-		if(time_out==10) {
-			novelty_threshold*=0.95;
-			if(novelty_threshold<novelty_floor)
-				novelty_threshold=novelty_floor;
-			time_out=0;
-		}
-		
-		//if more than four individuals added this generation
-		//raise threshold
-		if(add_queue.size()>4) novelty_threshold*=1.2;
-		
-		add_queue.clear();
-		
-		this_gen_index = novel_items.size();
-	}
-	
-	//criteria for adding to the archive
-	bool add_to_novelty_archive(float novelty)
-	{
-		if(novelty>novelty_threshold)
-			return true;
-		else
-			return false;
-	}
-	
-	//only used in generational model (obselete)
-	void end_of_gen()
-	{
-		generation++;
-		
-			
-			if(threshold_add)
-			{
-				find_novel_items(true);
-			}
-				
-			if(hall_of_fame)
-			{
-				find_novel_items(false);
-				
-				sort(current_gen.begin(),current_gen.end(),cmp);
-				reverse(current_gen.begin(),current_gen.end());
-			
-				add_novel_item(current_gen[0]);
-			}
-			
-			clean_gen();
-			
-		
-		add_pending();
-	}
-	
-	//steady-state end of generation call (every so many indivudals)
-	void end_of_gen_steady(Population* pop)
-	{
-		
-		generation++;
-		
-		add_pending();
-		
-		vector<Organism*>::iterator cur_org;
-	}
-	
-	void clean_gen()
-	{
-		vector<noveltyitem*>::iterator cur_item;
+#define MIN_ACCEPTABLE_NOVELTY 0.005
+    //not currently used
+    void add_randomly(Population* pop)
+    {
+        for (int i=0;i<(int)pop->organisms.size();i++)
+        {
+            if (((float)rand()/RAND_MAX)<(0.0005))
+            {
+                noveltyitem* newitem = new noveltyitem(*pop->organisms[i]->noveltypoint);
+                if (newitem->novelty > MIN_ACCEPTABLE_NOVELTY)
+                    add_novel_item(newitem,false);
+                else delete newitem;
+            }
+        }
+    }
 
-		bool datarecord=true;	
-		
-		stringstream filename("");
-		filename << "novrec/out" << generation << ".dat";
-		ofstream outfile(filename.str().c_str());
-		cout << filename.str() << endl;
+    noveltyitem *get_item(int i) {
+        return novel_items[i];
+    } 
 
-		for(cur_item=current_gen.begin();cur_item!=current_gen.end();cur_item++)
-		{
-			if(datarecord)
-			{
-				(*cur_item)->SerializeNoveltyPoint(outfile);
-			}
-			if(!(*cur_item)->added)
-				delete (*cur_item);
-		}
-		current_gen.clear();
-	}
-	
-	//see if there are any individuals in current generation
-	//that need to be added to the archive (obselete)
-	void find_novel_items(bool add=true)
-	{
-		vector<noveltyitem*>::iterator cur_item;
-		for(cur_item=current_gen.begin();cur_item!=current_gen.end();cur_item++)
-		{
-			float novelty = test_novelty((*cur_item));
-			(*cur_item)->novelty = novelty;
-			if(add && add_to_novelty_archive(novelty))
-				add_novel_item(*cur_item);
-		}
-	}
-	
-	//add an item to current generation (obselete)
-	void add_to_generation(noveltyitem* item)
-	{
-		current_gen.push_back(item);
-	}
+    //merge two populations into one
+    Population* merge_populations(Population* p1, Population *p2);
+    //evaluate one pop in terms of another (generational ns)
+    void evaluate_population(Population* to_eval, Population* against,bool fitness=true);
+    //re-evaluate entire population for novelty
+    void evaluate_population(Population* pop,bool fitness=true);
+    //evaluate single individual for novelty
+    void evaluate_individual(Organism* individual,Population* pop,bool fitness=true);
 
-	float novelty_histogram(noveltyitem* item)
-	{
-		float data[30];
-		for(int x=0;x<2;x++)
-			data[x]=scale(0,200,item->data[0][x]);
-		return hist->query_point(data);
-	}
-	
-	//nearest neighbor novelty score calculation
-	float novelty_avg_nn(noveltyitem* item,int neigh=-1,bool ageSmooth=false,Population* pop=NULL)
-	{
-		vector<sort_pair> novelties;
-		if(pop)
-			novelties = map_novelty_pop(novelty_metric,item,pop);
-		else
-			novelties = map_novelty(novelty_metric,item);
-		sort(novelties.begin(),novelties.end());
-			
-		float density=0.0;
-		int len=novelties.size();
-		float sum=0.0;
-		float weight=0.0;
-		
-		
-		if(neigh==-1)
-		{
-			neigh=neighbors;
-		}
-		
-		if(len<ARCHIVE_SEED_AMOUNT)
-		{		
-			item->age=1.0;
-			add_novel_item(item);	
-		}
-		else
-		{
-			len=neigh;
-			if((int)novelties.size()<len)
-				len=novelties.size();
-			int i=0;
-			
-			while(weight<neigh && i<(int)novelties.size())
-			{
-				float term = novelties[i].first;
-				float w = 1.0;
-				
-				if(ageSmooth)
-				{
-					float age=(novelties[i].second)->age;
-					w=1.0-pow((float)0.95,age);
-				}
-				
-				sum+=term*w;
-				weight+=w;		
-				i++;				
-			}
+    //maintain list of fittest organisms so far
+    void update_fittest(Organism* org)
+    {
+        int allowed_size=5;
+        if ((int)fittest.size()<allowed_size)
+        {
+            if (org->noveltypoint!=NULL)
+            {
+                noveltyitem* x = new noveltyitem(*(org->noveltypoint));
+                fittest.push_back(x);
+                sort(fittest.begin(),fittest.end(),cmp_fit);
+                reverse(fittest.begin(),fittest.end());
+            }
+            else
+            {
+                cout<<"WHY NULL?" << endl;
+            }
+        }
+        else
+        {
+            if (org->noveltypoint->fitness > fittest.back()->fitness)
+            {
+                noveltyitem* x = new noveltyitem(*(org->noveltypoint));
+                fittest.push_back(x);
 
-			if(weight!=0)
-			{
-					density = sum/weight; 
-			}
-		}	
-		
-		item->novelty=density;
-		item->generation=generation;
-		return density;
-	}
+                sort(fittest.begin(),fittest.end(),cmp_fit);
+                reverse(fittest.begin(),fittest.end());
 
-	//fitness = avg distance to k-nn in novelty space
-	float test_fitness(noveltyitem* item)
-	{
-		if(!histogram)
-			return novelty_avg_nn(item,-1,false);
-		else
-		{	
-			float val = novelty_histogram(item);
-                        cout << val << endl;
-                        return val;
-		}
-	}
-	
-	float test_novelty(noveltyitem* item)
-	{
-		if(!histogram)
-			return novelty_avg_nn(item,1,false);
-		else
-		{
-			float val = novelty_histogram(item);
-                        cout << val << endl;
-                        return val;
-		}
-	}
+                delete fittest.back();
+                fittest.pop_back();
 
-	//map the novelty metric across the archive
-	vector<sort_pair> map_novelty(float (*nov_func)(noveltyitem*,noveltyitem*),noveltyitem* newitem)
-	{
-		vector<sort_pair> novelties;
-		for(int i=0;i<(int)novel_items.size();i++)
-		{			
-			novelties.push_back(make_pair((*novelty_metric)(novel_items[i],newitem),novel_items[i])); 
-		}
-		return novelties;
-	}
-	
-	//map the novelty metric across the archive + current population
-	vector<sort_pair> map_novelty_pop(float (*nov_func)(noveltyitem*,noveltyitem*),noveltyitem* newitem, Population* pop)
-	{
-		vector<sort_pair> novelties;
-		for(int i=0;i<(int)novel_items.size();i++)
-		{
-			novelties.push_back(make_pair((*novelty_metric)(novel_items[i],newitem),novel_items[i]));
-		}
-		for(int i=0;i<(int)pop->organisms.size();i++)
-		{
-			novelties.push_back(make_pair((*novelty_metric)(pop->organisms[i]->noveltypoint,newitem),
-				pop->organisms[i]->noveltypoint));
-		}
-		return novelties;
-	}
-	
-	//write out archive
-	bool Serialize(char* fname)
-	{
-		ofstream outfile;
-		outfile.open(fname);
-		  if (!outfile) {
-		    perror ("The following error occurred");
-		    std::cerr<<"Can't open "<<fname<<" for output"<<std::endl;
-		    return false;
-		  }
-		bool res= Serialize(outfile);
-		outfile.close();
-		return res;
-	}
-	
-	//write out archive
-	bool Serialize(ofstream& ofile)
-	{
-		for(int i=0;i<(int)novel_items.size();i++)
-		{
-			novel_items[i]->Serialize(ofile);
-		}
-		return true;		
-	}
+            }
+        }
+    }
+
+    //resort fittest list
+    void update_fittest(Population* pop)
+    {
+
+        sort(fittest.begin(),fittest.end(),cmp_fit);
+        reverse(fittest.begin(),fittest.end());
+
+    }
+
+    //write out fittest list
+    void serialize_fittest(char *fn)
+    {
+        ofstream outfile(fn);
+        for (int i=0;i<(int)fittest.size();i++)
+            fittest[i]->Serialize(outfile);
+        outfile.close();
+    }
+
+    //adjust dynamic novelty threshold depending on how many have been added to
+    //archive recently
+    void add_pending()
+    {
+        if (record)
+        {
+            (*datafile) << novelty_threshold << " " << add_queue.size() << endl;
+        }
+
+        if (hall_of_fame)
+        {
+            if (add_queue.size()==1) time_out++;
+            else time_out=0;
+        }
+        else
+        {
+            if (add_queue.size()==0)	time_out++;
+            else time_out=0;
+        }
+
+        //if no individuals have been added for 10 generations
+        //lower threshold
+        if (time_out==10) {
+            novelty_threshold*=0.95;
+            if (novelty_threshold<novelty_floor)
+                novelty_threshold=novelty_floor;
+            time_out=0;
+        }
+
+        //if more than four individuals added this generation
+        //raise threshold
+        if (add_queue.size()>4) novelty_threshold*=1.2;
+
+        add_queue.clear();
+
+        this_gen_index = novel_items.size();
+    }
+
+    //criteria for adding to the archive
+    bool add_to_novelty_archive(float novelty)
+    {
+        if (novelty>novelty_threshold)
+            return true;
+        else
+            return false;
+    }
+
+    //only used in generational model (obselete)
+    void end_of_gen()
+    {
+        generation++;
+
+
+        if (threshold_add)
+        {
+            find_novel_items(true);
+        }
+
+        if (hall_of_fame)
+        {
+            find_novel_items(false);
+
+            sort(current_gen.begin(),current_gen.end(),cmp);
+            reverse(current_gen.begin(),current_gen.end());
+
+            add_novel_item(current_gen[0]);
+        }
+
+        clean_gen();
+
+
+        add_pending();
+    }
+
+    //steady-state end of generation call (every so many indivudals)
+    void end_of_gen_steady(Population* pop)
+    {
+
+        generation++;
+
+        add_pending();
+
+        vector<Organism*>::iterator cur_org;
+    }
+
+    void clean_gen()
+    {
+        vector<noveltyitem*>::iterator cur_item;
+
+        bool datarecord=true;
+
+        stringstream filename("");
+        filename << "novrec/out" << generation << ".dat";
+        ofstream outfile(filename.str().c_str());
+        cout << filename.str() << endl;
+
+        for (cur_item=current_gen.begin();cur_item!=current_gen.end();cur_item++)
+        {
+            if (datarecord)
+            {
+                (*cur_item)->SerializeNoveltyPoint(outfile);
+            }
+            if (!(*cur_item)->added)
+                delete (*cur_item);
+        }
+        current_gen.clear();
+    }
+
+    //see if there are any individuals in current generation
+    //that need to be added to the archive (obselete)
+    void find_novel_items(bool add=true)
+    {
+        vector<noveltyitem*>::iterator cur_item;
+        for (cur_item=current_gen.begin();cur_item!=current_gen.end();cur_item++)
+        {
+            float novelty = test_novelty((*cur_item));
+            (*cur_item)->novelty = novelty;
+            if (add && add_to_novelty_archive(novelty))
+                add_novel_item(*cur_item);
+        }
+    }
+
+    //add an item to current generation (obselete)
+    void add_to_generation(noveltyitem* item)
+    {
+        current_gen.push_back(item);
+    }
+
+    float novelty_histogram(noveltyitem* item)
+    {
+        float data[30];
+        for (int x=0;x<2;x++)
+            data[x]=scale(0,200,item->data[0][x]);
+        return hist->query_point(data);
+    }
+
+    //nearest neighbor novelty score calculation
+    float novelty_avg_nn(noveltyitem* item,int neigh=-1,bool ageSmooth=false,Population* pop=NULL)
+    {
+        vector<sort_pair> novelties;
+        if (pop)
+            novelties = map_novelty_pop(novelty_metric,item,pop);
+        else
+            novelties = map_novelty(novelty_metric,item);
+        sort(novelties.begin(),novelties.end());
+
+        float density=0.0;
+        int len=novelties.size();
+        float sum=0.0;
+        float weight=0.0;
+
+
+        if (neigh==-1)
+        {
+            neigh=neighbors;
+        }
+
+        if (len<ARCHIVE_SEED_AMOUNT)
+        {
+            item->age=1.0;
+            add_novel_item(item);
+        }
+        else
+        {
+            len=neigh;
+            if ((int)novelties.size()<len)
+                len=novelties.size();
+            int i=0;
+
+            while (weight<neigh && i<(int)novelties.size())
+            {
+                float term = novelties[i].first;
+                float w = 1.0;
+
+                if (ageSmooth)
+                {
+                    float age=(novelties[i].second)->age;
+                    w=1.0-pow((float)0.95,age);
+                }
+
+                sum+=term*w;
+                weight+=w;
+                i++;
+            }
+
+            if (weight!=0)
+            {
+                density = sum/weight;
+            }
+        }
+
+        item->novelty=density;
+        item->generation=generation;
+        return density;
+    }
+
+    //fitness = avg distance to k-nn in novelty space
+    float test_fitness(noveltyitem* item)
+    {
+        if (!histogram)
+            return novelty_avg_nn(item,-1,false);
+        else
+        {
+            float val = novelty_histogram(item);
+            cout << val << endl;
+            return val;
+        }
+    }
+
+    float test_novelty(noveltyitem* item)
+    {
+        if (!histogram)
+            return novelty_avg_nn(item,1,false);
+        else
+        {
+            float val = novelty_histogram(item);
+            cout << val << endl;
+            return val;
+        }
+    }
+
+    //map the novelty metric across the archive
+    vector<sort_pair> map_novelty(float (*nov_func)(noveltyitem*,noveltyitem*),noveltyitem* newitem)
+    {
+        vector<sort_pair> novelties;
+        for (int i=0;i<(int)novel_items.size();i++)
+        {
+            novelties.push_back(make_pair((*novelty_metric)(novel_items[i],newitem),novel_items[i]));
+        }
+        return novelties;
+    }
+
+    //map the novelty metric across the archive + current population
+    vector<sort_pair> map_novelty_pop(float (*nov_func)(noveltyitem*,noveltyitem*),noveltyitem* newitem, Population* pop)
+    {
+        vector<sort_pair> novelties;
+        for (int i=0;i<(int)novel_items.size();i++)
+        {
+            novelties.push_back(make_pair((*novelty_metric)(novel_items[i],newitem),novel_items[i]));
+        }
+        for (int i=0;i<(int)pop->organisms.size();i++)
+        {
+            novelties.push_back(make_pair((*novelty_metric)(pop->organisms[i]->noveltypoint,newitem),
+                                          pop->organisms[i]->noveltypoint));
+        }
+        return novelties;
+    }
+
+    //write out archive
+    bool Serialize(char* fname)
+    {
+        ofstream outfile;
+        outfile.open(fname);
+        if (!outfile) {
+            perror ("The following error occurred");
+            std::cerr<<"Can't open "<<fname<<" for output"<<std::endl;
+            return false;
+        }
+        bool res= Serialize(outfile);
+        outfile.close();
+        return res;
+    }
+
+    //write out archive
+    bool Serialize(ofstream& ofile)
+    {
+        for (int i=0;i<(int)novel_items.size();i++)
+        {
+            novel_items[i]->Serialize(ofile);
+        }
+        return true;
+    }
 
 };
 

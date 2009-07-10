@@ -18,6 +18,8 @@ return a->fitness < b->fitness;
 noveltyitem::noveltyitem(const noveltyitem& item)
 {
 	added=item.added;
+        //TODO: this might cause memory leak in
+        //merge_population?
 	genotype=new Genome(*(item.genotype));
 	phenotype=new Network(*(item.phenotype));
 	age=item.age;
@@ -32,6 +34,90 @@ noveltyitem::noveltyitem(const noveltyitem& item)
 			temp.push_back(item.data[i][j]);
 		data.push_back(temp);		
 	}
+}
+
+//merge two populations together according to novelty
+Population* noveltyarchive::merge_populations(Population* p1, Population *p2)
+{
+
+vector<Organism*> total_orgs;
+vector<Organism*> merged_orgs;
+vector<Organism*>::iterator it;
+vector<noveltyitem*>::iterator novit;
+
+//compile the organisms together
+for(it = p1->organisms.begin(); it!= p1->organisms.end();it++)
+{
+	total_orgs.push_back(*it);
+	(*it)->blacklist=false;
+}
+for(it = p2->organisms.begin(); it!= p2->organisms.end();it++)
+{
+	total_orgs.push_back(*it);
+	(*it)->blacklist=false;
+}
+
+int size = p1->organisms.size()-1; //remove one since we are adding 1st
+
+//randomly add first member to merged organisms
+Organism* last_added = total_orgs[rand()%(size*2)];
+last_added->blacklist=true;
+merged_orgs.push_back(last_added);
+
+//find the closest archive point to each individual
+for(it = total_orgs.begin(); it!=total_orgs.end(); it++)
+{
+	double closest = 100000000.0;
+        noveltyitem* closest_pt=last_added->noveltypoint; 
+	//map against archive
+	for(novit = novel_items.begin();novit != novel_items.end(); novit++)
+	{
+		double dist = (*novelty_metric)(*novit,(*it)->noveltypoint);
+		if (dist < closest)
+		{
+			closest = dist;
+			closest_pt = *novit;
+		}
+	}
+	(*it)->closest = closest;
+	(*it)->closest_pt = closest_pt;
+}
+
+//now greedily add point furthest from archive + merged pop so far
+for(int x=0;x<size;x++)
+{
+	Organism* best=NULL;
+	double best_dist= -1000.0;
+	for(it = total_orgs.begin(); it!=total_orgs.end(); it++)
+	{
+		if ((*it)->blacklist)
+			continue;
+
+                double new_dist = (*novelty_metric)((*it)->noveltypoint,
+					last_added->noveltypoint);
+
+		if (new_dist < (*it)->closest)
+			(*it)->closest = new_dist;
+
+		if ((*it)->closest > best_dist)
+		{
+			best_dist = ((*it)->closest);
+			best = *it;
+		}
+	}
+	merged_orgs.push_back(best);
+}
+return new Population(merged_orgs);
+
+
+}
+
+//evaluate the novelty of the whole population
+void noveltyarchive::evaluate_population(Population* p1,Population* p2,bool fitness)
+{
+	vector<Organism*>::iterator it;
+	for(it=p1->organisms.begin();it<p1->organisms.end();it++)
+		evaluate_individual((*it),p2,fitness);
 }
 
 //evaluate the novelty of the whole population

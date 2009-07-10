@@ -24,11 +24,18 @@ using namespace std;
 
 using namespace NEAT;
 
+void set_nov_measure(string m);
+void set_fit_measure(string m);
+
+//generational maze experiments
+Population *maze_generational(char* output_dir,const char* mazefile,int param, const char *genes, int gens, bool novelty); 
+int maze_generational_epoch(Population *pop,int generation,data_rec& Record,noveltyarchive& archive,bool novelty);
+
 //Walker novelty steady-state 
 int maze_novelty_realtime_loop(Population *pop);
-Population *maze_novelty_realtime(char* output_dir=NULL,const char* mazefile="maze.txt",int param=-1,string measure="std",const char* genes=NULL);
+Population *maze_novelty_realtime(char* output_dir=NULL,const char* mazefile="maze.txt",int param=-1,const char* genes=NULL);
 noveltyitem* maze_novelty_map(Organism *org,data_record* record=NULL);
-Population *maze_fitness_realtime(char* output_dir=NULL,const char* mazefile="maze.txt",int param=-1,string measure="std",const char* genes=NULL);
+Population *maze_fitness_realtime(char* output_dir=NULL,const char* mazefile="maze.txt",int param=-1,const char* genes=NULL);
 int maze_fitness_realtime_loop(Population *pop);
 
 double mazesimStep(Environment* newenv,Network *net,vector< vector<float> > &dc);
