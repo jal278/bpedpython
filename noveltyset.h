@@ -319,13 +319,13 @@ public:
     } 
 
     //merge two populations into one
-    Population* merge_populations(Population* p1, Population *p2);
+    Population* merge_populations(Population* p1, vector<Organism*> p2);
     //evaluate one pop in terms of another (generational ns)
-    void evaluate_population(Population* to_eval, Population* against,bool fitness=true);
+    void evaluate_population(Population* to_eval, vector<Organism*> against,bool fitness=true);
     //re-evaluate entire population for novelty
     void evaluate_population(Population* pop,bool fitness=true);
     //evaluate single individual for novelty
-    void evaluate_individual(Organism* individual,Population* pop,bool fitness=true);
+    void evaluate_individual(Organism* individual,vector<Organism*> pop,bool fitness=true);
 
     //maintain list of fittest organisms so far
     void update_fittest(Organism* org)
@@ -517,11 +517,11 @@ public:
     }
 
     //nearest neighbor novelty score calculation
-    float novelty_avg_nn(noveltyitem* item,int neigh=-1,bool ageSmooth=false,Population* pop=NULL)
+    float novelty_avg_nn(noveltyitem* item,int neigh=-1,bool ageSmooth=false,vector<Organism*> *pop=NULL)
     {
         vector<sort_pair> novelties;
         if (pop)
-            novelties = map_novelty_pop(novelty_metric,item,pop);
+            novelties = map_novelty_pop(novelty_metric,item,*pop);
         else
             novelties = map_novelty(novelty_metric,item);
         sort(novelties.begin(),novelties.end());
@@ -613,17 +613,16 @@ public:
     }
 
     //map the novelty metric across the archive + current population
-    vector<sort_pair> map_novelty_pop(float (*nov_func)(noveltyitem*,noveltyitem*),noveltyitem* newitem, Population* pop)
+    vector<sort_pair> map_novelty_pop(float (*nov_func)(noveltyitem*,noveltyitem*),noveltyitem* newitem, vector<Organism*> pop)
     {
         vector<sort_pair> novelties;
         for (int i=0;i<(int)novel_items.size();i++)
         {
             novelties.push_back(make_pair((*novelty_metric)(novel_items[i],newitem),novel_items[i]));
         }
-        for (int i=0;i<(int)pop->organisms.size();i++)
+        for (int i=0;i<(int)pop.size();i++)
         {
-            novelties.push_back(make_pair((*novelty_metric)(pop->organisms[i]->noveltypoint,newitem),
-                                          pop->organisms[i]->noveltypoint));
+            novelties.push_back(make_pair((*novelty_metric)(pop[i]->noveltypoint,newitem), pop[i]->noveltypoint));
         }
         return novelties;
     }

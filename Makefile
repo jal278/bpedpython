@@ -10,7 +10,9 @@ INCLUDES = -I ./include
 
 #CFLAGS = -g -Wall -Wno-return-type $(INCLUDES) -DSWIG_GLOBAL
 #CFLAGS = -g -Wall -Werror
+
 CFLAGS = -g -Wall -O3 -g $(INCLUDES) 
+#CFLAGS = -g -Wall -g $(INCLUDES) 
 
 mazesim: maze.h neat.o network.o nnode.o link.o trait.o gene.o genome.o innovation.o organism.o species.o population.o experiments.o noveltyexp.o neatmain.o noveltyset.o  #neatswig_wrap.o visual.o
 	$(CC) $(CFLAGS) neat.o network.o nnode.o link.o trait.o gene.o genome.o innovation.o organism.o species.o population.o experiments.o neatmain.o noveltyexp.o noveltyset.o  -o mazesim $(LIBS)

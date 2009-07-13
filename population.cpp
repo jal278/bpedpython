@@ -515,7 +515,7 @@ bool Population::epoch(int generation) {
 		total+=(*curorg)->fitness;
 	}
 	overall_average=total/total_organisms;
-	std::cout<<"Generation "<<generation<<": "<<"overall_average = "<<overall_average<<std::endl;
+	//std::cout<<"Generation "<<generation<<": "<<"overall_average = "<<overall_average<<std::endl;
 
 	//Now compute expected number of offspring for each individual organism
 	for(curorg=organisms.begin();curorg!=organisms.end();++curorg) {
@@ -574,7 +574,7 @@ bool Population::epoch(int generation) {
 	for(curspecies=sorted_species.begin();curspecies!=sorted_species.end();++curspecies) {
 
 		//Print out for Debugging/viewing what's going on 
-		std::cout<<"orig fitness of Species"<<(*curspecies)->id<<"(Size "<<(*curspecies)->organisms.size()<<"): "<<(*((*curspecies)->organisms).begin())->orig_fitness<<" last improved "<<((*curspecies)->age-(*curspecies)->age_of_last_improvement)<<std::endl;
+		//std::cout<<"orig fitness of Species"<<(*curspecies)->id<<"(Size "<<(*curspecies)->organisms.size()<<"): "<<(*((*curspecies)->organisms).begin())->orig_fitness<<" last improved "<<((*curspecies)->age-(*curspecies)->age_of_last_improvement)<<std::endl;
 	}
 
 	//Check for Population-level stagnation
@@ -584,11 +584,11 @@ bool Population::epoch(int generation) {
 		highest_fitness) {
 			highest_fitness=((*(((*curspecies)->organisms).begin()))->orig_fitness);
 			highest_last_changed=0;
-			std::cout<<"NEW POPULATION RECORD FITNESS: "<<highest_fitness<<std::endl;
+//			std::cout<<"NEW POPULATION RECORD FITNESS: "<<highest_fitness<<std::endl;
 		}
 	else {
 		++highest_last_changed;
-		std::cout<<highest_last_changed<<" generations since last population fitness record: "<<highest_fitness<<std::endl;
+//		std::cout<<highest_last_changed<<" generations since last population fitness record: "<<highest_fitness<<std::endl;
 	}
 
 	if(highest_fitness>max_fit)

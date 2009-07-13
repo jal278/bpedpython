@@ -510,7 +510,7 @@ int maze_novelty_realtime_loop(Population *pop) {
 	new_org->noveltypoint = maze_novelty_map(new_org,newrec);
 	new_org->noveltypoint->indiv_number = indiv_counter;
 	//calculate novelty of new individual
-	archive.evaluate_individual(new_org,pop);
+	archive.evaluate_individual(new_org,pop->organisms);
 	newrec->ToRec[5] = archive.get_threshold();
 	newrec->ToRec[6] = archive.get_set_size();
 	newrec->ToRec[RECSIZE-2] = new_org->noveltypoint->novelty;
@@ -809,7 +809,6 @@ noveltyitem* maze_novelty_map(Organism *org,data_record* record)
 //Perform evolution on single pole balacing, for gens generations
 Population *maze_generational(char* output_dir,const char* mazefile,int param,const char *genes, int gens,bool novelty) 
 {
-
     float archive_thresh=1.0;
     noveltyarchive archive(archive_thresh,*maze_novelty_metric,true,push_back_size);
 
@@ -847,9 +846,8 @@ Population *maze_generational(char* output_dir,const char* mazefile,int param,co
       cout<<"Verifying Spawned Pop"<<endl;
       pop->verify();
 
-      for (gen=1;gen<=gens;gen++) {
+      for (gen=0;gen<=gens;gen++) {
 	cout<<"Generation "<<gen<<endl;
-	
 	maze_generational_epoch(pop,gen,Record,archive,novelty);
 	
         }
@@ -862,7 +860,8 @@ Population *maze_generational(char* output_dir,const char* mazefile,int param,co
 int maze_generational_epoch(Population *pop,int generation,data_rec& Record, noveltyarchive& archive, bool novelty) {
   vector<Organism*>::iterator curorg;
   vector<Species*>::iterator curspecies;
-  vector<Organism*> measure_pop;
+static double best_fitness =0.0;  
+static vector<Organism*> measure_pop;
   //char cfilename[100];
   //strncpy( cfilename, filename.c_str(), 100 );
 
@@ -872,20 +871,7 @@ int maze_generational_epoch(Population *pop,int generation,data_rec& Record, nov
   int winnernum;
   int indiv_counter=0;
  
-  if(generation == 0)
-  {
-    for(curorg=(pop->organisms).begin();curorg!=(pop->organisms).end();++curorg) {
-       measure_pop.push_back(new Organism(*(*curorg))); 
-       //make it a copy so it dont get deleted
-    }
-  }
-  
-  //adjust target every so often
-  if((generation+1)%20)
-  {
-     //merge populations together...
-     //then make the measure_pop equal to the current population  
-  }
+  int switch_amount = 20;
 
   //Evaluate each organism on a test
   for(curorg=(pop->organisms).begin();curorg!=(pop->organisms).end();++curorg) {
@@ -897,7 +883,11 @@ int maze_generational_epoch(Population *pop,int generation,data_rec& Record, nov
         (*curorg)->noveltypoint->indiv_number = indiv_counter;
         (*curorg)->datarec = newrec;	
 	
-	
+        if((*curorg)->noveltypoint->fitness > best_fitness)
+	{
+		best_fitness = (*curorg)->noveltypoint->fitness;
+		cout << "NEW BEST " << best_fitness << endl;
+	}	
         //add record of new indivdual to storage
 	Record.add_new(newrec);
 	indiv_counter++;
@@ -909,6 +899,31 @@ int maze_generational_epoch(Population *pop,int generation,data_rec& Record, nov
     	   (*curorg)->fitness = (*curorg)->noveltypoint->fitness;
   }
 
+
+  //adjust target every so often
+  if(novelty)
+  {
+  if((generation)%switch_amount==0 && generation>0)
+  {
+     //merge populations together...
+     //then make the measure_pop equal to the current population 
+     Population *new_pop = archive.merge_populations(pop,measure_pop);
+     cout << "Populations merged..." << endl;
+     pop = new_pop;
+  }
+  
+  if((generation % switch_amount)==0)
+  {
+    cout << "CREATE MEASUREPOP " << endl;
+    measure_pop.clear();
+    for(curorg=(pop->organisms).begin();curorg!=(pop->organisms).end();++curorg)    {  
+       measure_pop.push_back(new Organism(*(*curorg))); 
+       //make it a copy so it dont get deleted
+    }
+    cout << "MEASUREPOP SIZE " << measure_pop.size() << endl;
+  }
+  
+  }
   if(novelty)
   {
 	//NEED TO CHANGE THESE TO GENERATIONAL EQUIVALENTS...
@@ -957,7 +972,9 @@ int maze_generational_epoch(Population *pop,int generation,data_rec& Record, nov
     }    
   }
 
-  //Create the next generation
+ 
+ 
+ //Create the next generation
   pop->epoch(generation);
 
 

@@ -37,7 +37,7 @@ noveltyitem::noveltyitem(const noveltyitem& item)
 }
 
 //merge two populations together according to novelty
-Population* noveltyarchive::merge_populations(Population* p1, Population *p2)
+Population* noveltyarchive::merge_populations(Population* p1, vector<Organism*> p2)
 {
 
 vector<Organism*> total_orgs;
@@ -51,16 +51,17 @@ for(it = p1->organisms.begin(); it!= p1->organisms.end();it++)
 	total_orgs.push_back(*it);
 	(*it)->blacklist=false;
 }
-for(it = p2->organisms.begin(); it!= p2->organisms.end();it++)
+for(it = p2.begin(); it!= p2.end(); it++)
 {
 	total_orgs.push_back(*it);
 	(*it)->blacklist=false;
 }
 
-int size = p1->organisms.size()-1; //remove one since we are adding 1st
+int size = total_orgs.size(); //remove one since we are adding 1st
+cout << size << " " << p1->organisms.size() << " " << p2.size() << endl;
 
 //randomly add first member to merged organisms
-Organism* last_added = total_orgs[rand()%(size*2)];
+Organism* last_added = total_orgs[rand()%size];
 last_added->blacklist=true;
 merged_orgs.push_back(last_added);
 
@@ -84,7 +85,7 @@ for(it = total_orgs.begin(); it!=total_orgs.end(); it++)
 }
 
 //now greedily add point furthest from archive + merged pop so far
-for(int x=0;x<size;x++)
+for(int x=0;x<(size/2)-1;x++)
 {
 	Organism* best=NULL;
 	double best_dist= -1000.0;
@@ -113,7 +114,7 @@ return new Population(merged_orgs);
 }
 
 //evaluate the novelty of the whole population
-void noveltyarchive::evaluate_population(Population* p1,Population* p2,bool fitness)
+void noveltyarchive::evaluate_population(Population* p1,vector<Organism*> p2,bool fitness)
 {
 	vector<Organism*>::iterator it;
 	for(it=p1->organisms.begin();it<p1->organisms.end();it++)
@@ -126,17 +127,17 @@ void noveltyarchive::evaluate_population(Population* pop,bool fitness)
 	Population *p = (Population*)pop;
 	vector<Organism*>::iterator it;
 	for(it=p->organisms.begin();it<p->organisms.end();it++)
-		evaluate_individual((*it),pop,fitness);
+		evaluate_individual((*it),pop->organisms,fitness);
 }
 
 //evaluate the novelty of a single individual
-void noveltyarchive::evaluate_individual(Organism* ind,Population* pop,bool fitness)
+void noveltyarchive::evaluate_individual(Organism* ind,vector<Organism*> pop,bool fitness)
 {
 	float result;
 	if(fitness)  //assign fitness according to average novelty
 	{
 		if(!histogram)
-			result = novelty_avg_nn(ind->noveltypoint,-1,false,pop);
+			result = novelty_avg_nn(ind->noveltypoint,-1,false,&pop);
 		else
 		{		
 			result = novelty_histogram(ind->noveltypoint);
