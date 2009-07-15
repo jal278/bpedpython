@@ -386,7 +386,8 @@ int maze_novelty_realtime_loop(Population *pop) {
 	//evaluate each individual
 	(*curorg)->noveltypoint = maze_novelty_map((*curorg));
 	(*curorg)->noveltypoint->indiv_number=indiv_counter;
-	(*curorg)->fitness = 0.0000001;
+	//make sure that we are resetting novelty metric of
+	//individuals that fail to meet goal?
 	indiv_counter++;
   }
 
@@ -807,7 +808,7 @@ noveltyitem* maze_novelty_map(Organism *org,data_record* record)
 
 
 //Perform evolution on single pole balacing, for gens generations
-Population *maze_generational(char* output_dir,const char* mazefile,int param,const char *genes, int gens,bool novelty) 
+Population *maze_generational(char* outputdir,const char* mazefile,int param,const char *genes, int gens,bool novelty) 
 {
     float archive_thresh=1.0;
     noveltyarchive archive(archive_thresh,*maze_novelty_metric,true,push_back_size);
@@ -825,7 +826,7 @@ Population *maze_generational(char* output_dir,const char* mazefile,int param,co
     ifstream iFile(genes,ios::in);
 
     env=new Environment(mazefile);
-    
+    if(outputdir!=NULL) strcpy(output_dir,outputdir);
     cout<<"START GENERATIONAL MAZE EVOLUTION"<<endl;
 
     cout<<"Reading in the start genome"<<endl;
@@ -849,8 +850,21 @@ Population *maze_generational(char* output_dir,const char* mazefile,int param,co
       for (gen=0;gen<=gens;gen++) {
 	cout<<"Generation "<<gen<<endl;
 	maze_generational_epoch(pop,gen,Record,archive,novelty);
-	
-        }
+
+  //writing out stuff 
+  if(gen%100==0)
+  {
+  char filename[30];
+  sprintf(filename,"%s_record.dat",output_dir);
+  char fname[30];
+  sprintf(fname,"%s_archive.dat",output_dir);
+  archive.Serialize(fname);
+  Record.serialize(filename);
+  sprintf(fname,"%sgen_%d",output_dir,gen);
+  pop->print_to_file_by_species(fname);
+  }
+        
+}
 
 
     return pop;
@@ -867,7 +881,8 @@ static vector<Organism*> measure_pop;
 
   //ofstream cfilename(filename.c_str());
 
-  bool win=false;
+  static bool win=false;
+  static bool firstflag=false;
   int winnernum;
   int indiv_counter=0;
  
@@ -882,7 +897,12 @@ static vector<Organism*> measure_pop;
 	(*curorg)->noveltypoint = maze_novelty_map((*curorg),newrec);
         (*curorg)->noveltypoint->indiv_number = indiv_counter;
         (*curorg)->datarec = newrec;	
-	
+
+	if((newrec->ToRec[3]>0.0 && newrec->ToRec[4]>0.0)) {
+		(*curorg)->winner=true;
+                win=true;	
+	}
+  
         if((*curorg)->noveltypoint->fitness > best_fitness)
 	{
 		best_fitness = (*curorg)->noveltypoint->fitness;
@@ -926,12 +946,16 @@ static vector<Organism*> measure_pop;
   }
   if(novelty)
   {
+  
 	//NEED TO CHANGE THESE TO GENERATIONAL EQUIVALENTS...
 	//assign fitness scores based on novelty
- 	archive.evaluate_population(pop,true);
+ 	archive.evaluate_population(pop,measure_pop,true);
 	///now add to the archive (maybe remove & only add randomly?)
-	archive.evaluate_population(pop,false);
+	archive.evaluate_population(pop,measure_pop,false);
         
+        cout << "ARCHIVE SIZE:" << archive.get_set_size() << endl;  
+        cout << "THRESHOLD:" << archive.get_threshold() << endl;
+	archive.end_of_gen_steady(pop);
 	//adjust novelty of infeasible individuals
 	/*
 	if(!newrec->ToRec[3] && novelty_measure != novelty_sample_free)
@@ -961,16 +985,20 @@ static vector<Organism*> measure_pop;
   //Only print to file every print_every generations
  // if  (win||
  //      ((generation%(NEAT::print_every))==0))
-  //  pop->print_to_file_by_species(filename);
-
-  if (win) {
+if(win && !firstflag)
+{
     for(curorg=(pop->organisms).begin();curorg!=(pop->organisms).end();++curorg) {
       if ((*curorg)->winner) {
 	winnernum=((*curorg)->gnome)->genome_id;
 	cout<<"WINNER IS #"<<((*curorg)->gnome)->genome_id<<endl;
+	char filename[100];
+        sprintf(filename,"%s_winner", output_dir);	
+       (*curorg)->print_to_file(filename);
       }
     }    
-  }
+   firstflag = true;
+}
+
 
  
  
@@ -978,6 +1006,6 @@ static vector<Organism*> measure_pop;
   pop->epoch(generation);
 
 
-  return 0;
+  return win;
 }
 

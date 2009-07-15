@@ -462,7 +462,6 @@ public:
 
         add_pending();
 
-        vector<Organism*>::iterator cur_org;
     }
 
     void clean_gen()

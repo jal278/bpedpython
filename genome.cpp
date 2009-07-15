@@ -3119,7 +3119,7 @@ void NEAT::print_Genome_tofile(Genome *g,const char *filename) {
 
 	//ofstream oFile(filename,ios::out);
 
-    std::string file = "nero/data/neat/";
+    std::string file = "";
     file += filename;
     //strcpyl(file, 100, "nero/data/neat/", filename, 0);
 	std::ofstream oFile(file.c_str());
