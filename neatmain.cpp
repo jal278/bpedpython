@@ -85,7 +85,7 @@ if(!noveltySwitch.getValue())
 }
 else
 {
- p = maze_generational(filename,mazename,param,startgenes,100,noveltySwitch.getValue());
+ p = maze_generational(filename,mazename,param,startgenes,2000,noveltySwitch.getValue());
 }
   return(0);
  

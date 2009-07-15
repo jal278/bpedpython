@@ -810,7 +810,7 @@ noveltyitem* maze_novelty_map(Organism *org,data_record* record)
 //Perform evolution on single pole balacing, for gens generations
 Population *maze_generational(char* outputdir,const char* mazefile,int param,const char *genes, int gens,bool novelty) 
 {
-    float archive_thresh=1.0;
+    float archive_thresh=0.1;
     noveltyarchive archive(archive_thresh,*maze_novelty_metric,true,push_back_size);
 
     Population *pop;
@@ -849,10 +849,10 @@ Population *maze_generational(char* outputdir,const char* mazefile,int param,con
 
       for (gen=0;gen<=gens;gen++) {
 	cout<<"Generation "<<gen<<endl;
-	maze_generational_epoch(pop,gen,Record,archive,novelty);
+	bool win = maze_generational_epoch(pop,gen,Record,archive,novelty);
 
   //writing out stuff 
-  if(gen%100==0)
+  if(gen%200==0)
   {
   char filename[30];
   sprintf(filename,"%s_record.dat",output_dir);
@@ -863,7 +863,15 @@ Population *maze_generational(char* outputdir,const char* mazefile,int param,con
   sprintf(fname,"%sgen_%d",output_dir,gen);
   pop->print_to_file_by_species(fname);
   }
-        
+  if (win)
+  {
+   char fname[30];
+   sprintf(fname,"%s_wingen",output_dir);
+    ofstream winfile(fname);
+    winfile << gen << endl;
+    break;
+  }
+      
 }
 
 

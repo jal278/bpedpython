@@ -57,6 +57,17 @@ for(it = p2.begin(); it!= p2.end(); it++)
 	(*it)->blacklist=false;
 }
 
+//throw in the archive as well
+for(novit = novel_items.begin();novit != novel_items.end(); novit++)
+{
+	//TODO: just creating these organisms will be a mem leak
+	//eventually refactor...
+	Organism* arch_org = new Organism(0.1,(*novit)->genotype,0,NULL);
+	arch_org->noveltypoint = (*novit);
+	total_orgs.push_back(arch_org);
+	//or at least delete...?
+}
+
 int size = total_orgs.size(); //remove one since we are adding 1st
 cout << size << " " << p1->organisms.size() << " " << p2.size() << endl;
 
@@ -69,19 +80,7 @@ merged_orgs.push_back(last_added);
 for(it = total_orgs.begin(); it!=total_orgs.end(); it++)
 {
 	double closest = 100000000.0;
-        noveltyitem* closest_pt=last_added->noveltypoint; 
-	//map against archive
-	for(novit = novel_items.begin();novit != novel_items.end(); novit++)
-	{
-		double dist = (*novelty_metric)(*novit,(*it)->noveltypoint);
-		if (dist < closest)
-		{
-			closest = dist;
-			closest_pt = *novit;
-		}
-	}
 	(*it)->closest = closest;
-	(*it)->closest_pt = closest_pt;
 }
 
 //now greedily add point furthest from archive + merged pop so far
