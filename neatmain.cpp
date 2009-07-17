@@ -13,7 +13,7 @@ using namespace TCLAP;
 int main(int argc, char **argv) {
 
   CmdLine cmd("Maze evolution", ' ', "0.1");
-  
+ 
   ValueArg<string> maze("m","maze","Maze file",false,"maze.txt","string");
   cmd.add(maze);
 
@@ -40,6 +40,12 @@ int main(int argc, char **argv) {
 
   ValueArg<int> extra_param("p","parameter","Extra Parameter",false,0,"int");
   cmd.add(extra_param);
+
+  ValueArg<int> num_samples("a","samples","Num Samples",false,1,"int");
+  cmd.add(num_samples);
+
+  ValueArg<int> time_steps("b","timesteps","Num Timesteps",false,400,"int");
+  cmd.add(time_steps);
 
   ValueArg<int> rng_seed("r","random_seed","Random Seed",false,-1,"int");
   cmd.add(rng_seed);
@@ -75,6 +81,8 @@ int main(int argc, char **argv) {
 
   set_fit_measure(fit_measure.getValue());
   set_nov_measure(nov_measure.getValue());
+  set_timesteps(time_steps.getValue());
+  set_samples(num_samples.getValue());
  
   if(!generationalSwitch.getValue())
 {

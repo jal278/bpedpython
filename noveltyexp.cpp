@@ -22,6 +22,19 @@ static novelty_measure_type novelty_measure = novelty_sample;
 enum fitness_measure_type { fitness_goal, fitness_drift, fitness_std };
 static fitness_measure_type fitness_measure = fitness_std;
 
+static int number_of_samples = 1;
+static int simulated_timesteps = 400;
+
+void set_samples(int s)
+{
+ number_of_samples=s;
+}
+
+void set_timesteps(int s)
+{
+ simulated_timesteps=s;
+}
+
 void set_fit_measure(string m)
 {
 if(m=="std")
@@ -622,8 +635,8 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record)
 {
 	vector<float> data;
 	
-	int timesteps=800;
-	int stepsize=50;
+	int timesteps=simulated_timesteps;
+	int stepsize=10000;
 	
 	double fitness=0.0;
 	Environment *newenv;
@@ -650,13 +663,9 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record)
 	}
 
 	/*ENABLE FOR ADDT'L INFO STUDIES*/
-	/*
-	if(param>0)
-	{
-		stepsize=timesteps/param;
-	}
-	/* */
-	
+        if(number_of_samples>0)	
+	 stepsize=timesteps/number_of_samples;
+		
 	for(int i=0;i<timesteps;i++)
 	{
 		fitness+=mazesimStep(newenv,net,dc);
@@ -666,7 +675,7 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record)
 		if((timesteps-i-1)%stepsize==0)
 		{
 				dc[0].push_back(newenv->hero.location.x);
-				dc[0].push_back(newenv->hero.location.y);		
+				dc[0].push_back(newenv->hero.location.y);
 		}
 		
 		float loc[2]={newenv->hero.location.x,newenv->hero.location.y};
@@ -677,7 +686,7 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record)
 	}
 
 	//calculate fitness of individual as closeness to target
-	if(fitness_measure = fitness_goal)
+	if(fitness_measure == fitness_goal)
         {
 	fitness=300.0 - newenv->distance_to_target();
 	if(fitness<0.1) fitness=0.1;
@@ -735,16 +744,6 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record)
 
 	if(novelty_measure==novelty_accum)
 	{
-		/*
-		for(int x=0;x<10;x++)
-		{
-			for(int y=0;y<10;y++)
-			cout << accum->buffer[x*10+y] << " ";
-			
-			cout << endl;
-		}	
-		cout << "---" << endl;
-		*/
 		accum->transform();	
 		for(int x=0;x<accum->size;x++)
 			dc[0].push_back(accum->buffer[x]);
