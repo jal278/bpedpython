@@ -29,17 +29,16 @@ void set_fit_measure(string m);
 
 void set_samples(int s);
 void set_timesteps(int s);
+void set_seed(string s);
 
 //generational maze experiments
 Population *maze_generational(char* output_dir,const char* mazefile,int param, const char *genes, int gens, bool novelty); 
 int maze_generational_epoch(Population *pop,int generation,data_rec& Record,noveltyarchive& archive,bool novelty);
 
 //Walker novelty steady-state 
-int maze_novelty_realtime_loop(Population *pop);
-Population *maze_novelty_realtime(char* output_dir=NULL,const char* mazefile="maze.txt",int param=-1,const char* genes=NULL);
+int maze_novelty_realtime_loop(Population *pop,bool novelty=false);
+Population *maze_novelty_realtime(char* output_dir=NULL,const char* mazefile="maze.txt",int param=-1,const char* genes=NULL,bool novelty=false);
 noveltyitem* maze_novelty_map(Organism *org,data_record* record=NULL);
-Population *maze_fitness_realtime(char* output_dir=NULL,const char* mazefile="maze.txt",int param=-1,const char* genes=NULL);
-int maze_fitness_realtime_loop(Population *pop);
 
 double mazesimStep(Environment* newenv,Network *net,vector< vector<float> > &dc);
 Environment* mazesimIni(Environment* tocopy,Network *net, vector< vector<float> > &dc);

@@ -149,6 +149,10 @@ void noveltyarchive::evaluate_individual(Organism* ind,vector<Organism*> pop,boo
 		{
 		result = novelty_avg_nn(ind->noveltypoint,1,false);
 		ind->noveltypoint->novelty=result;
+
+                if(!minimal_criteria)
+                   ind->noveltypoint->viable=true;
+
 		if(ind->noveltypoint->viable && add_to_novelty_archive(result))
 				add_novel_item(ind->noveltypoint);
 		}

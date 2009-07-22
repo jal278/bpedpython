@@ -4,6 +4,7 @@
 #include <vector>
 #include <fstream>
 #include <iostream>
+#include <stdio.h>
 
 #define RECSIZE 10
 using namespace std;
@@ -29,6 +30,12 @@ class data_rec
 	void serialize(char*fn)
 	{
 		ofstream output(fn);
+		  if (!output) {
+		    perror ("The following error occurred");
+		    std::cerr<<"Can't open "<<fn<<" for output"<<std::endl;
+		    return;
+		  }
+
 		for(int i=0;i<(int)data.size();i++)
 		{
 			for(int j=0;j<RECSIZE;j++)

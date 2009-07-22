@@ -24,6 +24,9 @@ static fitness_measure_type fitness_measure = fitness_std;
 
 static int number_of_samples = 1;
 static int simulated_timesteps = 400;
+static bool seed_mode = false;
+static char seed_name[40]="";
+static bool minimal_criteria=false;
 
 void set_samples(int s)
 {
@@ -33,6 +36,13 @@ void set_samples(int s)
 void set_timesteps(int s)
 {
  simulated_timesteps=s;
+}
+
+void set_seed(string s)
+{
+strcpy(seed_name,s.c_str());
+if(strlen(seed_name)>0)
+    seed_mode=true;
 }
 
 void set_fit_measure(string m)
@@ -93,224 +103,8 @@ float maze_novelty_metric(noveltyitem* x,noveltyitem* y)
 	return diff;
 }
 
-//fitness simulation of maze navigation
-Population *maze_fitness_realtime(char* outputdir,const char *mazefile,int par,const char* genes) {
-    Population *pop;
-    Genome *start_genome;
-    char curword[20];
-    int id;
-
-	//create new maze environment
-	env=new Environment(mazefile);
-	if(outputdir!=NULL) strcpy(output_dir,outputdir);
-	param=par;
-	
-	//starter gene file
-    ifstream iFile(genes,ios::in);
-	
-    cout<<"START MAZE NAVIGATOR FITNESS REAL-TIME EVOLUTION VALIDATION"<<endl;
-
-    cout<<"Reading in the start genome"<<endl;
-    //Read in the start Genome
-    iFile>>curword;
-    iFile>>id;
-    cout<<"Reading in Genome id "<<id<<endl;
-    start_genome=new Genome(id,iFile);
-    iFile.close();
-
-    cout<<"Start Genome: "<<start_genome<<endl;
-
-    //Spawn the Population from starter gene
-    cout<<"Spawning Population off Genome"<<endl;
-    pop=new Population(start_genome,NEAT::pop_size);
-      
-    cout<<"Verifying Spawned Pop"<<endl;
-    pop->verify();
-      
-    //Start the evolution loop using rtNEAT method calls 
-    maze_fitness_realtime_loop(pop);
-
-	//clean up
-	delete env;
-    return pop;
-}
-
-//actual rtNEAT loop for fitness run of maze navigation
-int maze_fitness_realtime_loop(Population *pop) {
-  bool firstflag=false; //indicates whether maze has been solved yet
-  int indiv_counter=0;
-  vector<Organism*>::iterator curorg;
-  vector<Species*>::iterator curspecies;
-  vector<Species*>::iterator curspec; //used in printing out debug info                                                         
-  vector<Species*> sorted_species;  //Species sorted by max fit org in Species                                                  
-
-  data_rec Record; //holds run information
-  int count=0;
-  int pause;
-  
-  //Real-time evolution variables                                                                                             
-  int offspring_count;
-  Organism *new_org;
-
-  //We try to keep the number of species constant at this number                                                    
-  int num_species_target=NEAT::pop_size/15;
-  
-  //This is where we determine the frequency of compatibility threshold adjustment
-  int compat_adjust_frequency = NEAT::pop_size/20;
-  if (compat_adjust_frequency < 1)
-    compat_adjust_frequency = 1;
-
-  //Initially, we evaluate the whole population                                                                               
-  //Evaluate each organism on a test                                                                                          
-  for(curorg=(pop->organisms).begin();curorg!=(pop->organisms).end();++curorg) {
-
-    //shouldn't happen                                                                                                        
-    if (((*curorg)->gnome)==0) {
-      cout<<"ERROR EMPTY GEMOME!"<<endl;
-      cin>>pause;
-    }
-
-	//map the novelty point to each individual (this runs the maze simulation)
-	(*curorg)->noveltypoint = maze_novelty_map((*curorg));
-	(*curorg)->noveltypoint->indiv_number = indiv_counter;
-	indiv_counter++;
-	(*curorg)->fitness = (*curorg)->noveltypoint->fitness;
-    
-  }
-
-  //Get ready for real-time loop
-  //Rank all the organisms from best to worst in each species
-  pop->rank_within_species();                                                                            
-
-  //Assign each species an average fitness 
-  //This average must be kept up-to-date by rtNEAT in order to select species probabailistically for reproduction
-  pop->estimate_all_averages();
-
-  cout <<"Entering real time loop..." << endl;
-
-  //Now create offspring one at a time, testing each offspring,                                                               
-  // and replacing the worst with the new offspring if its better
-
-  //run for 2000 generations (250*2000 = 500,000 evaluations)
-  for 
-(offspring_count=0;offspring_count<NEAT::pop_size*2001;offspring_count++) 
-{
-    
-	if(offspring_count>=pop_size*1000 && firstflag)
-		break;
-    if(offspring_count % (NEAT::pop_size*NEAT::print_every) == 0 )
-	{
-			cout << offspring_count << endl;
-			char fname[30];
-			sprintf(fname,"%sgen_%d",output_dir,offspring_count/NEAT::pop_size);
-			pop->print_to_file_by_species(fname);
-
-
-    char filename[30];
-    sprintf(filename,"%srecord.dat",output_dir);
-
-    Record.serialize(filename);
-	}
-	
-    //Every pop_size reproductions, adjust the compat_thresh to better match the num_species_targer
-    //and reassign the population to new species                                              
-    if (offspring_count % compat_adjust_frequency == 0) {
-		count++;
-		#ifdef DEBUG_OUTPUT
-		cout << "Adjusting..." << endl;
-		#endif
-		
-			
-      int num_species = pop->species.size();
-      double compat_mod=0.1;  //Modify compat thresh to control speciation                                                     
-
-      // This tinkers with the compatibility threshold 
-      if (num_species < num_species_target) {
-	NEAT::compat_threshold -= compat_mod;
-      }
-      else if (num_species > num_species_target)
-	NEAT::compat_threshold += compat_mod;
-
-      if (NEAT::compat_threshold < 0.3)
-	NEAT::compat_threshold = 0.3;
-		#ifdef DEBUG_OUTPUT
-      cout<<"compat_thresh = "<<NEAT::compat_threshold<<endl;
-		#endif
-      //Go through entire population, reassigning organisms to new species                                                  
-      for (curorg = (pop->organisms).begin(); curorg != pop->organisms.end(); ++curorg) {
-	pop->reassign_species(*curorg);
-      }
-    }
-    
-
-    //For printing only
-	#ifdef DEBUG_OUTPUT
-    for(curspec=(pop->species).begin();curspec!=(pop->species).end();curspec++) {
-      cout<<"Species "<<(*curspec)->id<<" size"<<(*curspec)->organisms.size()<<" average= "<<(*curspec)->average_est<<endl;
-    }
-
-    cout<<"Pop size: "<<pop->organisms.size()<<endl;
-	#endif
-    //Here we call two rtNEAT calls: 
-    //1) choose_parent_species() decides which species should produce the next offspring
-    //2) reproduce_one(...) creates a single offspring fromt the chosen species
-    new_org=(pop->choose_parent_species())->reproduce_one(offspring_count,pop,pop->species);
-
-    #ifdef DEBUG_OUTPUT
-	cout<<"Evaluating new baby: "<<endl;
-	#endif
-	
-	//create record for new individual
-	data_record *newrec = new data_record();
-	newrec->indiv_number=indiv_counter;
-	//evaluate new individual
-	new_org->noveltypoint = maze_novelty_map(new_org,newrec);
-	new_org->noveltypoint->indiv_number = indiv_counter;
-	//grab novelty
-	newrec->ToRec[RECSIZE-2]=new_org->noveltypoint->novelty;
-	//set organism's fitness 
-	new_org->fitness = new_org->noveltypoint->fitness;
-	indiv_counter++;
-	
-	#ifdef DEBUG_OUTPUT
-	cout << "Fitness: " << new_org->fitness << endl;
-	cout << "Novelty: " << new_org->noveltypoint->novelty << endl;
-	cout << "RFit: " << new_org->noveltypoint->fitness << endl;
-	#endif
-	
-	//add record of new individual to storage
-	Record.add_new(newrec);
-	
-    //Now we reestimate the baby's species' fitness
-    new_org->species->estimate_average();
-
-    //Remove the worst organism                                                                                               
-    pop->remove_worst();
-	
-	//store first solution organism
-	if(!firstflag && (newrec->ToRec[3]>0.0 && newrec->ToRec[4]>0.0)) {
-		firstflag=true;
-		char filename[30];
-		sprintf(filename,"%sgen_first",output_dir);
-		pop->print_to_file_by_species(filename);
-		cout << "Maze solved by indiv# " << indiv_counter << endl;	
-	}
-  	
-  }
-  
-  //finish up, write out the record and the final generation
-	cout << "COMPLETED..." << endl;
-    char filename[30];
-    sprintf(filename,"%srecord.dat",output_dir);
-    Record.serialize(filename);
-	sprintf(filename,"%sfit_rtgen_final",output_dir);
-	pop->print_to_file_by_species(filename);
-  
-   return 0;
-}
-
 //novelty maze navigation run
-Population *maze_novelty_realtime(char* outputdir,const char* mazefile,int par,const char* genes) {
+Population *maze_novelty_realtime(char* outputdir,const char* mazefile,int par,const char* genes,bool novelty) {
 	
     Population *pop;
     Genome *start_genome;
@@ -323,12 +117,16 @@ Population *maze_novelty_realtime(char* outputdir,const char* mazefile,int par,c
 	push_back_size=par;
 	if(outputdir!=NULL) strcpy(output_dir,outputdir);
 		
+    if(!seed_mode)
+        strcpy(seed_name,genes);
 	//starter genes file
-    ifstream iFile(genes,ios::in);
+    ifstream iFile(seed_name,ios::in);
 	
     cout<<"START MAZE NAVIGATOR NOVELTY REAL-TIME EVOLUTION VALIDATION"<<endl;
-
+if(!seed_mode)
     cout<<"Reading in the start genome"<<endl;
+else
+    cout<<"Reading in the seed genome" <<endl;
     //Read in the start Genome
     iFile>>curword;
     iFile>>id;
@@ -340,13 +138,16 @@ Population *maze_novelty_realtime(char* outputdir,const char* mazefile,int par,c
 
     //Spawn the Population from starter gene
     cout<<"Spawning Population off Genome"<<endl;
+    if(!seed_mode)
     pop=new Population(start_genome,NEAT::pop_size);
-      
+    else
+    pop=new Population(start_genome,NEAT::pop_size,0.0);   
+
     cout<<"Verifying Spawned Pop"<<endl;
     pop->verify();
       
     //Start the evolution loop using rtNEAT method calls 
-    maze_novelty_realtime_loop(pop);
+    maze_novelty_realtime_loop(pop,novelty);
 
 	//clean up
 	delete env;
@@ -354,9 +155,9 @@ Population *maze_novelty_realtime(char* outputdir,const char* mazefile,int par,c
 }
 
 //actual rtNEAT loop for novelty maze navigation runs
-int maze_novelty_realtime_loop(Population *pop) {
+int maze_novelty_realtime_loop(Population *pop,bool novelty) {
 	bool firstflag=false; //indicates whether the maze has been solved yet
-	
+        bool weakfirst=false;	
   vector<Organism*>::iterator curorg;
   vector<Species*>::iterator curspecies;
   vector<Species*>::iterator curspec; //used in printing out debug info                                                         
@@ -366,7 +167,7 @@ int maze_novelty_realtime_loop(Population *pop) {
    float archive_thresh=1.0; //initial novelty threshold
 
   //archive of novel behaviors
-  noveltyarchive archive(archive_thresh,*maze_novelty_metric,true,push_back_size);
+  noveltyarchive archive(archive_thresh,*maze_novelty_metric,true,push_back_size,minimal_criteria);
 	
   data_rec Record; //stores run information
 	
@@ -404,12 +205,14 @@ int maze_novelty_realtime_loop(Population *pop) {
 	indiv_counter++;
   }
 
+  if(novelty) {
   //assign fitness scores based on novelty
   archive.evaluate_population(pop,true);
   //add to archive
   archive.evaluate_population(pop,false);
- 
+  }
   
+  if(novelty && minimal_criteria)
   for(curorg=(pop->organisms).begin();curorg!=(pop->organisms).end();++curorg) (*curorg)->fitness = 0.00000001;
   
 //Get ready for real-time loop
@@ -435,11 +238,13 @@ int maze_novelty_realtime_loop(Population *pop) {
 	//end of generation
     if(offspring_count % (NEAT::pop_size*1) == 0)
 	{
+                 if(novelty) {
 			archive.end_of_gen_steady(pop);
 			//archive.add_randomly(pop);
 			archive.evaluate_population(pop,false);
 			cout << "ARCHIVE SIZE:" << 
 			archive.get_set_size() << endl;
+                 }
 	}
 
 	//write out current generation and fittest individuals
@@ -468,12 +273,12 @@ int maze_novelty_realtime_loop(Population *pop) {
 		#ifdef DEBUG_OUTPUT
 		cout << "Adjusting..." << endl;
 		#endif
-	
+          if(novelty) {	
 	   //update fittest individual list		
 	   archive.update_fittest(pop);
 	   //refresh generation's novelty scores
 	   archive.evaluate_population(pop,true);
-			
+          }	
       int num_species = pop->species.size();
       double compat_mod=0.1;  //Modify compat thresh to control speciation                                                     
 
@@ -524,22 +329,19 @@ int maze_novelty_realtime_loop(Population *pop) {
 	new_org->noveltypoint = maze_novelty_map(new_org,newrec);
 	new_org->noveltypoint->indiv_number = indiv_counter;
 	//calculate novelty of new individual
-	archive.evaluate_individual(new_org,pop->organisms);
+	if(novelty) {
+        archive.evaluate_individual(new_org,pop->organisms);
 	newrec->ToRec[5] = archive.get_threshold();
 	newrec->ToRec[6] = archive.get_set_size();
 	newrec->ToRec[RECSIZE-2] = new_org->noveltypoint->novelty;
-
-	if(!newrec->ToRec[3] && novelty_measure != novelty_sample_free)
+        }
+	if(novelty && !new_org->noveltypoint->viable && minimal_criteria)
 	{
 		new_org->fitness = 0.00001;
                 //cout << "fail" << endl;
 	}	
-	else
-	{
-		//cout << "succeed" << endl;
-		//cout << new_org->fitness << endl;
-	}
-	//add record of new indivdual to storage
+	
+        //add record of new indivdual to storage
 	Record.add_new(newrec);
 	indiv_counter++;
 	
@@ -553,7 +355,13 @@ int maze_novelty_realtime_loop(Population *pop) {
 	
     //Now we reestimate the baby's species' fitness
     new_org->species->estimate_average();
-
+        if(!weakfirst && (newrec->ToRec[3]>0.0)) {
+		weakfirst=true;
+		char filename[30];
+		sprintf(filename,"%srtgen_weakfirst",output_dir);
+		pop->print_to_file_by_species(filename);
+		cout << "Maze weakly solved by indiv# " << indiv_counter << endl;	
+        }
 	//write out the first individual to solve maze
 	if(!firstflag && (newrec->ToRec[3]>0.0 && newrec->ToRec[4]>0.0)) {
 		firstflag=true;
@@ -786,7 +594,7 @@ noveltyitem* maze_novelty_map(Organism *org,data_record* record)
 
 	//TODO: Perhaps remove non-viable organisms from merged populations
 	//or set their behavioral characterization to some null value..
-	if(!record->ToRec[3])
+	if(!record->ToRec[3] && novelty_measure != novelty_sample_free )
 		new_item->viable=false;
 
 		/*
@@ -809,8 +617,9 @@ noveltyitem* maze_novelty_map(Organism *org,data_record* record)
 //Perform evolution on single pole balacing, for gens generations
 Population *maze_generational(char* outputdir,const char* mazefile,int param,const char *genes, int gens,bool novelty) 
 {
-    float archive_thresh=0.1;
-    noveltyarchive archive(archive_thresh,*maze_novelty_metric,true,push_back_size);
+    float archive_thresh=3.0;
+
+    noveltyarchive archive(archive_thresh,*maze_novelty_metric,true,push_back_size,minimal_criteria);
 
     Population *pop;
 
@@ -862,12 +671,17 @@ Population *maze_generational(char* outputdir,const char* mazefile,int param,con
   sprintf(fname,"%sgen_%d",output_dir,gen);
   pop->print_to_file_by_species(fname);
   }
+
   if (win)
   {
    char fname[30];
    sprintf(fname,"%s_wingen",output_dir);
     ofstream winfile(fname);
     winfile << gen << endl;
+  sprintf(fname,"%s_archive.dat",output_dir);
+  archive.Serialize(fname);
+  sprintf(fname,"%s_record.dat",output_dir);
+  Record.serialize(fname);
     break;
   }
       

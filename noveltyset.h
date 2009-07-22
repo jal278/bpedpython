@@ -194,6 +194,9 @@ private:
     //are we collecting data?
     bool record;
 
+    //are we doing mc ns?
+    bool minimal_criteria;
+
     ofstream *datafile;
     ofstream *novelfile;
     typedef pair<float, noveltyitem*> sort_pair;
@@ -229,11 +232,12 @@ private:
 public:
 
     //constructor
-    noveltyarchive(float threshold,float (*nm)(noveltyitem*,noveltyitem*),bool rec=true,int pbs=-1)
+    noveltyarchive(float threshold,float (*nm)(noveltyitem*,noveltyitem*),bool rec=true,int pbs=-1,bool mc=false)
     {
         //how many nearest neighbors to consider for calculating novelty score?
         //histogram adds
         histogram=false;
+        minimal_criteria=mc;
         vector< vector<int> > k;
         vector< int> l;
 
@@ -326,6 +330,7 @@ public:
     void evaluate_population(Population* pop,bool fitness=true);
     //evaluate single individual for novelty
     void evaluate_individual(Organism* individual,vector<Organism*> pop,bool fitness=true);
+    void evaluate_individual(Organism* individual,Population *pop, bool fitness=true) { evaluate_individual(individual,pop->organisms,fitness); }
 
     //maintain list of fittest organisms so far
     void update_fittest(Organism* org)

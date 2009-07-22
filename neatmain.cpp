@@ -26,6 +26,9 @@ int main(int argc, char **argv) {
   ValueArg<string> output("o","output","Output directory",false,"./","string");
   cmd.add(output);
 
+  ValueArg<string> seed_genome("c","seed","Seed Genome",false,"","string");
+  cmd.add(seed_genome);
+
   SwitchArg noveltySwitch("n","novelty","Enable novelty search",false);
   cmd.add(noveltySwitch);
 
@@ -83,13 +86,14 @@ int main(int argc, char **argv) {
   set_nov_measure(nov_measure.getValue());
   set_timesteps(time_steps.getValue());
   set_samples(num_samples.getValue());
- 
+  set_seed(seed_genome.getValue()); 
+
   if(!generationalSwitch.getValue())
 {
 if(!noveltySwitch.getValue())
-      p = maze_fitness_realtime(filename,mazename,param,startgenes);
+      p = maze_novelty_realtime(filename,mazename,param,startgenes,false);
   else
-      p = maze_novelty_realtime(filename,mazename,param,startgenes);
+      p = maze_novelty_realtime(filename,mazename,param,startgenes,true);
 }
 else
 {
