@@ -27,6 +27,12 @@ static int simulated_timesteps = 400;
 static bool seed_mode = false;
 static char seed_name[40]="";
 static bool minimal_criteria=false;
+static bool goal_attract=true;
+
+void set_goal_attract(bool ga)
+{
+ goal_attract=ga;
+}
 
 void set_samples(int s)
 {
@@ -451,7 +457,7 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record)
         position_accumulator *accum; 
 	
 	newenv=mazesimIni(env,net,dc);
-	
+        newenv->goalattract = goal_attract;	
 	//data collection vector initialization
 	dc.clear();
 	dc.push_back(data);

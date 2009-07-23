@@ -29,6 +29,9 @@ int main(int argc, char **argv) {
   ValueArg<string> seed_genome("c","seed","Seed Genome",false,"","string");
   cmd.add(seed_genome);
 
+  SwitchArg goal_attract("","goalattract","Goal is attractor",true);
+  cmd.add(goal_attract);
+
   SwitchArg noveltySwitch("n","novelty","Enable novelty search",false);
   cmd.add(noveltySwitch);
 
@@ -87,6 +90,7 @@ int main(int argc, char **argv) {
   set_timesteps(time_steps.getValue());
   set_samples(num_samples.getValue());
   set_seed(seed_genome.getValue()); 
+  set_goal_attract(goal_attract.getValue());
 
   if(!generationalSwitch.getValue())
 {

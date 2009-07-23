@@ -327,6 +327,7 @@ class Environment
 			hero.ang_vel=e.hero.ang_vel;
 			end=e.end;
                         poi=e.poi;
+                        goalattract=e.goalattract;
 			for(int i=0;i<(int)e.lines.size();i++)
 			{
 				Line* x=new Line(*(e.lines[i]));
@@ -378,6 +379,7 @@ class Environment
 	    	reachpoi=0;
 		reachgoal=0;
 		closest_to_poi = 100000.0;
+            goalattract=true;
 			//read in line segments
             for(int i=0;i<num_lines;i++)
             {
@@ -411,7 +413,9 @@ class Environment
 				return 500.0;
 			}
 			if(dist<5.0) reachgoal=1; //if within 5 units, success!
-			return dist;
+                        else if (!goalattract) reachgoal=0; //must we
+						            //remain close?
+                        return dist;
 		}	
 	
 		float distance_to_poi()
@@ -480,7 +484,7 @@ class Environment
 		//run a time step of the simulation
         void Update()
         {
-		if (reachgoal)
+		if (reachgoal && goalattract)
 			return;
             float vx=cos(hero.heading/180.0*3.1415926)*hero.speed;
             float vy=sin(hero.heading/180.0*3.1415926)*hero.speed;
@@ -612,5 +616,6 @@ class Environment
         Point poi; //point of interest
         int reachpoi;
 	int reachgoal;
+        bool goalattract;
 };
 #endif

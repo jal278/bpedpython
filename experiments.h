@@ -30,7 +30,7 @@ void set_fit_measure(string m);
 void set_samples(int s);
 void set_timesteps(int s);
 void set_seed(string s);
-
+void set_goal_attract(bool s);
 //generational maze experiments
 Population *maze_generational(char* output_dir,const char* mazefile,int param, const char *genes, int gens, bool novelty); 
 int maze_generational_epoch(Population *pop,int generation,data_rec& Record,noveltyarchive& archive,bool novelty);
