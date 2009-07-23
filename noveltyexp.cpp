@@ -29,6 +29,11 @@ static char seed_name[40]="";
 static bool minimal_criteria=false;
 static bool goal_attract=true;
 
+void set_minimal_criteria(bool mc)
+{
+ minimal_criteria=mc;
+}
+
 void set_goal_attract(bool ga)
 {
  goal_attract=ga;

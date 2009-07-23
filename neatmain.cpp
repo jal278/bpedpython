@@ -38,6 +38,9 @@ int main(int argc, char **argv) {
   SwitchArg generationalSwitch("q","gen","Enable generational search",false);
   cmd.add(generationalSwitch);
 
+  SwitchArg mcSwitch("","mc","Enable minimal criteria",false);
+  cmd.add(mcSwitch);
+
   ValueArg<string> nov_measure("g","nm","Novelty Measure",false,"std","string");
   cmd.add(nov_measure);
 
@@ -87,10 +90,20 @@ int main(int argc, char **argv) {
 
   set_fit_measure(fit_measure.getValue());
   set_nov_measure(nov_measure.getValue());
+
+  cout << "Timesteps: " << time_steps.getValue() << endl;
   set_timesteps(time_steps.getValue());
+
+  cout << "Num Samples: " << num_samples.getValue() << endl;
   set_samples(num_samples.getValue());
+
   set_seed(seed_genome.getValue()); 
+
+  cout << "Goal sticky? "  << goal_attract.getValue() << endl;
   set_goal_attract(!goal_attract.getValue());
+
+  cout << "Minimal criteria engaged? " << mcSwitch.getValue() << endl;
+  set_minimal_criteria(mcSwitch.getValue());
 
   if(!generationalSwitch.getValue())
 {
