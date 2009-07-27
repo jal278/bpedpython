@@ -290,9 +290,9 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
 	   //refresh generation's novelty scores
 	   archive.evaluate_population(pop,true);
           }	
+      
       int num_species = pop->species.size();
       double compat_mod=0.1;  //Modify compat thresh to control speciation                                                     
-
       // This tinkers with the compatibility threshold 
       if (num_species < num_species_target) {
 	NEAT::compat_threshold -= compat_mod;
@@ -385,7 +385,6 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
 
     //Remove the worst organism                                                                                               
     pop->remove_worst();
-	
 
   }
   
@@ -579,6 +578,7 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record)
 
 	if(novelty_measure==novelty_accum)
 		delete accum;
+
 	delete newenv;
 	return fitness;
 }
@@ -718,7 +718,7 @@ static vector<Organism*> measure_pop;
   int winnernum;
   int indiv_counter=0;
  
-  int switch_amount = 20;
+  int switch_amount = 30;
 
   //Evaluate each organism on a test
   for(curorg=(pop->organisms).begin();curorg!=(pop->organisms).end();++curorg) {
@@ -751,6 +751,9 @@ static vector<Organism*> measure_pop;
     	   (*curorg)->fitness = (*curorg)->noveltypoint->fitness;
   }
 
+  char fn[100];
+  sprintf(fn,"dist%d",generation);
+  pop->print_distribution(fn);
 
   //adjust target every so often
   if(novelty)
@@ -759,9 +762,30 @@ static vector<Organism*> measure_pop;
   {
      //merge populations together...
      //then make the measure_pop equal to the current population 
+     pop->print_compatibility_matrix("old_pop.txt");     
      Population *new_pop = archive.merge_populations(pop,measure_pop);
+     new_pop->print_compatibility_matrix("new_pop.txt");
+
      cout << "Populations merged..." << endl;
      pop = new_pop;
+     int target_species=10;
+     cout << "changing speciation threshold..." << endl;
+     while(true)
+     {    
+          vector<Organism*>::iterator curorg;
+         
+         for (curorg = (pop->organisms).begin(); curorg != pop->organisms.end(); ++curorg) {
+			pop->reassign_species(*curorg);
+          }
+          
+         cout << "thresh @ " << NEAT::compat_threshold << " # species = " << pop->species.size() << endl;
+         if(pop->species.size() > target_species)
+		NEAT::compat_threshold += 0.3;
+         else
+                break;
+     }
+
+     
   }
   
   if((generation % switch_amount)==0)

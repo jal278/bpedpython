@@ -3,10 +3,14 @@
 
 #include <cmath>
 #include <vector>
+#include <iostream>
+#include <fstream>
 #include "innovation.h"
 #include "genome.h"
 #include "species.h"
 #include "organism.h"
+
+using namespace std;
 
 namespace NEAT {
 
@@ -61,6 +65,20 @@ namespace NEAT {
 		bool print_to_file_by_species(std::ostream& outFile);
 		bool print_to_file_by_species(char *filename);
 
+                void print_distribution(const char* filename);
+
+                void print_compatibility_matrix(const char* filename)
+                {
+                   ofstream out(filename);
+		   for(int x=0;x<organisms.size();x++)
+                   {
+                     for(int y=0;y<organisms.size(); y++)
+                       {
+                          out << organisms[x]->gnome->compatibility(organisms[y]->gnome) << " ";
+                       }
+                       out << endl;
+		   }
+                }
 		// Prints the champions of each species to files starting with directory_prefix
 		// The file name are as follows: [prefix]g[generation_num]cs[species_num]
 		// Thus, they can be indexed by generation or species

@@ -51,6 +51,7 @@ for(it = p1->organisms.begin(); it!= p1->organisms.end();it++)
 	total_orgs.push_back(*it);
 	(*it)->blacklist=false;
 }
+
 for(it = p2.begin(); it!= p2.end(); it++)
 {
 	total_orgs.push_back(*it);
@@ -84,7 +85,8 @@ for(it = total_orgs.begin(); it!=total_orgs.end(); it++)
 }
 
 //now greedily add point furthest from archive + merged pop so far
-for(int x=0;x<(size/2)-1;x++)
+//for(int x=0;x<(size/2)-1;x++)
+for(int x=0;x<(p1->organisms.size()-1);x++)
 {
 	Organism* best=NULL;
 	double best_dist= -1000.0;
@@ -105,6 +107,7 @@ for(int x=0;x<(size/2)-1;x++)
 			best = *it;
 		}
 	}
+        best->blacklist=true;
 	merged_orgs.push_back(best);
 }
 return new Population(merged_orgs);

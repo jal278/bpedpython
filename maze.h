@@ -35,6 +35,8 @@ for(int x=0;x<dim.size();x++)
 	size*=dim[x];
 
 buffer=(float*)malloc(sizeof(float)*size);
+
+
 for(int x=0;x<size;x++)
 	buffer[x]=0.0f;
 }
@@ -49,11 +51,12 @@ scale1(v[1],miny,maxy);
 
 for(int x=0;x<dim.size();x++)
 {
-	int loc_index = (v[x] * dim[x] + 0.499);
+	int loc_index = v[x] * dim[x]; //+ 0.499;
 	index+=multiplier*loc_index;
 	multiplier*=dim[x];
 }
-
+if(index>=size)
+ cout << "whoops..." << endl;
 	if(buffer[index]<cap)
 		buffer[index]++;
 	count++;

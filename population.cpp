@@ -4,11 +4,21 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include "noveltyset.h"
 using namespace std;
 using namespace NEAT;
 
 extern int NEAT::time_alive_minimum;
 
+               void  Population::print_distribution(const char* filename)
+                {
+                  ofstream out(filename);
+                  cout << organisms[0]->noveltypoint->data[0].size() << endl;
+                  for(int x=0;x<organisms.size();x++)
+                  {
+                    out << organisms[x]->noveltypoint->data[0][0] << " " << organisms[x]->noveltypoint->data[0][1] << endl;
+                  }
+                }
 Population::Population(Genome *g,int size) {
 	winnergen=0;
 	highest_fitness=0.0;
