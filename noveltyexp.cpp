@@ -750,10 +750,12 @@ static vector<Organism*> measure_pop;
         if(!novelty)
     	   (*curorg)->fitness = (*curorg)->noveltypoint->fitness;
   }
-
+ 
+  /*
   char fn[100];
   sprintf(fn,"dist%d",generation);
   pop->print_distribution(fn);
+  */
 
   //adjust target every so often
   if(novelty)
@@ -762,9 +764,9 @@ static vector<Organism*> measure_pop;
   {
      //merge populations together...
      //then make the measure_pop equal to the current population 
-     pop->print_compatibility_matrix("old_pop.txt");     
+     //pop->print_compatibility_matrix("old_pop.txt");     
      Population *new_pop = archive.merge_populations(pop,measure_pop);
-     new_pop->print_compatibility_matrix("new_pop.txt");
+     //new_pop->print_compatibility_matrix("new_pop.txt");
 
      cout << "Populations merged..." << endl;
      pop = new_pop;
