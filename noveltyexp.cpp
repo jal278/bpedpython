@@ -630,7 +630,8 @@ Population *maze_generational(char* outputdir,const char* mazefile,int param,con
 {
     float archive_thresh=3.0;
 
-    noveltyarchive archive(archive_thresh,*maze_novelty_metric,true,push_back_size,minimal_criteria);
+    noveltyarchive archive(archive_thresh,*maze_novelty_metric,true,push_back_size,minimal_criteria,true);
+
 
     Population *pop;
 
@@ -751,11 +752,8 @@ static vector<Organism*> measure_pop;
     	   (*curorg)->fitness = (*curorg)->noveltypoint->fitness;
   }
  
-  /*
-  char fn[100];
-  sprintf(fn,"dist%d",generation);
-  pop->print_distribution(fn);
-  */
+  
+  
 
   //adjust target every so often
   if(novelty)
@@ -770,6 +768,7 @@ static vector<Organism*> measure_pop;
 
      cout << "Populations merged..." << endl;
      pop = new_pop;
+     //maybe delete old pop?
      int target_species=10;
      cout << "changing speciation threshold..." << endl;
      while(true)
@@ -823,6 +822,10 @@ static vector<Organism*> measure_pop;
 	*/	
   }
 
+  char fn[100];
+  sprintf(fn,"dist%d",generation);
+  pop->print_distribution(fn);
+  
   //Average and max their fitnesses for dumping to file and snapshot
   for(curspecies=(pop->species).begin();curspecies!=(pop->species).end();++curspecies) {
 

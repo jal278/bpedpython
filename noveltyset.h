@@ -226,17 +226,18 @@ private:
     bool hall_of_fame;
     //add new items according to threshold
     bool threshold_add;
-
+    bool generational;
     //current generation
     int generation;
 public:
 
     //constructor
-    noveltyarchive(float threshold,float (*nm)(noveltyitem*,noveltyitem*),bool rec=true,int pbs=-1,bool mc=false)
+    noveltyarchive(float threshold,float (*nm)(noveltyitem*,noveltyitem*),bool rec=true,int pbs=-1,bool mc=false,bool _generational=false)
     {
         //how many nearest neighbors to consider for calculating novelty score?
         //histogram adds
         histogram=false;
+        generational=_generational;
         minimal_criteria=mc;
         vector< vector<int> > k;
         vector< int> l;
@@ -620,6 +621,7 @@ public:
     vector<sort_pair> map_novelty_pop(float (*nov_func)(noveltyitem*,noveltyitem*),noveltyitem* newitem, vector<Organism*> pop)
     {
         vector<sort_pair> novelties;
+        
         for (int i=0;i<(int)novel_items.size();i++)
         {
             novelties.push_back(make_pair((*novelty_metric)(novel_items[i],newitem),novel_items[i]));

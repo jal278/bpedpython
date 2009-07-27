@@ -16,9 +16,22 @@ extern int NEAT::time_alive_minimum;
                   cout << organisms[0]->noveltypoint->data[0].size() << endl;
                   for(int x=0;x<organisms.size();x++)
                   {
-                    out << organisms[x]->noveltypoint->data[0][0] << " " << organisms[x]->noveltypoint->data[0][1] << endl;
+                    out << organisms[x]->noveltypoint->data[0][0] << " " << organisms[x]->noveltypoint->data[0][1] << " " << organisms[x]->fitness << endl;
                   }
                 }
+ void Population::print_compatibility_matrix(const char* filename)
+                {
+                   ofstream out(filename);
+		   for(int x=0;x<organisms.size();x++)
+                   {
+                     for(int y=0;y<organisms.size(); y++)
+                       {
+                          out << organisms[x]->gnome->compatibility(organisms[y]->gnome) << " ";
+                       }
+                       out << endl;
+		   }
+}
+ 
 Population::Population(Genome *g,int size) {
 	winnergen=0;
 	highest_fitness=0.0;

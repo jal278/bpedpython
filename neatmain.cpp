@@ -99,7 +99,7 @@ int main(int argc, char **argv) {
 
   set_seed(seed_genome.getValue()); 
 
-  cout << "Goal sticky? "  << goal_attract.getValue() << endl;
+  cout << "Goal not sticky? "  << goal_attract.getValue() << endl;
   set_goal_attract(!goal_attract.getValue());
 
   cout << "Minimal criteria engaged? " << mcSwitch.getValue() << endl;
