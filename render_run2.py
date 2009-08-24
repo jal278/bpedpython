@@ -54,9 +54,8 @@ def readinrecord(fn):
 #maze="maze2.txt" #sys.argv[1]
 #rec=sys.argv[1] #"o/n1record.dat"
 
-archive="new/archive.dat"
-maze="maze_explore.txt"
-
+archive=sys.argv[1]
+maze="challenge_maze.txt" #"maze_explore.txt"
 
 os.system("grep Novelty %s > nov_temp.dat" % archive)
 os.system("grep Point %s > pt_temp.dat" % archive)
@@ -74,13 +73,14 @@ cutoff=b.shape[0]
 
 p1=map(int,a[1].split(" "))
 p2=map(int,a[3].split(" "))
-lines=[map(int,x.split(" ")) for x in a[4:]]
-scale = 2
+lines=[map(int,x.split(" ")) for x in a[5:]]
+scale = 1
 
 unzipped = zip(*lines)
+print unzipped
 xrng = (min(unzipped[0]+unzipped[2]),max(unzipped[0]+unzipped[2]))
-yrng = (min(unzipped[1]+unzipped[3]),max(unzipped[0]+unzipped[3]))
-
+yrng = (min(unzipped[1]+unzipped[3]),max(unzipped[1]+unzipped[3]))
+print xrng,yrng
 def norm(pt,rng):
    ret=[]
    for k in len(pt):
