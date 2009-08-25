@@ -580,7 +580,7 @@ class Environment
 	void update_radar(Character& h)
 	{
 		update_radar_gen(h,end,h.radar);
-                if(!reachpoi)
+                if(true) //if(!reachpoi)
 			update_radar_gen(h,poi,h.poi_radar);
 		else
 		{
