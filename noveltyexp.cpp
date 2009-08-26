@@ -518,6 +518,8 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record)
 	if(newenv->reachgoal)
 	{
 		fitness=1.0;
+                if(newenv->reachpoi)
+			fitness=500.0;
 	}
 	else
 	{
