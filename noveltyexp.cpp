@@ -348,7 +348,9 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
         }
 	if(novelty && !new_org->noveltypoint->viable && minimal_criteria)
 	{
-		new_org->fitness = 0.00001;
+		new_org->fitness = 0.00000001;
+                //reset behavioral characterization
+                new_org->noveltypoint->reset_behavior();
                 //cout << "fail" << endl;
 	}	
 	
@@ -605,7 +607,7 @@ noveltyitem* maze_novelty_map(Organism *org,data_record* record)
 
 	//TODO: Perhaps remove non-viable organisms from merged populations
 	//or set their behavioral characterization to some null value..
-	if(!record->ToRec[3] && novelty_measure != novelty_sample_free )
+	if(!record->ToRec[3])
 		new_item->viable=false;
 
 		/*
