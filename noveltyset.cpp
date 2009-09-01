@@ -141,12 +141,17 @@ void noveltyarchive::evaluate_individual(Organism* ind,vector<Organism*> pop,boo
 	float result;
 	if(fitness)  //assign fitness according to average novelty
 	{
+                if(minimal_criteria && !ind->noveltypoint->viable)
+                   result = 0.000000001;
+                else
+                {
 		if(!histogram)
 			result = novelty_avg_nn(ind->noveltypoint,-1,false,&pop);
 		else
 		{		
 			result = novelty_histogram(ind->noveltypoint);
 		}
+                }
 		ind->fitness = result;
 	} 
 	else  //consider adding a point to archive based on dist to nearest neighbor
@@ -163,4 +168,5 @@ void noveltyarchive::evaluate_individual(Organism* ind,vector<Organism*> pop,boo
 				add_novel_item(ind->noveltypoint);
 		}
 	}
+
 }

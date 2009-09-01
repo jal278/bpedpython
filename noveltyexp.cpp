@@ -175,7 +175,7 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
 
   vector<Species*> sorted_species;  //Species sorted by max fit org in Species 
 
-   float archive_thresh=1.0; //initial novelty threshold
+   float archive_thresh=1.0*number_of_samples+1.0; //initial novelty threshold
 
   //archive of novel behaviors
   noveltyarchive archive(archive_thresh,*maze_novelty_metric,true,push_back_size,minimal_criteria);
@@ -256,13 +256,14 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
 			cout << "ARCHIVE SIZE:" << 
 			archive.get_set_size() << endl;
                  }
+                 cout << "GEN" << offspring_count/NEAT::pop_size << endl;
 	}
 
 	//write out current generation and fittest individuals
     if( offspring_count % (NEAT::pop_size*NEAT::print_every) == 0 )
 	{
         	cout << offspring_count << endl;
-			char fname[30];
+			char fname[100];
 			sprintf(fname,"%sarchive.dat",output_dir);
 			archive.Serialize(fname);		
 	
@@ -349,6 +350,7 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
 	if(novelty && !new_org->noveltypoint->viable && minimal_criteria)
 	{
 		new_org->fitness = 0.00000001;
+                //new_org->novelty = 0.00000001;
                 //reset behavioral characterization
                 new_org->noveltypoint->reset_behavior();
                 //cout << "fail" << endl;
@@ -370,7 +372,7 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
     new_org->species->estimate_average();
         if(!weakfirst && (newrec->ToRec[3]>0.0)) {
 		weakfirst=true;
-		char filename[30];
+		char filename[100];
 		sprintf(filename,"%srtgen_weakfirst",output_dir);
 		pop->print_to_file_by_species(filename);
 		cout << "Maze weakly solved by indiv# " << indiv_counter << endl;	
@@ -378,7 +380,7 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
 	//write out the first individual to solve maze
 	if(!firstflag && (newrec->ToRec[3]>0.0 && newrec->ToRec[4]>0.0)) {
 		firstflag=true;
-		char filename[30];
+		char filename[100];
 		sprintf(filename,"%srtgen_first",output_dir);
 		pop->print_to_file_by_species(filename);
 		cout << "Maze solved by indiv# " << indiv_counter << endl;	
@@ -392,9 +394,9 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
   
   //write out run information, archive, and final generation
   cout << "COMPLETED...";
-  char filename[30];
+  char filename[100];
   sprintf(filename,"%srecord.dat",output_dir);
-  char fname[30];
+  char fname[100];
   sprintf(fname,"%srtarchive.dat",output_dir);
   archive.Serialize(fname);
   Record.serialize(filename);
@@ -678,9 +680,9 @@ Population *maze_generational(char* outputdir,const char* mazefile,int param,con
   //writing out stuff 
   if(gen%200==0)
   {
-  char filename[30];
+  char filename[100];
   sprintf(filename,"%s_record.dat",output_dir);
-  char fname[30];
+  char fname[100];
   sprintf(fname,"%s_archive.dat",output_dir);
   archive.Serialize(fname);
   Record.serialize(filename);
@@ -690,7 +692,7 @@ Population *maze_generational(char* outputdir,const char* mazefile,int param,con
 
   if (win)
   {
-   char fname[30];
+   char fname[100];
    sprintf(fname,"%s_wingen",output_dir);
     ofstream winfile(fname);
     winfile << gen << endl;
