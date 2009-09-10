@@ -15,7 +15,7 @@ class data_record
 	data_record()
 	{
 		for(int i=0;i<RECSIZE;i++)
-			ToRec[i]=-10.0;
+			ToRec[i]=0.0;
 		indiv_number=-1;
 	}
 	float ToRec[RECSIZE];

@@ -79,7 +79,10 @@ cout << "Novelty measure " << novelty_measure << endl;
 }
 
 static char output_dir[30]="";
+
 static Environment* env;
+static vector<Environment*> envList;
+
 static int param=-1;
 static int push_back_size = 200;
 //used for discretization studies
@@ -114,17 +117,39 @@ float maze_novelty_metric(noveltyitem* x,noveltyitem* y)
 	return diff;
 }
 
+static void read_in_environments(const char* mazefile)
+{
+ifstream listfile(mazefile);
+
+while(!listfile.eof())
+{
+string filename;
+getline(listfile,filename);
+if(filename.length() == 0)
+ break;
+cout << "Reading maze: " << filename << endl;
+Environment* new_env = new Environment(filename.c_str());
+envList.push_back(new_env);
+}
+
+}
+
 //novelty maze navigation run
 Population *maze_novelty_realtime(char* outputdir,const char* mazefile,int par,const char* genes,bool novelty) {
 	
     Population *pop;
     Genome *start_genome;
     char curword[20];
+
     int id;
 
+	
 	//crgate new maze environment
-	env=new Environment(mazefile);
-	//param=par;
+	//env=new Environment(mazefile);
+        //read in environments
+        read_in_environments(mazefile);	
+
+        //param=par;
 	push_back_size=par;
 	if(outputdir!=NULL) strcpy(output_dir,outputdir);
 		
@@ -175,8 +200,9 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
 
   vector<Species*> sorted_species;  //Species sorted by max fit org in Species 
 
-   float archive_thresh=1.0*number_of_samples+1.0; //initial novelty threshold
-
+//was 1.0*number_of_samples+1.0 for earlier results...
+   float archive_thresh=(1.0*number_of_samples+1.0) * 20.0 * envList.size(); //initial novelty threshold
+  cout << "Archive threshold: " << archive_thresh << endl;
   //archive of novel behaviors
   noveltyarchive archive(archive_thresh,*maze_novelty_metric,true,push_back_size,minimal_criteria);
 	
@@ -370,7 +396,7 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
 	
     //Now we reestimate the baby's species' fitness
     new_org->species->estimate_average();
-        if(!weakfirst && (newrec->ToRec[3]>0.0)) {
+        if(!weakfirst && (newrec->ToRec[3]>=envList.size())) {
 		weakfirst=true;
 		char filename[100];
 		sprintf(filename,"%srtgen_weakfirst",output_dir);
@@ -378,7 +404,7 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
 		cout << "Maze weakly solved by indiv# " << indiv_counter << endl;	
         }
 	//write out the first individual to solve maze
-	if(!firstflag && (newrec->ToRec[3]>0.0 && newrec->ToRec[4]>0.0)) {
+	if(!firstflag && (newrec->ToRec[3]>envList.size() && newrec->ToRec[4]>envList.size())) {
 		firstflag=true;
 		char filename[100];
 		sprintf(filename,"%srtgen_first",output_dir);
@@ -406,7 +432,7 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
 
   sprintf(fname,"%srtgen_final",output_dir);
   pop->print_to_file_by_species(fname);
-
+  exit(0);
   return 0;
 }
   
@@ -453,7 +479,7 @@ Environment* mazesimIni(Environment* tocopy,Network *net, vector< vector<float> 
 	  
 	  return fitness;
   }
-double mazesim(Network* net, vector< vector<float> > &dc, data_record *record)
+double mazesim(Network* net, vector< vector<float> > &dc, data_record *record,Environment* the_env)
 {
 	vector<float> data;
 	
@@ -464,18 +490,17 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record)
 	Environment *newenv;
         position_accumulator *accum; 
 	
-	newenv=mazesimIni(env,net,dc);
+	newenv=mazesimIni(the_env,net,dc);
         newenv->goalattract = goal_attract;	
 	//data collection vector initialization
-	dc.clear();
-	dc.push_back(data);
+	//dc.clear();
 
 	if(novelty_measure == novelty_sample || 
            novelty_measure ==novelty_sample_free)
-		dc[0].reserve(timesteps/stepsize);
+		data.reserve(timesteps/stepsize);
 	if(novelty_measure == novelty_accum)
 	{
-		dc[0].reserve(100);	
+		data.reserve(100);	
 		float minx,miny,maxx,maxy;
 		newenv->get_range(minx,miny,maxx,maxy);
 		vector<int> dims;
@@ -496,8 +521,8 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record)
                    novelty_measure==novelty_sample_free)
 		if((timesteps-i-1)%stepsize==0)
 		{
-				dc[0].push_back(newenv->hero.location.x);
-				dc[0].push_back(newenv->hero.location.y);
+				data.push_back(newenv->hero.location.x);
+				data.push_back(newenv->hero.location.y);
 		}
 		
 		float loc[2]={newenv->hero.location.x,newenv->hero.location.y};
@@ -562,30 +587,32 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record)
 	if(false)
 	{
 	//novelty point is the ending location of the navigator
-	dc[0].push_back(x);
-	dc[0].push_back(y);
+	data.push_back(x);
+	data.push_back(y);
 	}
 
 	if(novelty_measure==novelty_accum)
 	{
 		accum->transform();	
 		for(int x=0;x<accum->size;x++)
-			dc[0].push_back(accum->buffer[x]);
+			data.push_back(accum->buffer[x]);
 	}
 
 	if(record!=NULL)
 	{
-		record->ToRec[0]=fitness;
+		record->ToRec[0]+=fitness;
 		record->ToRec[1]=newenv->hero.location.x;
 		record->ToRec[2]=newenv->hero.location.y;
-		record->ToRec[3]=newenv->reachgoal;
-		record->ToRec[4]=newenv->reachpoi;		
+		record->ToRec[3]+=newenv->reachgoal;
+		record->ToRec[4]+=newenv->reachpoi;		
 	}
 
 	if(novelty_measure==novelty_accum)
 		delete accum;
 
-	delete newenv;
+	dc.push_back(data);
+	
+        delete newenv;
 	return fitness;
 }
 
@@ -598,11 +625,19 @@ noveltyitem* maze_novelty_map(Organism *org,data_record* record)
   new_item->phenotype=new Network(*org->net);
   vector< vector<float> > gather;
 
-  double fitness;
+  double fitness=0.0;
   static float highest_fitness=0.0;
 
-	fitness=mazesim(org->net,gather,record);
-  	if(fitness>highest_fitness)
+	for(int x=0;x<envList.size();x++)
+        {
+ 	 fitness+=mazesim(org->net,gather,record,envList[x]);
+          
+         //minimal criteria must be met in *all* scenarios...
+         if(record!=NULL && record->ToRec[3]<envList.size())
+            new_item->viable=false;
+        }
+  	
+        if(fitness>highest_fitness)
 		highest_fitness=fitness;
 	
 	//keep track of highest fitness so hard in record
@@ -624,7 +659,8 @@ noveltyitem* maze_novelty_map(Organism *org,data_record* record)
 	}
 
  	 //push back novelty characterization
-	 new_item->data.push_back(gather[0]);
+         for(int i=0;i<gather.size();i++)
+	  new_item->data.push_back(gather[i]);
  	 //set fitness (this is 'real' objective-based fitness, not novelty)
  	 new_item->fitness=fitness;
   return new_item;

@@ -46,7 +46,7 @@ p3=map(int,a[4].split(" "))
 lines=[map(int,x.split(" ")) for x in a[5:]]
 
 scene = svg_draw.Scene("test",width=450,height=450)
-scale = 1
+scale = 0.5
 
 
 for x in lines:
