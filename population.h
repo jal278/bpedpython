@@ -12,6 +12,11 @@
 
 using namespace std;
 
+void reset_activity();
+int calculate_diversity();
+long int calculate_cumulative_activity();
+double calculate_average_activity();
+
 namespace NEAT {
 
 	class Species;
@@ -32,6 +37,8 @@ namespace NEAT {
 		bool spawn(Genome *g,int size);
 
 	public:
+	//added for statistics
+        void update_statistics();
 
         std::vector<Organism*> organisms; //The organisms in the Population
 

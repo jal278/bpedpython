@@ -41,6 +41,9 @@ namespace NEAT {
 		int get_last_node_id(); //Return id of final NNode in Genome
 		double get_last_gene_innovnum(); //Return last innovation number in Genome
 
+                //allow pruning for activity statistics experiments
+                void mutate_gene_disable();
+
 		void print_genome(); //Displays Genome on screen
 
 		//Constructor which takes full genome specs and puts them into the new one

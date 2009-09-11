@@ -19,7 +19,7 @@ using namespace std;
 enum novelty_measure_type { novelty_sample, novelty_accum, novelty_sample_free };
 static novelty_measure_type novelty_measure = novelty_sample;
 
-enum fitness_measure_type { fitness_goal, fitness_drift, fitness_std };
+enum fitness_measure_type { fitness_goal, fitness_drift, fitness_std,fitness_rnd };
 static fitness_measure_type fitness_measure = fitness_std;
 
 static int number_of_samples = 1;
@@ -28,6 +28,8 @@ static bool seed_mode = false;
 static char seed_name[40]="";
 static bool minimal_criteria=false;
 static bool goal_attract=true;
+
+static bool activity_stats=true;
 
 void set_minimal_criteria(bool mc)
 {
@@ -58,6 +60,8 @@ if(strlen(seed_name)>0)
 
 void set_fit_measure(string m)
 {
+if(m=="rnd")
+   fitness_measure=fitness_rnd;
 if(m=="std")
    fitness_measure=fitness_std;
 if(m=="drift")
@@ -202,6 +206,8 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
 
 //was 1.0*number_of_samples+1.0 for earlier results...
    float archive_thresh=(1.0*number_of_samples+1.0) * 20.0 * envList.size(); //initial novelty threshold
+  if(minimal_criteria)
+   archive_thresh/=20.0;
   cout << "Archive threshold: " << archive_thresh << endl;
   //archive of novel behaviors
   noveltyarchive archive(archive_thresh,*maze_novelty_metric,true,push_back_size,minimal_criteria);
@@ -223,6 +229,12 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
   if (compat_adjust_frequency < 1)
     compat_adjust_frequency = 1;
 
+//activity stat log file
+  char asfn[100];
+  sprintf(asfn,"%s_activitystats.dat",output_dir);
+  ofstream activity_stat_file(asfn);
+  if(activity_stats)
+     reset_activity();  
   //Initially, we evaluate the whole population                                                                               
   //Evaluate each organism on a test                   
   int indiv_counter=0;  
@@ -270,7 +282,14 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
 	//only continue past generation 1000 if not yet solved
 	if(offspring_count>=pop_size*1000 && firstflag)
 		break;
-	
+
+if(activity_stats&& offspring_count % 10000 == 0)
+{
+  pop->update_statistics();
+ activity_stat_file << offspring_count << " "  << calculate_diversity() 
+                   << " " << calculate_cumulative_activity() << " " <<
+	                     calculate_average_activity() << endl; 
+}	
 	
 	//end of generation
     if(offspring_count % (NEAT::pop_size*1) == 0)
@@ -538,7 +557,13 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record,En
 	fitness=300.0 - newenv->distance_to_target();
 	if(fitness<0.1) fitness=0.1;
 	}
-
+        
+        if(fitness_measure ==fitness_rnd)
+        {
+         //todo assign random fitness, this needs to get reassigned
+         //often...
+        }
+   
 	//calculate fitness as meeting minimal criteria
 	if(fitness_measure == fitness_drift)
 	{

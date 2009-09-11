@@ -582,7 +582,8 @@ public:
                 density = sum/weight;
             }
         }
-
+        if(density <0.00001)
+          density=0.00001;
         item->novelty=density;
         item->generation=generation;
         return density;

@@ -8,6 +8,38 @@
 using namespace std;
 using namespace NEAT;
 
+//ACTIVITY STATISTICS CALCULATIONS
+#define MAX_COMPONENTS 1000000
+static int activity_level[MAX_COMPONENTS];
+
+void reset_activity()
+{
+for(int x=0;x<MAX_COMPONENTS;x++)
+ activity_level[x]=0;
+}
+
+int calculate_diversity()
+{
+int diversity=0;
+for(int x=0;x<MAX_COMPONENTS;x++)
+ if(activity_level[x]>0)
+  diversity++;
+return diversity;
+}
+
+long int calculate_cumulative_activity()
+{
+long int total=0;
+for(int x=0;x<MAX_COMPONENTS;x++)
+ total+=activity_level[x];
+return total;
+}
+
+double calculate_average_activity()
+{
+return calculate_cumulative_activity()/calculate_diversity();
+}
+
 extern int NEAT::time_alive_minimum;
 
                void  Population::print_distribution(const char* filename)
@@ -19,6 +51,24 @@ extern int NEAT::time_alive_minimum;
                     out << organisms[x]->noveltypoint->data[0][0] << " " << organisms[x]->noveltypoint->data[0][1] << " " << organisms[x]->fitness << endl;
                   }
                 }
+
+void Population::update_statistics()
+{
+
+for(int x=0;x<organisms.size();x++)
+{
+Genome* genome = organisms[x]->gnome;
+for(int y=0;y<genome->genes.size();y++)
+{
+ Gene* gene = genome->genes[y];
+ if(gene->enable)
+   activity_level[(int)y]++;
+}
+
+}
+
+}
+
  void Population::print_compatibility_matrix(const char* filename)
                 {
                    ofstream out(filename);

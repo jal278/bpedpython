@@ -3,6 +3,7 @@
 #include "noveltyset.h"
 #include <cmath>
 #include <iostream>
+#define DISABLE_PROB 0.00
 using namespace NEAT;
 
 Species::Species(int i) {
@@ -264,6 +265,8 @@ double Species::estimate_average() {
 					new_genome->struct_change=3; //JLADD
 
 				}
+                                if (randfloat()<DISABLE_PROB)
+                                   new_genome->mutate_gene_disable();
 				if (randfloat()<NEAT::mutate_gene_reenable_prob) {
 					//cout<<"mutate gene reenable"<<endl;
 					new_genome->mutate_gene_reenable();
@@ -432,6 +435,8 @@ double Species::estimate_average() {
 					new_genome->struct_change=3; 
 					//cout<<"mutate_toggle_enable: "<<new_genome<<endl;
 				}
+                                if (randfloat()<DISABLE_PROB)
+                                   new_genome->mutate_gene_disable();
 				if (randfloat()<NEAT::mutate_gene_reenable_prob) {
 					new_genome->mutate_gene_reenable(); 
 					//cout<<"mutate_gene_reenable: "<<new_genome<<endl;
@@ -1084,6 +1089,8 @@ bool Species::reproduce(int generation, Population *pop,std::vector<Species*> &s
 							new_genome->mutate_toggle_enable(1);
 
 						}
+                                if (randfloat()<DISABLE_PROB)
+                                   new_genome->mutate_gene_disable();
 						if (randfloat()<NEAT::mutate_gene_reenable_prob) {
 							//std::cout<<"mutate gene reenable"<<std::endl;
 							new_genome->mutate_gene_reenable();
@@ -1245,6 +1252,8 @@ bool Species::reproduce(int generation, Population *pop,std::vector<Species*> &s
 							new_genome->mutate_toggle_enable(1);
 							//std::cout<<"mutate_toggle_enable: "<<new_genome<<std::endl;
 						}
+                                if (randfloat()<DISABLE_PROB)
+                                   new_genome->mutate_gene_disable();
 						if (randfloat()<NEAT::mutate_gene_reenable_prob) {
 							new_genome->mutate_gene_reenable(); 
 							//std::cout<<"mutate_gene_reenable: "<<new_genome<<std::endl;

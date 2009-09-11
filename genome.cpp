@@ -1348,6 +1348,44 @@ void Genome::mutate_toggle_enable(int times) {
 	}
 }
 
+void Genome::mutate_gene_disable() {
+	int genenum;
+	int count;
+	std::vector<Gene*>::iterator thegene;  //Gene to toggle
+	std::vector<Gene*>::iterator checkgene;  //Gene to check
+	int genecount;
+
+	for (count=1;count<=20;count++) {
+
+		//Choose a random genenum
+		genenum=randint(0,genes.size()-1);
+
+		//find the gene
+		thegene=genes.begin();
+		for(genecount=0;genecount<genenum;genecount++)
+			++thegene;
+
+		//Toggle the enable on this gene
+		if (((*thegene)->enable)==true) {
+			//We need to make sure that another gene connects out of the in-node
+			//Because if not a section of network will break off and become isolated
+			checkgene=genes.begin();
+			while((checkgene!=genes.end())&&
+				(((((*checkgene)->lnk)->in_node)!=(((*thegene)->lnk)->in_node))||
+				(((*checkgene)->enable)==false)||
+				((*checkgene)->innovation_num==(*thegene)->innovation_num)))
+				++checkgene;
+
+			//Disable the gene if it's safe to do so
+			if (checkgene!=genes.end())
+                        {
+				(*thegene)->enable=false;
+                                break;
+                        }
+		}
+	}
+}
+
 void Genome::mutate_gene_reenable() {
 	std::vector<Gene*>::iterator thegene;  //Gene to enable
 
