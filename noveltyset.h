@@ -12,6 +12,8 @@
 
 #include "population.h"
 
+#define SNUM 0.0000001
+
 #define ARCHIVE_SEED_AMOUNT 1
 
 inline float scale(float lo, float hi, float x)
@@ -582,8 +584,10 @@ public:
                 density = sum/weight;
             }
         }
-        if(density <0.00001)
-          density=0.00001;
+        if(density <SNUM)
+        {
+          density=SNUM + (((float)rand()/RAND_MAX)*SNUM);
+        }
         item->novelty=density;
         item->generation=generation;
         return density;

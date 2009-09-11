@@ -207,7 +207,7 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
 //was 1.0*number_of_samples+1.0 for earlier results...
    float archive_thresh=(1.0*number_of_samples+1.0) * 20.0 * envList.size(); //initial novelty threshold
   if(minimal_criteria)
-   archive_thresh/=20.0;
+   archive_thresh/=200.0;
   cout << "Archive threshold: " << archive_thresh << endl;
   //archive of novel behaviors
   noveltyarchive archive(archive_thresh,*maze_novelty_metric,true,push_back_size,minimal_criteria);
@@ -262,8 +262,10 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
   }
   
   if(novelty && minimal_criteria)
-  for(curorg=(pop->organisms).begin();curorg!=(pop->organisms).end();++curorg) (*curorg)->fitness = 0.00000001;
-  
+  for(curorg=(pop->organisms).begin();curorg!=(pop->organisms).end();++curorg) 
+{
+(*curorg)->fitness = SNUM/100.0;
+}  
 //Get ready for real-time loop
   //Rank all the organisms from best to worst in each species
   pop->rank_within_species();                                                                            
@@ -394,13 +396,17 @@ if(activity_stats&& offspring_count % 10000 == 0)
         }
 	if(novelty && !new_org->noveltypoint->viable && minimal_criteria)
 	{
-		new_org->fitness = 0.00000001;
+		new_org->fitness = SNUM/1000.0;
                 //new_org->novelty = 0.00000001;
                 //reset behavioral characterization
                 new_org->noveltypoint->reset_behavior();
                 //cout << "fail" << endl;
+               // cout << " :( " << endl;
 	}	
-	
+        else
+        {
+             //cout << ":)" << new_org->noveltypoint->indiv_number << endl;
+        }	
         //add record of new indivdual to storage
 	Record.add_new(newrec);
 	indiv_counter++;
@@ -656,11 +662,20 @@ noveltyitem* maze_novelty_map(Organism *org,data_record* record)
 	for(int x=0;x<envList.size();x++)
         {
  	 fitness+=mazesim(org->net,gather,record,envList[x]);
+         }
           
          //minimal criteria must be met in *all* scenarios...
-         if(record!=NULL && record->ToRec[3]<envList.size())
-            new_item->viable=false;
-        }
+         if(record!=NULL)
+         {
+           if( record->ToRec[3]<envList.size())
+           { new_item->viable=false;
+          //  cout << record->ToRec[3] << endl; 
+           }
+            else { 
+            // cout << "viable... " << endl;
+            }
+          }
+
   	
         if(fitness>highest_fitness)
 		highest_fitness=fitness;

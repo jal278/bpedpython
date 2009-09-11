@@ -142,7 +142,10 @@ void noveltyarchive::evaluate_individual(Organism* ind,vector<Organism*> pop,boo
 	if(fitness)  //assign fitness according to average novelty
 	{
                 if(minimal_criteria && !ind->noveltypoint->viable)
+                {
                    result = 0.000000001;
+                   ind->fitness = result;
+		}
                 else
                 {
 		if(!histogram)
