@@ -429,7 +429,7 @@ if(activity_stats&& offspring_count % 10000 == 0)
 		cout << "Maze weakly solved by indiv# " << indiv_counter << endl;	
         }
 	//write out the first individual to solve maze
-	if(!firstflag && (newrec->ToRec[3]>envList.size() && newrec->ToRec[4]>envList.size())) {
+	if(!firstflag && (newrec->ToRec[3]>=envList.size() && newrec->ToRec[4]>=envList.size())) {
 		firstflag=true;
 		char filename[100];
 		sprintf(filename,"%srtgen_first",output_dir);
@@ -560,7 +560,7 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record,En
 	//calculate fitness of individual as closeness to target
 	if(fitness_measure == fitness_goal)
         {
-	fitness=300.0 - newenv->distance_to_target();
+	fitness=500.0 - newenv->distance_to_target();
 	if(fitness<0.1) fitness=0.1;
 	}
         
@@ -656,12 +656,22 @@ noveltyitem* maze_novelty_map(Organism *org,data_record* record)
   new_item->phenotype=new Network(*org->net);
   vector< vector<float> > gather;
 
+  vector<float> constraint_vector;
+  bool apply_constraints=true;
   double fitness=0.0;
   static float highest_fitness=0.0;
 
 	for(int x=0;x<envList.size();x++)
         {
+         int c1_old = record->ToRec[3];
+         int c2_old = record->ToRec[4];
  	 fitness+=mazesim(org->net,gather,record,envList[x]);
+
+         if(apply_constraints) {
+         constraint_vector.push_back((c1_old-record->ToRec[3]) * 2000.0);
+         constraint_vector.push_back((c2_old-record->ToRec[4]) * 2000.0);
+         }
+
          }
           
          //minimal criteria must be met in *all* scenarios...
@@ -701,6 +711,8 @@ noveltyitem* maze_novelty_map(Organism *org,data_record* record)
  	 //push back novelty characterization
          for(int i=0;i<gather.size();i++)
 	  new_item->data.push_back(gather[i]);
+         if(apply_constraints)
+	  new_item->data.push_back(constraint_vector);
  	 //set fitness (this is 'real' objective-based fitness, not novelty)
  	 new_item->fitness=fitness;
   return new_item;
