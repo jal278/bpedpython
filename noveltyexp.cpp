@@ -281,6 +281,8 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
   for 
 (offspring_count=0;offspring_count<NEAT::pop_size*2001;offspring_count++) 
 {
+//fix compat_threshold, so no speciation...
+//      NEAT::compat_threshold = 1000000.0;
 	//only continue past generation 1000 if not yet solved
 	if(offspring_count>=pop_size*1000 && firstflag)
 		break;
@@ -338,7 +340,6 @@ if(activity_stats&& offspring_count % 10000 == 0)
 	   //refresh generation's novelty scores
 	   archive.evaluate_population(pop,true);
           }	
-      
       int num_species = pop->species.size();
       double compat_mod=0.1;  //Modify compat thresh to control speciation                                                     
       // This tinkers with the compatibility threshold 
@@ -439,7 +440,10 @@ if(activity_stats&& offspring_count % 10000 == 0)
 	}
 
     //Remove the worst organism                                                                                               
-    pop->remove_worst();
+    if(fitness_measure ==fitness_rnd)
+     pop->remove_random();
+    else    
+     pop->remove_worst();
 
   }
   
@@ -568,6 +572,7 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record,En
         {
          //todo assign random fitness, this needs to get reassigned
          //often...
+   	 fitness = randint(10,100);
         }
    
 	//calculate fitness as meeting minimal criteria
@@ -658,18 +663,27 @@ noveltyitem* maze_novelty_map(Organism *org,data_record* record)
 
   vector<float> constraint_vector;
   bool apply_constraints=true;
+  bool remove_regular=true;
   double fitness=0.0;
   static float highest_fitness=0.0;
 
 	for(int x=0;x<envList.size();x++)
         {
-         int c1_old = record->ToRec[3];
-         int c2_old = record->ToRec[4];
- 	 fitness+=mazesim(org->net,gather,record,envList[x]);
+         int c1_old,c2_old;
+         if(record!=NULL) {
+         c1_old = record->ToRec[3];
+         c2_old = record->ToRec[4];
+ 	 }
 
-         if(apply_constraints) {
-         constraint_vector.push_back((c1_old-record->ToRec[3]) * 2000.0);
-         constraint_vector.push_back((c2_old-record->ToRec[4]) * 2000.0);
+         fitness+=mazesim(org->net,gather,record,envList[x]);
+
+         if(apply_constraints && record!=NULL) {
+         constraint_vector.push_back((c1_old-record->ToRec[3]) * 100.0);
+         constraint_vector.push_back((c2_old-record->ToRec[4]) * 100.0);
+         }
+         else {
+         constraint_vector.push_back(0);
+         constraint_vector.push_back(0);
          }
 
          }
@@ -709,8 +723,10 @@ noveltyitem* maze_novelty_map(Organism *org,data_record* record)
 	}
 
  	 //push back novelty characterization
+         if(!remove_regular) 
          for(int i=0;i<gather.size();i++)
 	  new_item->data.push_back(gather[i]);
+         
          if(apply_constraints)
 	  new_item->data.push_back(constraint_vector);
  	 //set fitness (this is 'real' objective-based fitness, not novelty)

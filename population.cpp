@@ -1116,6 +1116,37 @@ bool Population::remove_species(Species *spec) {
 		return true;
 	}
 }
+void Population::remove_random() {
+
+ Organism* org_to_kill=0;
+ int org_num = randint(0,organisms.size()-1);
+ org_to_kill = organisms[org_num];
+ Species *orgs_species;
+std::vector<Organism*>::iterator deadorg;
+ deadorg=organisms.begin()+org_num;
+ orgs_species = org_to_kill->species; //The species of the dead organism
+
+	if (org_to_kill) {
+
+//		printf("Org to kill: species = %d",org_to_kill->species->id);
+
+		//Remove the organism from its species and the population
+		orgs_species->remove_org(org_to_kill);  //Remove from species
+		delete org_to_kill;  //Delete the organism itself 
+		organisms.erase(deadorg); //Remove from population list
+
+		//Did the species become empty?
+		if ((orgs_species->organisms.size())==0) {
+
+			remove_species(orgs_species);
+			delete orgs_species;
+		}
+		//If not, re-estimate the species average after removing the organism
+		else {
+			orgs_species->estimate_average();
+		}
+	}
+}
 
 Organism* Population::remove_worst() {
 

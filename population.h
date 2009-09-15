@@ -42,6 +42,7 @@ namespace NEAT {
 
         std::vector<Organism*> organisms; //The organisms in the Population
 
+        void remove_random();
         std::vector<Species*> species;  // Species in the Population. Note that the species should comprise all the genomes 
 
 		// ******* Member variables used during reproduction *******
