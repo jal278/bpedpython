@@ -4,6 +4,12 @@
 #include <cmath>
 #include <cstring>
 
+//ADDED
+double NEAT::time_const_mut_power=0.4;
+double NEAT::time_const_mut_prob=0.3;
+double NEAT::bias_mut_power=0.8;
+double NEAT::bias_mut_prob=0.4;
+
 int NEAT::time_alive_minimum = 0;
 double NEAT::trait_param_mut_prob = 0;
 double NEAT::trait_mutation_power = 0; // Power of mutation on a signle trait param 
@@ -362,6 +368,17 @@ bool NEAT::load_neat_params(const char *filename, bool output) {
     paramFile>>curword;
 	paramFile>>NEAT::num_runs;
 	
+	paramFile>>curword;
+	paramFile>>NEAT::time_const_mut_power;
+	
+	paramFile>>curword;
+	paramFile>>NEAT::time_const_mut_prob;
+	
+	paramFile>>curword;
+	paramFile>>NEAT::bias_mut_power;
+	
+	paramFile>>curword;
+	paramFile>>NEAT::bias_mut_prob;
 
     if(output) {
 	    printf("trait_param_mut_prob=%f\n",trait_param_mut_prob);
@@ -397,6 +414,10 @@ bool NEAT::load_neat_params(const char *filename, bool output) {
 	    printf("print_every=%d\n",print_every);
 	    printf("babies_stolen=%d\n",babies_stolen);
 	    printf("num_runs=%d\n",num_runs);
+	    printf("time_const_mut_power=%f\n",time_const_mut_power);
+	    printf("time_const_mut_prob=%f\n",time_const_mut_prob);
+	    printf("bias_mut_power=%f\n",bias_mut_power);
+        printf("bias_mut_prob=%f\n",bias_mut_prob);
     }
 
 	paramFile.close();

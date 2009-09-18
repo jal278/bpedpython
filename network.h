@@ -72,6 +72,9 @@ namespace NEAT {
 
 		// Activates the net such that all outputs are active
 		bool activate();
+		bool activate_ctrnn(double dt);
+		bool init_ctrnn();
+		void ctrnn_dynamics();
 
 		// Prints the values of its outputs
 		void show_activation();

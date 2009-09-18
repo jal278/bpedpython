@@ -254,6 +254,8 @@ double Species::estimate_average() {
 				if (randfloat()<NEAT::mutate_node_trait_prob) {
 					//cout<<"mutate_node_trait"<<endl;
 					new_genome->mutate_node_trait(1);
+					new_genome->mutate_node_parameters(NEAT::time_const_mut_power,NEAT::time_const_mut_prob,
+					                                   NEAT::bias_mut_power,NEAT::bias_mut_prob);
 				}
 				if (randfloat()<NEAT::mutate_link_weights_prob) {
 					//cout<<"mutate_link_weights"<<endl;
@@ -423,6 +425,8 @@ double Species::estimate_average() {
 					//cout<<"..mutate link trait: "<<new_genome<<endl;
 				}
 				if (randfloat()<NEAT::mutate_node_trait_prob) {
+                    new_genome->mutate_node_parameters(NEAT::time_const_mut_power,NEAT::time_const_mut_prob,
+					                                   NEAT::bias_mut_power,NEAT::bias_mut_prob);
 					new_genome->mutate_node_trait(1);
 					//cout<<"mutate_node_trait: "<<new_genome<<endl;
 				}
@@ -1079,6 +1083,9 @@ bool Species::reproduce(int generation, Population *pop,std::vector<Species*> &s
 						if (randfloat()<NEAT::mutate_node_trait_prob) {
 							//std::cout<<"mutate_node_trait"<<std::endl;
 							new_genome->mutate_node_trait(1);
+new_genome->mutate_node_parameters(NEAT::time_const_mut_power,NEAT::time_const_mut_prob,
+					                                   NEAT::bias_mut_power,NEAT::bias_mut_prob);
+
 						}
 						if (randfloat()<NEAT::mutate_link_weights_prob) {
 							//std::cout<<"mutate_link_weights"<<std::endl;
@@ -1242,6 +1249,8 @@ bool Species::reproduce(int generation, Population *pop,std::vector<Species*> &s
 						}
 						if (randfloat()<NEAT::mutate_node_trait_prob) {
 							new_genome->mutate_node_trait(1);
+new_genome->mutate_node_parameters(NEAT::time_const_mut_power,NEAT::time_const_mut_prob,
+					                                   NEAT::bias_mut_power,NEAT::bias_mut_prob);
 							//std::cout<<"mutate_node_trait: "<<new_genome<<std::endl;
 						}
 						if (randfloat()<NEAT::mutate_link_weights_prob) {

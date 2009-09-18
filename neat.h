@@ -2,8 +2,13 @@
 #define _NERO_NEAT_H_
 
 #include <cstdlib>
-
 namespace NEAT {
+    //leaky integrator additions
+    extern double time_const_mut_power;
+    extern double bias_mut_power;
+    extern double time_const_mut_prob;
+    extern double bias_mut_prob;
+
 
 	extern int time_alive_minimum; // Minimum time alive to be considered for selection or death in real-time evolution 
 	const int num_trait_params = 8;

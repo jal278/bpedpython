@@ -65,6 +65,10 @@ namespace NEAT {
 
 		functype ftype; // type is either SIGMOID ..or others that can be added
 		nodetype type; // type is either NEURON or SENSOR 
+		
+        //jladd
+        double time_const;
+        double bias;
 
 		double activesum;  // The incoming activity before being processed 
 		double activation; // The total activation entering the NNode 
@@ -110,6 +114,7 @@ namespace NEAT {
 
 		// Just return activation for step
 		double get_active_out();
+		double get_output();
 
 		// Return activation from PREVIOUS time step
 		double get_active_out_td();

@@ -43,6 +43,10 @@ NNode::NNode(nodetype ntype,int nodeid, nodeplace placement) {
 	frozen=false;
 	trait_id=1;
 	override=false;
+	
+	//randomly set time_const, let bias be 0.0
+	time_const = 0.5;
+	bias=0.0;
 }
 
 NNode::NNode(NNode *n,Trait *t) {
@@ -65,6 +69,9 @@ NNode::NNode(NNode *n,Trait *t) {
 		trait_id=t->trait_id;
 	else trait_id=1;
 	override=false;
+	
+	bias=n->bias;
+	time_const=n->time_const;
 }
 
 NNode::NNode (const char *argline, std::vector<Trait*> &traits) {
@@ -89,7 +96,7 @@ NNode::NNode (const char *argline, std::vector<Trait*> &traits) {
 	//gen_node_label = (nodeplace)atoi(curword);
 
     int nodety, nodepl;
-    ss >> node_id >> traitnum >> nodety >> nodepl;
+    ss >> node_id >> traitnum >> nodety >> nodepl >> time_const >> bias;
     type = (nodetype)nodety;
     gen_node_label = (nodeplace)nodepl;
 
@@ -130,6 +137,8 @@ NNode::NNode (const NNode& nnode)
 	frozen = nnode.frozen;
 	trait_id = nnode.trait_id;
 	override = nnode.override;
+	bias=nnode.bias;
+	time_const=nnode.time_const;
 }
 
 NNode::~NNode() {
@@ -163,6 +172,7 @@ bool NNode::sensor_load(double value) {
 
 		activation_count++;  //Puts sensor into next time-step
 		activation=value;
+		output=value;
 		return true;
 	}
 	else return false;
@@ -194,6 +204,10 @@ double NNode::get_active_out() {
 	if (activation_count>0)
 		return activation;
 	else return 0.0;
+}
+
+double NNode::get_output() {
+    return output;
 }
 
 // Return activation currently in node from PREVIOUS (time-delayed) time step,
@@ -355,7 +369,7 @@ void NNode::print_to_file(std::ofstream &outFile) {
   if (nodetrait!=0) outFile<<nodetrait->trait_id<<" ";
   else outFile<<"0 ";
   outFile<<type<<" ";
-  outFile<<gen_node_label<<std::endl;
+  outFile<<gen_node_label<<" " << time_const << " " << bias << std::endl;
 }
 
 
@@ -378,7 +392,7 @@ void NNode::print_to_file(std::ostream &outFile) {
 	else outFile << "0 ";
 
 	char tempbuf2[128];
-	sprintf(tempbuf2, "%d %d\n", type, gen_node_label);
+	sprintf(tempbuf2, "%d %d %f %f\n", type, gen_node_label,time_const,bias);
 	outFile << tempbuf2;
 }
 

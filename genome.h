@@ -110,6 +110,9 @@ namespace NEAT {
 		// Change random node's trait times times 
 		void mutate_node_trait(int times);
 
+        //jladd
+        void mutate_node_parameters(double tc_power,double tc_rate,double bias_power,double bias_rate,bool cold=false);
+
 		// Add Gaussian noise to linkweights either GAUSSIAN or COLDGAUSSIAN (from zero)
 		void mutate_link_weights(double power,double rate,mutator mut_type);
 

@@ -9,6 +9,11 @@
 using namespace NEAT;
 using namespace std;
 
+double static roundfix(double unrounded)
+{
+	double rounded = (double)(((int)((unrounded*10000)+.5))/10000.0);
+	return rounded;
+}
 
 
 Genome::Genome(int id, std::vector<Trait*> t, std::vector<NNode*> n, std::vector<Gene*> g) {
@@ -109,8 +114,8 @@ Genome::Genome(const Genome& genome)
 
 Genome::Genome(int id, std::ifstream &iFile) {
 
-	char curword[128];  //max word size of 128 characters
-	char curline[1024]; //max line size of 1024 characters
+	char curword[128]="";  //max word size of 128 characters
+	char curline[1024]=""; //max line size of 1024 characters
 	char delimiters[] = " \n";
 
 	int done=0;
@@ -673,6 +678,9 @@ Network *Genome::genesis(int id) {
 		//Derive the node parameters from the trait pointed to
 		curtrait=(*curnode)->nodetrait;
 		newnode->derive_trait(curtrait);
+	
+		newnode->bias=roundfix((*curnode)->bias);
+		newnode->time_const=roundfix((*curnode)->time_const);
 
 		//Check for input or output designation of node
 		if (((*curnode)->gen_node_label)==INPUT) 
@@ -702,7 +710,7 @@ Network *Genome::genesis(int id) {
 			
 			//check rounding
 			double unrounded = curlink->weight;
-			double rounded = (double)(((int)((unrounded*1000)+.5))/1000.0);
+			double rounded = roundfix(unrounded); 
 			newlink=new Link(rounded,inode,onode,curlink->is_recurrent);
 
 			(onode->incoming).push_back(newlink);
@@ -939,7 +947,7 @@ void Genome::round_weights()
 	std::vector<Gene*>::iterator curgene;
 	for(curgene=genes.begin();curgene!=genes.end();++curgene) {
 		double unrounded = ((*curgene)->lnk)->weight;
-		double rounded = (double)(((int)((unrounded*1000)+.5))/1000.0);
+		double rounded = (double)(((int)((unrounded*10000)+.5))/10000.0);
 		((*curgene)->lnk)->weight=rounded;
 	}
 }
@@ -1111,6 +1119,55 @@ void Genome::mutate_node_trait(int times) {
 		//(*thegene)->mutation_num+=randposneg()*randfloat()*nodetrait_mut_sig;
 		//}
 	}
+}
+
+//jladd
+void Genome::mutate_node_parameters(double tc_power,double tc_rate,double bias_power,double bias_rate,bool cold) {
+    std::vector<NNode*>::iterator curnode;
+    for(curnode=nodes.begin();curnode!=nodes.end();curnode++) {
+        if(randfloat()<tc_rate)
+        {
+            if(!cold)
+            {
+                double randnum=randposneg()*randfloat()*tc_power;
+                (*curnode)->time_const+=randnum;
+                if ((*curnode)->time_const<0.1)
+                    (*curnode)->time_const=0.1;
+                if ((*curnode)->time_const>5.0)
+                    (*curnode)->time_const=5.0;
+            }
+            else
+            {
+                double randnum=randfloat()*tc_power+0.1;
+                (*curnode)->time_const=randnum;
+                if ((*curnode)->time_const<0.1)
+                    (*curnode)->time_const=0.1;
+                if ((*curnode)->time_const>5.0)
+                    (*curnode)->time_const=5.0;
+            }
+        }   
+        if(randfloat()<bias_rate)
+        {
+            if(!cold)
+            {
+                double randnum=randposneg()*randfloat()*bias_power;
+                (*curnode)->bias+=randnum;
+                if((*curnode)->bias > 8.0)
+                    (*curnode)->bias=8.0;
+                if((*curnode)->bias < -8.0)
+                    (*curnode)->bias=(-8.0);
+            }
+            else
+            {
+                double randnum=randposneg()*randfloat()*bias_power;
+                (*curnode)->bias=randnum;
+                if((*curnode)->bias > 8.0)
+                    (*curnode)->bias=8.0;
+                if((*curnode)->bias < -8.0)
+                    (*curnode)->bias=(-8.0);
+            }
+        }
+    }
 }
 
 void Genome::mutate_link_weights(double power,double rate,mutator mut_type) {
@@ -1296,8 +1353,8 @@ void Genome::mutate_link_weights(double power,double rate,mutator mut_type) {
 				((*curgene)->lnk)->weight=randnum;
 
 			//Cap the weights at 20.0 (experimental)
-			if (((*curgene)->lnk)->weight > 3.0) ((*curgene)->lnk)->weight = 3.0;
-			else if (((*curgene)->lnk)->weight < -3.0) ((*curgene)->lnk)->weight = -3.0;
+			if (((*curgene)->lnk)->weight > 5.0) ((*curgene)->lnk)->weight = 5.0;
+			else if (((*curgene)->lnk)->weight < -5.0) ((*curgene)->lnk)->weight = -5.0;
 
 			//Record the innovation
 			//(*curgene)->mutation_num+=randnum;
@@ -1524,6 +1581,11 @@ bool Genome::mutate_add_node(std::vector<Innovation*> &innovs,int &curnode_id,do
 			//Create the new NNode
 			//By convention, it will point to the first trait
 			newnode=new NNode(NEURON,curnode_id++,HIDDEN);
+
+			//set new node's time constant & bias
+			newnode->time_const=randfloat()+0.1;
+			newnode->bias=randposneg()*randfloat()*2.0;
+
 			newnode->nodetrait=(*(traits.begin()));
 
 			//Create the new Genes

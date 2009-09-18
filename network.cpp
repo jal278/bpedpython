@@ -5,6 +5,21 @@
 
 using namespace NEAT;
 
+void Network::ctrnn_dynamics()
+{
+std::ofstream out("out.dat");
+init_ctrnn();
+for(int x=0;x<300;x++)
+{
+	activate_ctrnn(0.02);
+	for(int y=0;y<6;y++)
+		out << outputs[y]->output << " "; 
+	out << std::endl;
+}
+
+}
+
+
 Network::Network(std::vector<NNode*> in,std::vector<NNode*> out,std::vector<NNode*> all,int netid) {
   inputs=in;
   outputs=out;
@@ -141,6 +156,82 @@ void Network::print_links_tofile(char *filename) {
 	oFile.close();
 
 } //print_links_tofile
+
+bool Network::init_ctrnn() {
+std::vector<NNode*>::iterator curnode;
+
+flush();
+for(curnode=all_nodes.begin();curnode!=all_nodes.end();++curnode) {
+    if (((*curnode)->type)!=SENSOR) {
+    (*curnode)->output=NEAT::fsigmoid((*curnode)->bias,1.0,1.0);
+    }
+
+}
+
+return true;
+}
+
+bool Network::activate_ctrnn(double dt) {
+	std::vector<NNode*>::iterator curnode;
+	std::vector<Link*>::iterator curlink;
+	double add_amount;  //For adding to the activesum
+
+		// For each node, compute the sum of its incoming activation
+		for(curnode=all_nodes.begin();curnode!=all_nodes.end();++curnode) {
+			//Ignore SENSORS
+
+			//cout<<"On node "<<(*curnode)->node_id<<endl;
+
+			if (((*curnode)->type)!=SENSOR) {
+				(*curnode)->activesum=0;
+	
+				// For each incoming connection, add the activity from the connection to the activesum
+				for(curlink=((*curnode)->incoming).begin();curlink!=((*curnode)->incoming).end();++curlink) {
+					//Handle possible time delays
+					
+						 add_amount=((*curlink)->weight)*(((*curlink)->in_node)->get_output());
+	
+    					(*curnode)->activesum+=add_amount;
+				
+
+				} //End for over incoming links
+
+			} //End if (((*curnode)->type)!=SENSOR)
+
+		} //End for over all nodes
+
+		// Now activate all the non-sensor nodes off their incoming activation
+		for(curnode=all_nodes.begin();curnode!=all_nodes.end();++curnode) {
+
+			if (((*curnode)->type)!=SENSOR) {
+				//Only activate if some active input came in
+				//cout<<"Activating "<<(*curnode)->node_id<<" with "<<(*curnode)->activesum<<": ";
+
+					//Keep a memory of activations for potential time delayed connections
+					(*curnode)->last_activation2=(*curnode)->last_activation;
+					(*curnode)->last_activation=(*curnode)->activation;
+
+				
+						//Now run the net activation through an activation function
+						//if ((*curnode)->ftype==SIGMOID)
+						//	(*curnode)->activation=NEAT::fsigmoid((*curnode)->activesum,4.924273,2.4621365);  //Sigmoidal activation- see comments under fsigmoid
+					    double delta = dt/(*curnode)->time_const * (-(*curnode)->activation + (*curnode)->activesum);
+					    (*curnode)->activation+=delta;
+					    (*curnode)->output=NEAT::fsigmoid((*curnode)->bias+(*curnode)->activation,1.0,1.0);
+                    //cout<<(*curnode)->activation<<endl;
+
+					//Increment the activation_count
+					//First activation cannot be from nothing!!
+					(*curnode)->activation_count++;
+				
+			}
+		}
+
+	
+	return true;
+}
+
+
 
 // Activates the net such that all outputs are active
 // Returns true on success;
