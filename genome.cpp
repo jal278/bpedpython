@@ -1423,9 +1423,11 @@ void Genome::mutate_gene_disable() {
 			++thegene;
 
 		//Toggle the enable on this gene
+
 		if (((*thegene)->enable)==true) {
 			//We need to make sure that another gene connects out of the in-node
 			//Because if not a section of network will break off and become isolated
+/*
 			checkgene=genes.begin();
 			while((checkgene!=genes.end())&&
 				(((((*checkgene)->lnk)->in_node)!=(((*thegene)->lnk)->in_node))||
@@ -1436,9 +1438,10 @@ void Genome::mutate_gene_disable() {
 			//Disable the gene if it's safe to do so
 			if (checkgene!=genes.end())
                         {
+*/
 				(*thegene)->enable=false;
                                 break;
-                        }
+//                        }
 		}
 	}
 }
@@ -1658,7 +1661,6 @@ bool Genome::mutate_add_node(std::vector<Innovation*> &innovs,int &curnode_id,do
 } 
 
 bool Genome::mutate_add_link(std::vector<Innovation*> &innovs,double &curinnov,int tries) {
-
 	int nodenum1,nodenum2;  //Random node numbers
 	std::vector<NNode*>::iterator thenode1,thenode2;  //Random node iterators
 	int nodecount;  //Counter for finding nodes

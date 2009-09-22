@@ -287,7 +287,7 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
 	//if(offspring_count>=pop_size*1000 && firstflag)
 	//	break;
 
-if(activity_stats&& offspring_count % 20000 == 0)
+if(activity_stats&& offspring_count % 10000 == 0)
 {
   pop->update_statistics();
  activity_stat_file << offspring_count << " "  << calculate_diversity() 

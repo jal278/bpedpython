@@ -9,7 +9,7 @@ using namespace std;
 using namespace NEAT;
 
 //ACTIVITY STATISTICS CALCULATIONS
-#define MAX_COMPONENTS 1000000
+#define MAX_COMPONENTS 10000000
 static int activity_level[MAX_COMPONENTS];
 
 void reset_activity()
@@ -1117,7 +1117,6 @@ bool Population::remove_species(Species *spec) {
 	}
 }
 void Population::remove_random() {
-
  Organism* org_to_kill=0;
  int org_num = randint(0,organisms.size()-1);
  org_to_kill = organisms[org_num];
