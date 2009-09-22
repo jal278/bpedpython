@@ -3,7 +3,7 @@
 #include "noveltyset.h"
 #include <cmath>
 #include <iostream>
-#define DISABLE_PROB 0.5
+#define DISABLE_PROB 0.0
 using namespace NEAT;
 
 Species::Species(int i) {
