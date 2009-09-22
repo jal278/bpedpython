@@ -285,24 +285,24 @@ class Character
  
 			//define the range finder sensors			
             rangeFinderAngles.push_back(-90.0f);
-            rangeFinderAngles.push_back(-45.0f);
+            //rangeFinderAngles.push_back(-45.0f);
             rangeFinderAngles.push_back(0.0f);
-            rangeFinderAngles.push_back(45.0f);
+            //rangeFinderAngles.push_back(45.0f);
             rangeFinderAngles.push_back(90.0f);
-            rangeFinderAngles.push_back(-180.0f);
+            //rangeFinderAngles.push_back(-180.0f);
             
 			//define the radar sensors
             radarAngles1.push_back(315.0);
             radarAngles2.push_back(405.0);
             
-            radarAngles1.push_back(45.0);
-            radarAngles2.push_back(135.0);
+            //radarAngles1.push_back(45.0);
+            //radarAngles2.push_back(135.0);
             
-            radarAngles1.push_back(135.0);
-            radarAngles2.push_back(225.0);
+            //radarAngles1.push_back(135.0);
+            //radarAngles2.push_back(225.0);
             
-            radarAngles1.push_back(225.0);
-            radarAngles2.push_back(315.0);
+            //radarAngles1.push_back(225.0);
+            //radarAngles2.push_back(315.0);
             
             for(int i=0;i<(int)rangeFinderAngles.size();i++)
                 rangeFinders.push_back(0.0);
@@ -415,7 +415,7 @@ class Environment
 				cout << "NAN Distance error..." << endl;
 				return 500.0;
 			}
-			if(dist<5.0) reachgoal=1; //if within 5 units, success!
+			if(dist<10.0) reachgoal=1; //if within 5 units, success!
                         else if (!goalattract) reachgoal=0; //must we
 						            //remain close?
                         return dist;
@@ -432,7 +432,7 @@ class Environment
                         if(dist<closest_to_poi)
 				closest_to_poi=dist;
 
-			if(dist<5.0) reachpoi=1; //if within 5 units, success!
+			if(dist<10.0) reachpoi=1; //if within 5 units, success!
 			return dist;
 		}
 		//create neural net inputs from sensors
@@ -465,6 +465,8 @@ class Environment
                                 if(isnan(inputs[i+j+k]))
 					cout << "NaN in inputs" << endl;
 			}
+
+                        inputs[i+j+k] = reachpoi;
 			return;
 		}
 		
@@ -591,7 +593,13 @@ class Environment
 		//radar sensors
         void update_radar_gen(Character& h,Point target, vector<float>& radar_arr)
         {
-            		
+		//possible optimization for mc, move later, avoid sqrt
+            double distance = h.location.distance(target); 
+            distance = 1.0 - (distance/200.0);
+            if(distance<0.2)
+		distance=0.2;
+            
+            
 			//rotate goal with respect to heading of navigator
             target.rotate(-h.heading,h.location);
             
@@ -608,10 +616,10 @@ class Environment
                 radar_arr[i]=0.0;
             
                 if(angle>=h.radarAngles1[i] && angle<h.radarAngles2[i])
-                    radar_arr[i]=1.0;
+                    radar_arr[i]=distance;
                 
                 if(angle+360.0>=h.radarAngles1[i] && angle+360.0<h.radarAngles2[i])
-                    radar_arr[i]=1.0;  
+                    radar_arr[i]=distance;  
             }
         }
         
