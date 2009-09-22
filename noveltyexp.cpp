@@ -662,8 +662,8 @@ noveltyitem* maze_novelty_map(Organism *org,data_record* record)
   vector< vector<float> > gather;
 
   vector<float> constraint_vector;
-  bool apply_constraints=true;
-  bool remove_regular=true;
+  bool apply_constraints=false;
+  bool remove_regular=false;
   double fitness=0.0;
   static float highest_fitness=0.0;
 

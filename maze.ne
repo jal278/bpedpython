@@ -31,3 +31,7 @@ newlink_tries 40
 print_every 5
 babies_stolen 0
 num_runs 1
+time_const_mut_power 0.2
+time_const_mut_prob 0.3
+bias_mut_power 0.2
+bias_mut_prob 0.3

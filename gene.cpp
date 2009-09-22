@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <sstream>
+using namespace std;
 using namespace NEAT;
 
 Gene::Gene(double w, NNode *inode, NNode *onode, bool recur, double innov, double mnum) {
@@ -92,7 +93,8 @@ Gene::Gene(const char *argline, std::vector<Trait*> &traits, std::vector<NNode*>
 
 	//Get a pointer to the input node
 	curnode=nodes.begin();
-	while(((*curnode)->node_id)!=inodenum)
+	//cout << inodenum << " " << onodenum << endl;
+        while(((*curnode)->node_id)!=inodenum)
 		++curnode;
 	inode=(*curnode);
 
