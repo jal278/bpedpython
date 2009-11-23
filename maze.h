@@ -285,24 +285,24 @@ class Character
  
 			//define the range finder sensors			
             rangeFinderAngles.push_back(-90.0f);
-            //rangeFinderAngles.push_back(-45.0f);
+            rangeFinderAngles.push_back(-45.0f);
             rangeFinderAngles.push_back(0.0f);
-            //rangeFinderAngles.push_back(45.0f);
+            rangeFinderAngles.push_back(45.0f);
             rangeFinderAngles.push_back(90.0f);
-            //rangeFinderAngles.push_back(-180.0f);
+            rangeFinderAngles.push_back(-180.0f);
             
 			//define the radar sensors
             radarAngles1.push_back(315.0);
             radarAngles2.push_back(405.0);
             
-            //radarAngles1.push_back(45.0);
-            //radarAngles2.push_back(135.0);
+            radarAngles1.push_back(45.0);
+            radarAngles2.push_back(135.0);
             
-            //radarAngles1.push_back(135.0);
-            //radarAngles2.push_back(225.0);
+            radarAngles1.push_back(135.0);
+            radarAngles2.push_back(225.0);
             
-            //radarAngles1.push_back(225.0);
-            //radarAngles2.push_back(315.0);
+            radarAngles1.push_back(225.0);
+            radarAngles2.push_back(315.0);
             
             for(int i=0;i<(int)rangeFinderAngles.size();i++)
                 rangeFinders.push_back(0.0);

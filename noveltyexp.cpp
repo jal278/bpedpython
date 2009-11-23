@@ -29,7 +29,7 @@ static char seed_name[40]="";
 static bool minimal_criteria=false;
 static bool goal_attract=true;
 
-static bool activity_stats=true;
+static bool activity_stats=false;
 
 void set_minimal_criteria(bool mc)
 {
