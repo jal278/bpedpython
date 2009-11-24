@@ -285,7 +285,8 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
 //      NEAT::compat_threshold = 1000000.0;
 	//only continue past generation 1000 if not yet solved
 	//if(offspring_count>=pop_size*1000 && firstflag)
-	//	break;
+        if(firstflag)
+	 break;
 
 if(activity_stats&& offspring_count % 10000 == 0)
 {
@@ -428,6 +429,8 @@ if(activity_stats&& offspring_count % 10000 == 0)
 		sprintf(filename,"%srtgen_weakfirst",output_dir);
 		pop->print_to_file_by_species(filename);
 		cout << "Maze weakly solved by indiv# " << indiv_counter << endl;	
+          if(fitness_measure == fitness_goal)
+           firstflag=true; 
         }
 	//write out the first individual to solve maze
 	if(!firstflag && (newrec->ToRec[3]>=envList.size() && newrec->ToRec[4]>=envList.size())) {
