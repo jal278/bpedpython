@@ -27,7 +27,7 @@ static int simulated_timesteps = 400;
 static bool seed_mode = false;
 static char seed_name[40]="";
 static bool minimal_criteria=false;
-static bool goal_attract=true;
+static bool goal_attract=false;
 
 static bool activity_stats=false;
 
@@ -206,8 +206,8 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
 
 //was 1.0*number_of_samples+1.0 for earlier results...
    float archive_thresh=(1.0*number_of_samples+1.0) * 20.0 * envList.size(); //initial novelty threshold
-  if(minimal_criteria)
-   archive_thresh/=200.0;
+  //if(minimal_criteria)
+  // archive_thresh/=200.0;
   cout << "Archive threshold: " << archive_thresh << endl;
   //archive of novel behaviors
   noveltyarchive archive(archive_thresh,*maze_novelty_metric,true,push_back_size,minimal_criteria);
@@ -249,7 +249,8 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
 	//evaluate each individual
 	(*curorg)->noveltypoint = maze_novelty_map((*curorg));
 	(*curorg)->noveltypoint->indiv_number=indiv_counter;
-	//make sure that we are resetting novelty metric of
+	(*curorg)->fitness = (*curorg)->noveltypoint->fitness;
+        //make sure that we are resetting novelty metric of
 	//individuals that fail to meet goal?
 	indiv_counter++;
   }
@@ -264,7 +265,7 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
   if(novelty && minimal_criteria)
   for(curorg=(pop->organisms).begin();curorg!=(pop->organisms).end();++curorg) 
 {
-(*curorg)->fitness = SNUM/100.0;
+(*curorg)->fitness = SNUM/1000.0;
 }  
 //Get ready for real-time loop
   //Rank all the organisms from best to worst in each species
@@ -279,7 +280,7 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
   //Now create offspring one at a time, testing each offspring,                                                               
   // and replacing the worst with the new offspring if its better
   for 
-(offspring_count=0;offspring_count<NEAT::pop_size*4001;offspring_count++) 
+(offspring_count=0;offspring_count<NEAT::pop_size*2001;offspring_count++) 
 {
 //fix compat_threshold, so no speciation...
 //      NEAT::compat_threshold = 1000000.0;
@@ -389,7 +390,8 @@ if(activity_stats&& offspring_count % 10000 == 0)
 	//evaluate individual, get novelty point
 	new_org->noveltypoint = maze_novelty_map(new_org,newrec);
 	new_org->noveltypoint->indiv_number = indiv_counter;
-	//calculate novelty of new individual
+	new_org->fitness=new_org->noveltypoint->fitness;
+        //calculate novelty of new individual
 	if(novelty) {
         archive.evaluate_individual(new_org,pop->organisms);
 	newrec->ToRec[5] = archive.get_threshold();
@@ -589,22 +591,27 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record,En
 	}
 	else
 	{
-		fitness=0.00001;
+		fitness=SNUM/1000.0;
 	}
 	}
 
         if(fitness_measure == fitness_std)
         {
-          fitness=0.0;
+          fitness=SNUM;
+          float mod = 250.0 - newenv->distance_to_target();
+          if(mod<0) mod=0.0;
+          float mod2 = 250.0 - newenv->closest_to_poi;
+          if(mod2<0) mod2=0.0;
+
           if(newenv->reachgoal)
 		fitness+=250.0;
           else
-                fitness+=250.0 - newenv->distance_to_target();
+                fitness+=mod;
 
-           if(newenv->reachpoi)
+           if(newenv->reachpoi && newenv->reachgoal)
 		fitness+=250.0;
-           else
-                fitness+=250.0 - newenv->closest_to_poi;
+           else if (newenv->reachgoal)
+                fitness+=mod2;
         }
 
 	//fitness as novelty studies

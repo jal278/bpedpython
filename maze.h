@@ -429,10 +429,10 @@ class Environment
 				cout << "NAN Distance error..." << endl;
 				return 500.0;
 			}
-                        if(dist<closest_to_poi)
+                        if(dist<closest_to_poi && reachgoal)
 				closest_to_poi=dist;
 
-			if(dist<10.0) reachpoi=1; //if within 5 units, success!
+			if(dist<10.0 && reachgoal) reachpoi=1; //if within 5 units, success!
 			return dist;
 		}
 		//create neural net inputs from sensors
@@ -466,7 +466,7 @@ class Environment
 					cout << "NaN in inputs" << endl;
 			}
 
-                        inputs[i+j+k] = reachpoi;
+                        inputs[i+j+k] = reachgoal; //was reachpoi
 			return;
 		}
 		
@@ -498,8 +498,8 @@ class Environment
 		//run a time step of the simulation
         void Update()
         {
-		if (reachgoal && goalattract)
-			return;
+	//	if (reachgoal && goalattract)
+	//		return;
             float vx=cos(hero.heading/180.0*3.1415926)*hero.speed;
             float vy=sin(hero.heading/180.0*3.1415926)*hero.speed;
 			if(isnan(vx))
