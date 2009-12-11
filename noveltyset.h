@@ -436,10 +436,16 @@ public:
     //criteria for adding to the archive
     bool add_to_novelty_archive(float novelty)
     {
+        
+        if (((float)rand()/RAND_MAX)<(0.001))
+         return true;
+        return false;
+        /*
         if (novelty>novelty_threshold)
             return true;
         else
             return false;
+        */
     }
 
     //only used in generational model (obselete)
@@ -586,7 +592,7 @@ public:
         }
         if(density <SNUM)
         {
-          density=SNUM + (((float)rand()/RAND_MAX)*SNUM);
+          density=SNUM; // + (((float)rand()/RAND_MAX)*SNUM);
         }
         item->novelty=density;
         item->generation=generation;

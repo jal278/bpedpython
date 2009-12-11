@@ -206,8 +206,8 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
 
 //was 1.0*number_of_samples+1.0 for earlier results...
    float archive_thresh=(1.0*number_of_samples+1.0) * 20.0 * envList.size(); //initial novelty threshold
-  //if(minimal_criteria)
-  // archive_thresh/=200.0;
+  if(minimal_criteria)
+   archive_thresh/=100.0; //was 200
   cout << "Archive threshold: " << archive_thresh << endl;
   //archive of novel behaviors
   noveltyarchive archive(archive_thresh,*maze_novelty_metric,true,push_back_size,minimal_criteria);
