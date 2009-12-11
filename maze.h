@@ -341,6 +341,7 @@ class Environment
 			reachgoal=e.reachgoal;
                         reachpoi=e.reachpoi;
 			closest_to_poi = e.closest_to_poi;
+			closest_to_target = e.closest_to_target;
 		}
 
 	void get_range(float &minx,float &miny, float &maxx, float& maxy)
@@ -382,6 +383,7 @@ class Environment
 	    	reachpoi=0;
 		reachgoal=0;
 		closest_to_poi = 100000.0;
+                closest_to_target = 100000.0;
             goalattract=true;
 			//read in line segments
             for(int i=0;i<num_lines;i++)
@@ -415,9 +417,14 @@ class Environment
 				cout << "NAN Distance error..." << endl;
 				return 500.0;
 			}
-			if(dist<10.0) reachgoal=1; //if within 5 units, success!
+			if(dist<10.0  && !reachgoal) {
+                         reachgoal=1; //if within 5 units, success!
+                         closest_to_poi=10000000;
+                        }
                         else if (!goalattract) reachgoal=0; //must we
 						            //remain close?
+                        if(dist<closest_to_target)
+                          closest_to_target=dist;
                         return dist;
 		}	
 	
@@ -429,7 +436,7 @@ class Environment
 				cout << "NAN Distance error..." << endl;
 				return 500.0;
 			}
-                        if(dist<closest_to_poi && reachgoal)
+                        if(dist<closest_to_poi)
 				closest_to_poi=dist;
 
 			if(dist<10.0 && reachgoal) reachpoi=1; //if within 5 units, success!
@@ -629,6 +636,7 @@ class Environment
             for(int i=0;i<(int)lines.size();i++)
                 delete lines[i];
         }
+        double closest_to_target;
         double closest_to_poi;		
         vector<Line*> lines; //maze line segments
         Character hero; //navigator

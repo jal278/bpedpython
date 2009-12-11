@@ -280,7 +280,7 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
   //Now create offspring one at a time, testing each offspring,                                                               
   // and replacing the worst with the new offspring if its better
   for 
-(offspring_count=0;offspring_count<NEAT::pop_size*2001;offspring_count++) 
+(offspring_count=0;offspring_count<NEAT::pop_size*1001;offspring_count++) 
 {
 //fix compat_threshold, so no speciation...
 //      NEAT::compat_threshold = 1000000.0;
@@ -598,9 +598,9 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record,En
         if(fitness_measure == fitness_std)
         {
           fitness=SNUM;
-          float mod = 250.0 - newenv->distance_to_target();
+          float mod = 250.0 - newenv->closest_to_target;
           if(mod<0) mod=0.0;
-          float mod2 = 250.0 - newenv->closest_to_poi;
+          float mod2 = 250.0 - newenv->distance_to_poi();
           if(mod2<0) mod2=0.0;
 
           if(newenv->reachgoal)
