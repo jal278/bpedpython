@@ -616,10 +616,10 @@ class Environment
                 radar_arr[i]=0.0;
             
                 if(angle>=h.radarAngles1[i] && angle<h.radarAngles2[i])
-                    radar_arr[i]=distance;
+                    radar_arr[i]=1.0; //distance;
                 
                 if(angle+360.0>=h.radarAngles1[i] && angle+360.0<h.radarAngles2[i])
-                    radar_arr[i]=distance;  
+                    radar_arr[i]=1.0;//distance;  
             }
         }
         
