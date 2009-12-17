@@ -115,6 +115,17 @@ void mazeDlg::OnPaint(wxPaintEvent& event)
   wxPen heropen(*wxRED_PEN);
   heropen.SetWidth(3);
   
+  //draw inputs
+ double inputs[30];
+ env->generate_neural_inputs(inputs); 
+ for(int i=0;i<15;i++)
+  {
+   if(inputs[i]>0.5)
+   dc.SetBrush(*wxGREEN_BRUSH);
+   else
+   dc.SetBrush(*wxBLUE_BRUSH);
+   dc.DrawCircle(i*30+20,500,10);
+  }
   //draw walls
   for(int i=0;i<env->lines.size();i++)
   {

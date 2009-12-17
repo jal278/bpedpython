@@ -474,7 +474,7 @@ class Environment
 			}
 
                         inputs[i+j+k] = reachgoal; //was reachpoi
-			return;
+                        return;
 		}
 		
 		//transform neural net outputs into angular velocity and speed
