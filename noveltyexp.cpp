@@ -216,7 +216,7 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
 //was 1.0*number_of_samples+1.0 for earlier results...
    float archive_thresh=(1.0*number_of_samples+1.0);// * 20.0 * envList.size(); //initial novelty threshold
  // if(minimal_criteria)
-   archive_thresh/=200.0;
+   //archive_thresh/=200.0;
   cout << "Archive threshold: " << archive_thresh << endl;
   //archive of novel behaviors
   noveltyarchive archive(archive_thresh,*maze_novelty_metric,true,push_back_size,minimal_criteria);
@@ -401,7 +401,7 @@ if(activity_stats&& offspring_count % 10000 == 0)
 	//calculate novelty of new individual
 	if(novelty) {
         archive.evaluate_individual(new_org,pop->organisms);
-	newrec->ToRec[5] = archive.get_threshold();
+	//newrec->ToRec[5] = archive.get_threshold();
 	newrec->ToRec[6] = archive.get_set_size();
 	newrec->ToRec[RECSIZE-2] = new_org->noveltypoint->novelty;
         }
@@ -652,7 +652,8 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record,En
 		record->ToRec[1]=newenv->hero.location.x;
 		record->ToRec[2]=newenv->hero.location.y;
 		record->ToRec[3]+=newenv->reachgoal;
-		record->ToRec[4]+=newenv->reachpoi;		
+		record->ToRec[4]+=newenv->reachpoi;
+                record->ToRec[5]=newenv->hero.collide;		
 	}
 
 	if(novelty_measure==novelty_accum)
@@ -674,15 +675,15 @@ noveltyitem* maze_novelty_map(Organism *org,data_record* record)
   vector< vector<float> > gather;
 
   vector<float> constraint_vector;
-  bool apply_constraints=true; //false;
-  bool remove_regular=true; //false;
+  bool apply_constraints=false; //false;
+  bool remove_regular=false; //false;
   int c1old=0,c2old=0;
   double fitness=0.0;
   static float highest_fitness=0.0;
   
 new_item->viable=true;
 
-  if(record!=NULL) {
+  if(record!=NULL && minimal_criteria) {
   for(int x=0;x<mcList.size();x++)
   {
   record->ToRec[3]=0;
@@ -699,7 +700,7 @@ new_item->viable=true;
  record->ToRec[4]=0;
 }
 
-if(new_item->viable)
+if(true) //new_item->viable)
 	for(int x=0;x<envList.size();x++)
         {
          if(record!=NULL) {
@@ -712,6 +713,8 @@ if(new_item->viable)
          if(record!=NULL) {
 	   constraint_vector.push_back(record->ToRec[3]-c1old);
            c1old=record->ToRec[3];
+           //if(record->ToRec[5]==1)
+           //  new_item->viable=false;
          }
 	else constraint_vector.push_back(0);
         } 

@@ -269,6 +269,7 @@ class Character
         vector<float> poi_radar; //stores poi radar
         vector<float> rangeFinders; //stores rangefinder outputs
         Point location;
+        bool collide;
         float heading;
         float speed;
         float ang_vel;
@@ -277,6 +278,7 @@ class Character
         
         Character()
         {
+            collide=false;
             heading=0.0f;
             speed=0.0f;
             ang_vel=0.0f;
@@ -504,7 +506,7 @@ class Environment
             float vy=sin(hero.heading/180.0*3.1415926)*hero.speed;
 			if(isnan(vx))
 				cout << "VX NAN" << endl;
-            
+             
             hero.heading+=hero.ang_vel;
 			if(isnan(hero.ang_vel))
 				cout << "HERO ANG VEL NAN" << endl;
@@ -515,14 +517,16 @@ class Environment
             Point newloc;
             newloc.x=vx+hero.location.x;
             newloc.y=vy+hero.location.y;
-
             //collision detection
-            if(!collide_lines(newloc,hero.radius))
+            if(!hero.collide && !collide_lines(newloc,hero.radius))
             {
                 hero.location.x=newloc.x;
                 hero.location.y=newloc.y;
             }
-			
+	    else
+            { 
+            hero.collide=true;
+            }		
             update_rangefinders(hero);
             update_radar(hero);
         }
