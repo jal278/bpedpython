@@ -16,6 +16,9 @@ int main(int argc, char **argv) {
  
   ValueArg<string> maze("m","maze","Maze file",false,"maze.txt","string");
   cmd.add(maze);
+  
+  ValueArg<string> mcmaze("","mcmaze","MC Maze file",false,"mcmaze.txt","string");
+  cmd.add(mcmaze);
 
   ValueArg<string> genes("z","sg","Starter genes",false,"mazestartgenes","string");
   cmd.add(genes);
@@ -88,6 +91,7 @@ int main(int argc, char **argv) {
   cout << "Maze: " << mazename << endl;
   cout << "Start genes: " << startgenes << endl;
 
+  set_mcmaze(mcmaze.getValue());
   set_fit_measure(fit_measure.getValue());
   set_nov_measure(nov_measure.getValue());
 
