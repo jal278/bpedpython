@@ -31,7 +31,12 @@ static bool minimal_criteria=false;
 static bool goal_attract=true;
 
 static bool activity_stats=false;
+static bool constraint_switch=false;
 
+void  set_constraint_switch(bool val)
+{
+constraint_switch=val;
+}
 void set_minimal_criteria(bool mc)
 {
  minimal_criteria=mc;
@@ -215,8 +220,8 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
 
 //was 1.0*number_of_samples+1.0 for earlier results...
    float archive_thresh=(1.0*number_of_samples+1.0);// * 20.0 * envList.size(); //initial novelty threshold
- // if(minimal_criteria)
-   //archive_thresh/=200.0;
+ if(constraint_switch)
+   archive_thresh/=200.0;
   cout << "Archive threshold: " << archive_thresh << endl;
   //archive of novel behaviors
   noveltyarchive archive(archive_thresh,*maze_novelty_metric,true,push_back_size,minimal_criteria);
@@ -675,24 +680,27 @@ noveltyitem* maze_novelty_map(Organism *org,data_record* record)
   vector< vector<float> > gather;
 
   vector<float> constraint_vector;
-  bool apply_constraints=false; //false;
-  bool remove_regular=false; //false;
+  bool apply_constraints=constraint_switch; //false;
+  bool remove_regular=constraint_switch; //false;
   int c1old=0,c2old=0;
   double fitness=0.0;
   static float highest_fitness=0.0;
   
 new_item->viable=true;
 
-  if(record!=NULL && minimal_criteria) {
+  if(record!=NULL && minimal_criteria) 
   for(int x=0;x<mcList.size();x++)
   {
   record->ToRec[3]=0;
    mazesim(org->net,gather,record,mcList[x]); 
-  if(!record->ToRec[3])
+  if(!record->ToRec[3]) {
     new_item->viable=false;
+    //cout << "not viable..." << endl;
     break;   
   }
+ // cout << "viable..." << endl;
   }
+
  gather.clear();
  if(record!=NULL) {
  record->ToRec[0]=0;
@@ -724,18 +732,18 @@ for(int x=0;x<envList.size();x++) constraint_vector.push_back(0);
 }
 
          //minimal criteria must be met in *all* scenarios...
-        /* 
+         
         if(record!=NULL)
          {
            if( record->ToRec[3]<envList.size())
            { new_item->viable=false;
-          //  cout << record->ToRec[3] << endl; 
+            //cout << record->ToRec[3] << endl; 
            }
             else { 
-            // cout << "viable... " << endl;
+             //cout << "viable... " << endl;
             }
           }
-  	*/
+  	
         if(fitness>highest_fitness)
 		highest_fitness=fitness;
 	

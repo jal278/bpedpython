@@ -24,6 +24,7 @@ using namespace std;
 
 using namespace NEAT;
 
+void  set_constraint_switch(bool val);
 void set_nov_measure(string m);
 void set_fit_measure(string m);
 

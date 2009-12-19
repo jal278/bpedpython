@@ -13,7 +13,7 @@ using namespace TCLAP;
 int main(int argc, char **argv) {
 
   CmdLine cmd("Maze evolution", ' ', "0.1");
- 
+   
   ValueArg<string> maze("m","maze","Maze file",false,"maze.txt","string");
   cmd.add(maze);
   
@@ -37,6 +37,9 @@ int main(int argc, char **argv) {
 
   SwitchArg noveltySwitch("n","novelty","Enable novelty search",false);
   cmd.add(noveltySwitch);
+
+  SwitchArg constraintSwitch("","constraint","Enable constraint-based NS",false);
+  cmd.add(constraintSwitch);
 
   SwitchArg generationalSwitch("q","gen","Enable generational search",false);
   cmd.add(generationalSwitch);
@@ -108,7 +111,8 @@ int main(int argc, char **argv) {
 
   cout << "Minimal criteria engaged? " << mcSwitch.getValue() << endl;
   set_minimal_criteria(mcSwitch.getValue());
-
+  
+  set_constraint_switch(constraintSwitch.getValue());
   if(!generationalSwitch.getValue())
 {
 if(!noveltySwitch.getValue())

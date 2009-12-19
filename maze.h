@@ -417,7 +417,7 @@ class Environment
 				cout << "NAN Distance error..." << endl;
 				return 500.0;
 			}
-			if(dist<10.0) reachgoal=1; //if within 5 units, success!
+			if(dist<20.0) reachgoal=1; //if within 5 units, success!
                         else if (!goalattract) reachgoal=0; //must we
 						            //remain close?
                         return dist;
@@ -525,7 +525,7 @@ class Environment
             }
 	    else
             { 
-            hero.collide=true;
+            //hero.collide=true;
             }		
             update_rangefinders(hero);
             update_radar(hero);
