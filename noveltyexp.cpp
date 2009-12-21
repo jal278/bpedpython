@@ -32,6 +32,12 @@ static bool goal_attract=true;
 
 static bool activity_stats=false;
 static bool constraint_switch=false;
+static bool area_of_interest=false;
+
+void set_aoi(bool val)
+{
+area_of_interest=val;
+}
 
 void  set_constraint_switch(bool val)
 {
@@ -674,6 +680,18 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record,En
 	return fitness;
 }
 
+bool contained(float x,float y)
+{
+Point p(x,y);
+if(envList[0]->end.distance(p) < 200)
+{
+ //cout <<"contained.." << endl;
+ return true;
+}
+//cout <<"notcontained..." << endl;
+return false;
+}
+
 //evaluates an individual and stores the novelty point
 noveltyitem* maze_novelty_map(Organism *org,data_record* record)
 {
@@ -741,6 +759,12 @@ for(int x=0;x<envList.size();x++) constraint_vector.push_back(0);
          
         if(record!=NULL)
          {
+           if(area_of_interest)
+           {
+            if(!contained(record->ToRec[1],record->ToRec[2]))
+		new_item->viable=false;
+           }
+            else
            if( record->ToRec[3]<envList.size())
            { new_item->viable=false;
             //cout << record->ToRec[3] << endl; 
@@ -756,6 +780,7 @@ for(int x=0;x<envList.size();x++) constraint_vector.push_back(0);
 	//keep track of highest fitness so far in record
 	if(record!=NULL)
 	{
+        record->ToRec[5]=new_item->viable;
 	if(record->ToRec[3]>best)
         {
          best=record->ToRec[3];
@@ -774,6 +799,7 @@ for(int x=0;x<envList.size();x++) constraint_vector.push_back(0);
  	 //set fitness (this is 'real' objective-based fitness, not novelty)
  	 new_item->fitness=fitness;
          org->fitness=fitness;
+ 
   return new_item;
 }
 

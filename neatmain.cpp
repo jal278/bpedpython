@@ -35,6 +35,9 @@ int main(int argc, char **argv) {
   SwitchArg goal_attract("","goalnotsticky","Goal is not attractor",false);
   cmd.add(goal_attract);
 
+  SwitchArg area_of_interest("","aoi","Enforce pruning of behavior space",false);
+  cmd.add(area_of_interest);
+
   SwitchArg noveltySwitch("n","novelty","Enable novelty search",false);
   cmd.add(noveltySwitch);
 
@@ -97,6 +100,7 @@ int main(int argc, char **argv) {
   set_mcmaze(mcmaze.getValue());
   set_fit_measure(fit_measure.getValue());
   set_nov_measure(nov_measure.getValue());
+  set_aoi(area_of_interest.getValue());
 
   cout << "Timesteps: " << time_steps.getValue() << endl;
   set_timesteps(time_steps.getValue());

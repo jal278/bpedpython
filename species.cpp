@@ -4,7 +4,7 @@
 #include <cmath>
 #include <iostream>
 #define DISABLE_PROB 0.0
-#define FREEZEPROB 0.1
+#define FREEZEPROB 0.0
 using namespace NEAT;
 
 Species::Species(int i) {
