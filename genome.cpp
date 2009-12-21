@@ -1369,6 +1369,31 @@ void Genome::mutate_link_weights(double power,double rate,mutator mut_type) {
 
 }
 
+void Genome::mutate_gene_freeze()
+{
+       int times=1;
+	int genenum;
+	int count;
+	std::vector<Gene*>::iterator thegene;  //Gene to toggle
+	std::vector<Gene*>::iterator checkgene;  //Gene to check
+	int genecount;
+
+	for (count=1;count<=times;count++) {
+
+		//Choose a random genenum
+		genenum=randint(0,genes.size()-1);
+
+		//find the gene
+		thegene=genes.begin();
+		for(genecount=0;genecount<genenum;genecount++)
+			++thegene;
+
+		//Toggle the enable on this gene
+		(*thegene)->frozen = !(*thegene)->frozen;
+
+	}
+}
+
 void Genome::mutate_toggle_enable(int times) {
 	int genenum;
 	int count;

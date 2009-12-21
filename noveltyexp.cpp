@@ -220,8 +220,10 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
 
 //was 1.0*number_of_samples+1.0 for earlier results...
    float archive_thresh=(1.0*number_of_samples+1.0);// * 20.0 * envList.size(); //initial novelty threshold
- if(constraint_switch)
-   archive_thresh/=200.0;
+  if(!minimal_criteria)
+	archive_thresh*=20;
+ //if(constraint_switch)
+   //archive_thresh/=200.0;
   cout << "Archive threshold: " << archive_thresh << endl;
   //archive of novel behaviors
   noveltyarchive archive(archive_thresh,*maze_novelty_metric,true,push_back_size,minimal_criteria);
@@ -515,7 +517,7 @@ Environment* mazesimIni(Environment* tocopy,Network *net, vector< vector<float> 
 		net->activate();
 	
 	  	//use the net's outputs to change heading and velocity of navigator
-		newenv->interpret_outputs(net->outputs[0]->activation,net->outputs[1]->activation);
+		newenv->interpret_outputs(net->outputs[0]->activation,net->outputs[1]->activation,0); //,net->outputs[2]->activation);
 	  	//update the environment
 		newenv->Update();
 	  newenv->distance_to_poi(); 
@@ -583,6 +585,8 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record,En
         {
 	fitness=500.0 - newenv->distance_to_target();
 	if(fitness<0.1) fitness=0.1;
+        //if (newenv->hero.collide)
+	//	fitness+=50;
 	}
         
         if(fitness_measure ==fitness_rnd)
@@ -720,11 +724,13 @@ if(true) //new_item->viable)
 
          if(record!=NULL) {
 	   constraint_vector.push_back(record->ToRec[3]-c1old);
+           constraint_vector.push_back(record->ToRec[4]-c2old);
            c1old=record->ToRec[3];
            //if(record->ToRec[5]==1)
            //  new_item->viable=false;
          }
-	else constraint_vector.push_back(0);
+	else { constraint_vector.push_back(0);
+	 constraint_vector.push_back(0); }
         } 
 else 
 {

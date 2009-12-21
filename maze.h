@@ -326,7 +326,8 @@ class Environment
     public:
         Environment(const Environment &e)
 		{
-			hero.location = e.hero.location;
+               steps=0;	
+		hero.location = e.hero.location;
 			hero.heading = e.hero.heading;
 			hero.speed=e.hero.speed;
 			hero.ang_vel=e.hero.ang_vel;
@@ -374,6 +375,7 @@ class Environment
 		//initialize environment from maze file
         Environment(const char* filename)
         {
+            steps=0;
             ifstream inpfile(filename);
             int num_lines; 
             inpfile >> num_lines; //read in how many line segments
@@ -417,7 +419,7 @@ class Environment
 				cout << "NAN Distance error..." << endl;
 				return 500.0;
 			}
-			if(dist<20.0) reachgoal=1; //if within 5 units, success!
+			if(dist<15.0) reachgoal=1; //if within 5 units, success!
                         else if (!goalattract) reachgoal=0; //must we
 						            //remain close?
                         return dist;
@@ -434,12 +436,13 @@ class Environment
                         if(dist<closest_to_poi)
 				closest_to_poi=dist;
 
-			if(dist<10.0) reachpoi=1; //if within 5 units, success!
+			if(dist<20.0) reachpoi=1; //if within 5 units, success!
 			return dist;
 		}
 		//create neural net inputs from sensors
 		void generate_neural_inputs(double* inputs)
-		{			
+		{	
+                        steps++;		
 			//bias
 			inputs[0]=(1.0);
 			
@@ -459,36 +462,48 @@ class Environment
 				if(isnan(inputs[i+j]))
 					cout << "NAN in inputs" << endl;
 			}
-			
+		        	
+                        double distance = distance_to_target(); 
+                        distance = 1.0 - (distance/100.0);
+                        if(distance<0.0)
+		         distance=0.0;
+                        inputs[i+j]=distance;
+                        
 			//poi radar
 			for(k=0;k<(int)hero.poi_radar.size();k++)
 			{
-				inputs[i+j+k]=(hero.poi_radar[k]);
-                                if(isnan(inputs[i+j+k]))
+				inputs[i+j+k+1]=(hero.poi_radar[k]);
+                                if(isnan(inputs[i+j+k+1]))
 					cout << "NaN in inputs" << endl;
 			}
-
-                        inputs[i+j+k] = reachpoi;
+			
+			distance = distance_to_poi();	
+                        distance = 1.0 - (distance/100.0);
+                        if(distance<0.0)
+		         distance=0.0;
+                        inputs[i+j+k+1] = distance;
+                        
 			return;
 		}
 		
 		//transform neural net outputs into angular velocity and speed
-		void interpret_outputs(float o1,float o2)
+		void interpret_outputs(float o1,float o2,float o3)
 		{
 			if(isnan(o1) || isnan(o2))
 				cout << "OUTPUT ISNAN" << endl;	
 			
 			//why apply accelerations?
-			//hero.ang_vel+=(o1-0.5)*1.0;
-			//hero.speed+=(o2-0.5)*1.0;
+			hero.ang_vel+=(o1-0.5)*1.0;
+			hero.speed+=(o2-0.5)*1.0;
                         
                         //if(o1<0.2)
                         //  hero.ang_vel= -0.5;
                         //if(o2>0.8)
                         //  hero.ang_vel= +0.5;
-
-			hero.ang_vel=(o1-0.5)*6.0;
-			hero.speed=(o2)*3.0;
+			//if(o3>0.5)
+			//  hero.collide=true;
+			//hero.ang_vel=(o1-0.5)*6.0;
+			//hero.speed=(o2)*3.0;
 			
 			//constraints of speed & angular velocity
 			if(hero.speed>3.0) hero.speed=3.0;
@@ -633,6 +648,7 @@ class Environment
             for(int i=0;i<(int)lines.size();i++)
                 delete lines[i];
         }
+        int steps;
         double closest_to_poi;		
         vector<Line*> lines; //maze line segments
         Character hero; //navigator
