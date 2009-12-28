@@ -523,7 +523,7 @@ Environment* mazesimIni(Environment* tocopy,Network *net, vector< vector<float> 
 		net->activate();
 	
 	  	//use the net's outputs to change heading and velocity of navigator
-		newenv->interpret_outputs(net->outputs[0]->activation,net->outputs[1]->activation,0); //,net->outputs[2]->activation);
+		newenv->interpret_outputs(net->outputs[0]->activation,net->outputs[1]->activation,net->outputs[2]->activation);
 	  	//update the environment
 		newenv->Update();
 	  newenv->distance_to_poi(); 
@@ -824,7 +824,11 @@ Population *maze_generational(char* outputdir,const char* mazefile,int param,con
 
     ifstream iFile(genes,ios::in);
 
-    env=new Environment(mazefile);
+    read_in_environments(mazefile,envList);	
+
+    if(strlen(mc_mazes)>0)
+	 read_in_environments(mc_mazes,mcList);
+    
     if(outputdir!=NULL) strcpy(output_dir,outputdir);
     cout<<"START GENERATIONAL MAZE EVOLUTION"<<endl;
 

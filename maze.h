@@ -493,17 +493,17 @@ class Environment
 				cout << "OUTPUT ISNAN" << endl;	
 			
 			//why apply accelerations?
-			hero.ang_vel+=(o1-0.5)*1.0;
-			hero.speed+=(o2-0.5)*1.0;
+			//hero.ang_vel+=(o1-0.5)*1.0;
+			//hero.speed+=(o2-0.5)*1.0;
                         
                         //if(o1<0.2)
                         //  hero.ang_vel= -0.5;
                         //if(o2>0.8)
-                        //  hero.ang_vel= +0.5;
-			//if(o3>0.5)
-			//  hero.collide=true;
-			//hero.ang_vel=(o1-0.5)*6.0;
-			//hero.speed=(o2)*3.0;
+                        // hero.ang_vel= +0.5;
+			if(o3>0.5)
+			  hero.collide=true;
+			hero.ang_vel=(o1-0.5)*6.0;
+			hero.speed=(o2)*3.0;
 			
 			//constraints of speed & angular velocity
 			if(hero.speed>3.0) hero.speed=3.0;

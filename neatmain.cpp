@@ -44,13 +44,13 @@ int main(int argc, char **argv) {
   SwitchArg constraintSwitch("","constraint","Enable constraint-based NS",false);
   cmd.add(constraintSwitch);
 
-  SwitchArg generationalSwitch("q","gen","Enable generational search",false);
+  SwitchArg generationalSwitch("","gen","Enable generational search",false);
   cmd.add(generationalSwitch);
 
   SwitchArg mcSwitch("","mc","Enable minimal criteria",false);
   cmd.add(mcSwitch);
 
-  ValueArg<string> nov_measure("g","nm","Novelty Measure",false,"std","string");
+  ValueArg<string> nov_measure("","nm","Novelty Measure",false,"std","string");
   cmd.add(nov_measure);
 
   ValueArg<string> fit_measure("f","fm","Fitness Measure",false,"std","string");
