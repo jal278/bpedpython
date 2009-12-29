@@ -32,6 +32,9 @@ int main(int argc, char **argv) {
   ValueArg<string> seed_genome("c","seed","Seed Genome",false,"","string");
   cmd.add(seed_genome);
 
+  SwitchArg remove_random("","remrand","Remove random individuak",false);
+  cmd.add(remove_random); 
+
   SwitchArg goal_attract("","goalnotsticky","Goal is not attractor",false);
   cmd.add(goal_attract);
 
@@ -101,7 +104,7 @@ int main(int argc, char **argv) {
   set_fit_measure(fit_measure.getValue());
   set_nov_measure(nov_measure.getValue());
   set_aoi(area_of_interest.getValue());
-
+   set_random_replace(remove_random.getValue());
   cout << "Timesteps: " << time_steps.getValue() << endl;
   set_timesteps(time_steps.getValue());
 

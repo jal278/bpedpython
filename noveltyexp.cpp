@@ -33,7 +33,11 @@ static bool goal_attract=false;
 static bool activity_stats=false;
 static bool constraint_switch=false;
 static bool area_of_interest=false;
-
+static bool rand_repl=false;
+void set_random_replace(bool val)
+{
+rand_repl = val;
+}
 void set_aoi(bool val)
 {
 area_of_interest=val;
@@ -424,7 +428,7 @@ if(activity_stats&& offspring_count % 10000 == 0)
 	newrec->ToRec[6] = archive.get_set_size();
 	newrec->ToRec[RECSIZE-2] = new_org->noveltypoint->novelty;
         }
-	if(novelty && !new_org->noveltypoint->viable && minimal_criteria)
+	if( !new_org->noveltypoint->viable && minimal_criteria)
 	{
 		new_org->fitness = SNUM/1000.0;
                 //new_org->novelty = 0.00000001;
@@ -471,10 +475,10 @@ if(activity_stats&& offspring_count % 10000 == 0)
 	}
 
     //Remove the worst organism                                                                                               
-    if(fitness_measure ==fitness_rnd)
+    //if(fitness_measure ==fitness_rnd)
      pop->remove_random();
-    else    
-     pop->remove_worst();
+    //else    
+    // pop->remove_worst();
 
   }
   
@@ -776,7 +780,7 @@ for(int x=0;x<envList.size();x++) constraint_vector.push_back(0);
 		new_item->viable=false;
            }
             else
-           if( false) //record->ToRec[3]<envList.size())
+           if( record->ToRec[3]<envList.size())
            { new_item->viable=false;
             //cout << record->ToRec[3] << endl; 
            }
@@ -866,7 +870,7 @@ Population *maze_generational(char* outputdir,const char* mazefile,int param,con
 	bool win = maze_generational_epoch(pop,gen,Record,archive,novelty);
 
   //writing out stuff 
-  if(gen%200==0)
+  if(gen%10==0)
   {
   char filename[100];
   sprintf(filename,"%s_record.dat",output_dir);
@@ -925,9 +929,15 @@ static vector<Organism*> measure_pop;
         (*curorg)->noveltypoint->indiv_number = indiv_counter;
         (*curorg)->datarec = newrec;	
 
-	if((newrec->ToRec[3]>0.0 && newrec->ToRec[4]>0.0)) {
-		(*curorg)->winner=true;
+	if((newrec->ToRec[3]>=envList.size())) { // && newrec->ToRec[4]>0.0)) {
+	        if((newrec->ToRec[4]>=envList.size())) {	
+                (*curorg)->winner=true;
                 win=true;	
+                }
+                if(fitness_measure==fitness_goal) {
+                (*curorg)->winner=true;
+                win=true;
+                }
 	}
   
         if((*curorg)->noveltypoint->fitness > best_fitness)
@@ -938,7 +948,22 @@ static vector<Organism*> measure_pop;
         //add record of new indivdual to storage
 	Record.add_new(newrec);
 	indiv_counter++;
-	
+/*
+	if((*curorg)->noveltypoint->viable)
+             cout << "viable..." << endl;
+        else
+             cout << "not viable..." << endl;
+*/
+	if( !(*curorg)->noveltypoint->viable && minimal_criteria)
+	{
+		(*curorg)->fitness = SNUM/1000.0;
+                //new_org->novelty = 0.00000001;
+                //reset behavioral characterization
+                (*curorg)->noveltypoint->reset_behavior();
+                //cout << "fail" << endl;
+               // cout << " :( " << endl;
+	}	
+       	
 	//update fittest list
 	archive.update_fittest(*curorg);
 	
@@ -946,64 +971,26 @@ static vector<Organism*> measure_pop;
     	   (*curorg)->fitness = (*curorg)->noveltypoint->fitness;
   }
  
-  
-  
-
-  //adjust target every so often
-  if(novelty)
-  {
-  if((generation)%switch_amount==0 && generation>0)
-  {
-     //merge populations together...
-     //then make the measure_pop equal to the current population 
-     //pop->print_compatibility_matrix("old_pop.txt");     
-     Population *new_pop = archive.merge_populations(pop,measure_pop);
-     //new_pop->print_compatibility_matrix("new_pop.txt");
-
-     cout << "Populations merged..." << endl;
-     pop = new_pop;
-     //maybe delete old pop?
-     int target_species=10;
-     cout << "changing speciation threshold..." << endl;
-     while(true)
-     {    
-          vector<Organism*>::iterator curorg;
-         
-         for (curorg = (pop->organisms).begin(); curorg != pop->organisms.end(); ++curorg) {
-			pop->reassign_species(*curorg);
-          }
-          
-         cout << "thresh @ " << NEAT::compat_threshold << " # species = " << pop->species.size() << endl;
-         if(pop->species.size() > target_species)
-		NEAT::compat_threshold += 0.3;
-         else
-                break;
-     }
-
-     
-  }
-  
-  if((generation % switch_amount)==0)
-  {
-    cout << "CREATE MEASUREPOP " << endl;
-    measure_pop.clear();
-    for(curorg=(pop->organisms).begin();curorg!=(pop->organisms).end();++curorg)    {  
-       measure_pop.push_back(new Organism(*(*curorg))); 
-       //make it a copy so it dont get deleted
-    }
-    cout << "MEASUREPOP SIZE " << measure_pop.size() << endl;
-  }
-  
-  }
   if(novelty)
   {
   
 	//NEED TO CHANGE THESE TO GENERATIONAL EQUIVALENTS...
 	//assign fitness scores based on novelty
- 	archive.evaluate_population(pop,measure_pop,true);
+ 	archive.evaluate_population(pop,true);
 	///now add to the archive (maybe remove & only add randomly?)
-	archive.evaluate_population(pop,measure_pop,false);
-        
+	archive.evaluate_population(pop,false);
+       
+ 
+  for(curorg=(pop->organisms).begin();curorg!=(pop->organisms).end();++curorg) {
+	if( !(*curorg)->noveltypoint->viable && minimal_criteria)
+	{
+		(*curorg)->fitness = SNUM/1000.0;
+                //new_org->novelty = 0.00000001;
+                //reset behavioral characterization
+                //cout << "fail" << endl;
+               // cout << " :( " << endl;
+	}	
+      } 
         cout << "ARCHIVE SIZE:" << archive.get_set_size() << endl;  
         cout << "THRESHOLD:" << archive.get_threshold() << endl;
 	archive.end_of_gen_steady(pop);

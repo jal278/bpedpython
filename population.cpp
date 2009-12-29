@@ -45,10 +45,13 @@ extern int NEAT::time_alive_minimum;
                void  Population::print_distribution(const char* filename)
                 {
                   ofstream out(filename);
-                  cout << organisms[0]->noveltypoint->data[0].size() << endl;
+                  int size = organisms[0]->noveltypoint->data[0].size();
+                  
                   for(int x=0;x<organisms.size();x++)
                   {
-                    out << organisms[x]->noveltypoint->data[0][0] << " " << organisms[x]->noveltypoint->data[0][1] << " " << organisms[x]->fitness << endl;
+                    for(int y=0;y<size;y++)
+                    out << organisms[x]->noveltypoint->data[0][y] << " ";
+                    out << organisms[x]->noveltypoint->viable << " " << organisms[x]->fitness << endl;
                   }
                 }
 
