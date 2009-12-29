@@ -48,7 +48,8 @@ heading = extract_heading(doc)
 start_point = extract_specific_point(doc,"start_point")
 goal_point = extract_specific_point(doc,"goal_point")
 
-scale=0.75
+scale=1.0
+
 print len(lines)
 print str(int(scale*start_point[0])) + " " + str(int(scale*start_point[1]))
 print str(int(heading))

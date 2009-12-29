@@ -26,11 +26,23 @@ static int number_of_samples = 1;
 static int simulated_timesteps = 400;
 static bool seed_mode = false;
 static char seed_name[40]="";
+static char mc_mazes[40]="";
 static bool minimal_criteria=false;
 static bool goal_attract=false;
 
 static bool activity_stats=false;
+static bool constraint_switch=false;
+static bool area_of_interest=false;
 
+void set_aoi(bool val)
+{
+area_of_interest=val;
+}
+
+void  set_constraint_switch(bool val)
+{
+constraint_switch=val;
+}
 void set_minimal_criteria(bool mc)
 {
  minimal_criteria=mc;
@@ -49,6 +61,11 @@ void set_samples(int s)
 void set_timesteps(int s)
 {
  simulated_timesteps=s;
+}
+
+void set_mcmaze(string s)
+{
+strcpy(mc_mazes,s.c_str());
 }
 
 void set_seed(string s)
@@ -86,6 +103,7 @@ static char output_dir[30]="";
 
 static Environment* env;
 static vector<Environment*> envList;
+static vector<Environment*> mcList;
 
 static int param=-1;
 static int push_back_size = 200;
@@ -121,7 +139,7 @@ float maze_novelty_metric(noveltyitem* x,noveltyitem* y)
 	return diff;
 }
 
-static void read_in_environments(const char* mazefile)
+static void read_in_environments(const char* mazefile, vector<Environment*>& envLst)
 {
 ifstream listfile(mazefile);
 
@@ -133,7 +151,7 @@ if(filename.length() == 0)
  break;
 cout << "Reading maze: " << filename << endl;
 Environment* new_env = new Environment(filename.c_str());
-envList.push_back(new_env);
+envLst.push_back(new_env);
 }
 
 }
@@ -151,8 +169,10 @@ Population *maze_novelty_realtime(char* outputdir,const char* mazefile,int par,c
 	//crgate new maze environment
 	//env=new Environment(mazefile);
         //read in environments
-        read_in_environments(mazefile);	
+        read_in_environments(mazefile,envList);	
 
+	if(strlen(mc_mazes)>0)
+	 read_in_environments(mc_mazes,mcList);
         //param=par;
 	push_back_size=par;
 	if(outputdir!=NULL) strcpy(output_dir,outputdir);
@@ -164,10 +184,13 @@ Population *maze_novelty_realtime(char* outputdir,const char* mazefile,int par,c
 	
     cout<<"START MAZE NAVIGATOR NOVELTY REAL-TIME EVOLUTION VALIDATION"<<endl;
 if(!seed_mode)
+ {
     cout<<"Reading in the start genome"<<endl;
+}
 else
     cout<<"Reading in the seed genome" <<endl;
-    //Read in the start Genome
+    
+  //Read in the start Genome
     iFile>>curword;
     iFile>>id;
     cout<<"Reading in Genome id "<<id<<endl;
@@ -181,8 +204,9 @@ else
     if(!seed_mode)
     pop=new Population(start_genome,NEAT::pop_size);
     else
-    pop=new Population(start_genome,NEAT::pop_size,0.0);   
-
+    {
+    pop=new Population(seed_name);//start_genome,NEAT::pop_size,0.0);   
+    }
     cout<<"Verifying Spawned Pop"<<endl;
     pop->verify();
       
@@ -206,8 +230,10 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
 
 //was 1.0*number_of_samples+1.0 for earlier results...
    float archive_thresh=(1.0*number_of_samples+1.0);// * 20.0 * envList.size(); //initial novelty threshold
-  //if(minimal_criteria)
-  // archive_thresh/=200.0; //was 200
+  if(!minimal_criteria)
+	archive_thresh*=20;
+ //if(constraint_switch)
+   //archive_thresh/=200.0;
   cout << "Archive threshold: " << archive_thresh << endl;
   //archive of novel behaviors
   noveltyarchive archive(archive_thresh,*maze_novelty_metric,true,push_back_size,minimal_criteria);
@@ -261,7 +287,7 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
   //add to archive
   archive.evaluate_population(pop,false);
   }
-  
+
   if(novelty && minimal_criteria)
   for(curorg=(pop->organisms).begin();curorg!=(pop->organisms).end();++curorg) 
 {
@@ -394,7 +420,7 @@ if(activity_stats&& offspring_count % 10000 == 0)
         //calculate novelty of new individual
 	if(novelty) {
         archive.evaluate_individual(new_org,pop->organisms);
-	newrec->ToRec[5] = archive.get_threshold();
+	//newrec->ToRec[5] = archive.get_threshold();
 	newrec->ToRec[6] = archive.get_set_size();
 	newrec->ToRec[RECSIZE-2] = new_org->noveltypoint->novelty;
         }
@@ -503,7 +529,7 @@ Environment* mazesimIni(Environment* tocopy,Network *net, vector< vector<float> 
 		net->activate();
 	
 	  	//use the net's outputs to change heading and velocity of navigator
-		newenv->interpret_outputs(net->outputs[0]->activation,net->outputs[1]->activation);
+		newenv->interpret_outputs(net->outputs[0]->activation,net->outputs[1]->activation,net->outputs[2]->activation);
 	  	//update the environment
 		newenv->Update();
 	  newenv->distance_to_poi(); 
@@ -517,7 +543,7 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record,En
 {
 	vector<float> data;
 	
-	int timesteps=simulated_timesteps;
+	int timesteps=the_env->steps; //simulated_timesteps;
 	int stepsize=10000;
 	
 	double fitness=0.0;
@@ -571,6 +597,8 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record,En
         {
 	fitness=500.0 - newenv->distance_to_target();
 	if(fitness<0.1) fitness=0.1;
+        //if (newenv->hero.collide)
+	//	fitness+=50;
 	}
         
         if(fitness_measure ==fitness_rnd)
@@ -650,7 +678,8 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record,En
 		record->ToRec[1]=newenv->hero.location.x;
 		record->ToRec[2]=newenv->hero.location.y;
 		record->ToRec[3]+=newenv->reachgoal;
-		record->ToRec[4]+=newenv->reachpoi;		
+		record->ToRec[4]+=newenv->reachpoi;
+                record->ToRec[5]=newenv->hero.collide;		
 	}
 
 	if(novelty_measure==novelty_accum)
@@ -662,78 +691,117 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record,En
 	return fitness;
 }
 
+bool contained(float x,float y)
+{
+Point p(x,y);
+if(envList[0]->end.distance(p) < 200)
+{
+ //cout <<"contained.." << endl;
+ return true;
+}
+//cout <<"notcontained..." << endl;
+return false;
+}
+
 //evaluates an individual and stores the novelty point
 noveltyitem* maze_novelty_map(Organism *org,data_record* record)
 {
-
+  static int best = 0;
   noveltyitem *new_item = new noveltyitem;
   new_item->genotype=new Genome(*org->gnome);
   new_item->phenotype=new Network(*org->net);
   vector< vector<float> > gather;
 
   vector<float> constraint_vector;
-  bool apply_constraints=false;
-  bool remove_regular=false;
+  bool apply_constraints=constraint_switch; //false;
+  bool remove_regular=constraint_switch; //false;
+  int c1old=0,c2old=0;
   double fitness=0.0;
   static float highest_fitness=0.0;
+  
+new_item->viable=true;
 
+  if(record!=NULL && minimal_criteria) 
+  for(int x=0;x<mcList.size();x++)
+  {
+  record->ToRec[3]=0;
+   mazesim(org->net,gather,record,mcList[x]); 
+  if(!record->ToRec[3]) {
+    new_item->viable=false;
+   // cout << "not viable..." << endl;
+    break;   
+  }
+  //cout << "viable..." << endl;
+  }
+
+ gather.clear();
+ if(record!=NULL) {
+ record->ToRec[0]=0;
+ record->ToRec[3]=0;
+ record->ToRec[4]=0;
+ }
+
+if(true) //new_item->viable)
 	for(int x=0;x<envList.size();x++)
         {
-         int c1_old,c2_old;
          if(record!=NULL) {
-         c1_old = record->ToRec[3];
-         c2_old = record->ToRec[4];
+           c1old = record->ToRec[3];
+           c2old = record->ToRec[4];
  	 }
 
          fitness+=mazesim(org->net,gather,record,envList[x]);
 
-         if(apply_constraints && record!=NULL) {
-         constraint_vector.push_back((c1_old-record->ToRec[3]) * 100.0);
-         constraint_vector.push_back((c2_old-record->ToRec[4]) * 100.0);
+         if(record!=NULL) {
+	   constraint_vector.push_back(record->ToRec[3]-c1old);
+           constraint_vector.push_back(record->ToRec[4]-c2old);
+           c1old=record->ToRec[3];
+           //if(record->ToRec[5]==1)
+           //  new_item->viable=false;
          }
-         else {
-         constraint_vector.push_back(0);
-         constraint_vector.push_back(0);
-         }
+	else { constraint_vector.push_back(0);
+	 constraint_vector.push_back(0); }
+        } 
+else 
+{
+for(int x=0;x<envList.size();x++) constraint_vector.push_back(0); 
+}
 
-         }
-          
          //minimal criteria must be met in *all* scenarios...
-         if(record!=NULL)
+         
+        if(record!=NULL)
          {
-           if( record->ToRec[3]<envList.size())
+           if(area_of_interest)
+           {
+            if(!contained(record->ToRec[1],record->ToRec[2]))
+		new_item->viable=false;
+           }
+            else
+           if( false) //record->ToRec[3]<envList.size())
            { new_item->viable=false;
-          //  cout << record->ToRec[3] << endl; 
+            //cout << record->ToRec[3] << endl; 
            }
             else { 
-            // cout << "viable... " << endl;
+             //cout << "viable... " << endl;
             }
           }
-
   	
         if(fitness>highest_fitness)
 		highest_fitness=fitness;
 	
-	//keep track of highest fitness so hard in record
+	//keep track of highest fitness so far in record
 	if(record!=NULL)
 	{
-
-	//TODO: Perhaps remove non-viable organisms from merged populations
-	//or set their behavioral characterization to some null value..
-	if(!record->ToRec[3])
-		new_item->viable=false;
-
-		/*
-	record->ToRec[19]=org->gnome->parent1;
-	record->ToRec[18]=org->gnome->parent2;
-	record->ToRec[17]=org->gnome->struct_change;
-		*/
-
+        record->ToRec[5]=new_item->viable;
+	if(record->ToRec[3]>best)
+        {
+         best=record->ToRec[3];
+         cout << "best: " << best << endl;
+ 	}
 	record->ToRec[RECSIZE-1]=highest_fitness;
 	}
 
  	 //push back novelty characterization
-         if(!remove_regular) 
+         if(!remove_regular)
          for(int i=0;i<gather.size();i++)
 	  new_item->data.push_back(gather[i]);
          
@@ -741,6 +809,8 @@ noveltyitem* maze_novelty_map(Organism *org,data_record* record)
 	  new_item->data.push_back(constraint_vector);
  	 //set fitness (this is 'real' objective-based fitness, not novelty)
  	 new_item->fitness=fitness;
+         org->fitness=fitness;
+ 
   return new_item;
 }
 
@@ -765,7 +835,11 @@ Population *maze_generational(char* outputdir,const char* mazefile,int param,con
 
     ifstream iFile(genes,ios::in);
 
-    env=new Environment(mazefile);
+    read_in_environments(mazefile,envList);	
+
+    if(strlen(mc_mazes)>0)
+	 read_in_environments(mc_mazes,mcList);
+    
     if(outputdir!=NULL) strcpy(output_dir,outputdir);
     cout<<"START GENERATIONAL MAZE EVOLUTION"<<endl;
 

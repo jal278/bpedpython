@@ -269,6 +269,7 @@ class Character
         vector<float> poi_radar; //stores poi radar
         vector<float> rangeFinders; //stores rangefinder outputs
         Point location;
+        bool collide;
         float heading;
         float speed;
         float ang_vel;
@@ -277,6 +278,7 @@ class Character
         
         Character()
         {
+            collide=false;
             heading=0.0f;
             speed=0.0f;
             ang_vel=0.0f;
@@ -324,7 +326,8 @@ class Environment
     public:
         Environment(const Environment &e)
 		{
-			hero.location = e.hero.location;
+               steps=e.steps;	
+		hero.location = e.hero.location;
 			hero.heading = e.hero.heading;
 			hero.speed=e.hero.speed;
 			hero.ang_vel=e.hero.ang_vel;
@@ -375,7 +378,8 @@ class Environment
         {
             ifstream inpfile(filename);
             int num_lines; 
-            inpfile >> num_lines; //read in how many line segments
+         inpfile >> steps;    
+	inpfile >> num_lines; //read in how many line segments
             hero.location.fromfile(inpfile); //read initial location
             inpfile >> hero.heading; //read initial heading
             end.fromfile(inpfile); //read goal location
@@ -444,7 +448,7 @@ class Environment
 		}
 		//create neural net inputs from sensors
 		void generate_neural_inputs(double* inputs)
-		{			
+		{	
 			//bias
 			inputs[0]=(1.0);
 			
@@ -464,21 +468,34 @@ class Environment
 				if(isnan(inputs[i+j]))
 					cout << "NAN in inputs" << endl;
 			}
-			
+		        	
+                        double distance = distance_to_target(); 
+                        distance = 1.0 - (distance/100.0);
+                        if(distance<0.0)
+		         distance=0.0;
+                        inputs[i+j]=distance;
+                        
 			//poi radar
 			for(k=0;k<(int)hero.poi_radar.size();k++)
 			{
-				inputs[i+j+k]=(hero.poi_radar[k]);
-                                if(isnan(inputs[i+j+k]))
+				inputs[i+j+k+1]=(hero.poi_radar[k]);
+                                if(isnan(inputs[i+j+k+1]))
 					cout << "NaN in inputs" << endl;
 			}
 
-                        inputs[i+j+k] = reachgoal; //was reachpoi
-                        return;
+			
+			distance = distance_to_poi();	
+                        distance = 1.0 - (distance/100.0);
+                        if(distance<0.0)
+		         distance=0.0;
+                        inputs[i+j+k+1] = distance;
+                        
+                        inputs[i+j+k+2] = reachgoal; //was reachpoi
+			return;
 		}
 		
 		//transform neural net outputs into angular velocity and speed
-		void interpret_outputs(float o1,float o2)
+		void interpret_outputs(float o1,float o2,float o3)
 		{
 			if(isnan(o1) || isnan(o2))
 				cout << "OUTPUT ISNAN" << endl;	
@@ -490,8 +507,9 @@ class Environment
                         //if(o1<0.2)
                         //  hero.ang_vel= -0.5;
                         //if(o2>0.8)
-                        //  hero.ang_vel= +0.5;
-
+                        // hero.ang_vel= +0.5;
+			//if(o3>0.5)
+			//  hero.collide=true;
 			hero.ang_vel=(o1-0.5)*6.0;
 			hero.speed=(o2)*3.0;
 			
@@ -511,7 +529,7 @@ class Environment
             float vy=sin(hero.heading/180.0*3.1415926)*hero.speed;
 			if(isnan(vx))
 				cout << "VX NAN" << endl;
-            
+             
             hero.heading+=hero.ang_vel;
 			if(isnan(hero.ang_vel))
 				cout << "HERO ANG VEL NAN" << endl;
@@ -522,14 +540,16 @@ class Environment
             Point newloc;
             newloc.x=vx+hero.location.x;
             newloc.y=vy+hero.location.y;
-
             //collision detection
-            if(!collide_lines(newloc,hero.radius))
+            if(!hero.collide && !collide_lines(newloc,hero.radius))
             {
                 hero.location.x=newloc.x;
                 hero.location.y=newloc.y;
             }
-			
+	    else
+            { 
+            //hero.collide=true;
+            }		
             update_rangefinders(hero);
             update_radar(hero);
         }
@@ -623,10 +643,10 @@ class Environment
                 radar_arr[i]=0.0;
             
                 if(angle>=h.radarAngles1[i] && angle<h.radarAngles2[i])
-                    radar_arr[i]=1.0;
+                    radar_arr[i]=1.0; //distance;  
                 
                 if(angle+360.0>=h.radarAngles1[i] && angle+360.0<h.radarAngles2[i])
-                    radar_arr[i]=1.0; //distance;  
+                    radar_arr[i]=1.0;//distance;  
             }
         }
         
@@ -637,6 +657,7 @@ class Environment
                 delete lines[i];
         }
         double closest_to_target;
+        int steps;
         double closest_to_poi;		
         vector<Line*> lines; //maze line segments
         Character hero; //navigator

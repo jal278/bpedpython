@@ -52,7 +52,7 @@ mazeDlg::mazeDlg(wxWindow *parent, wxWindowID id, const wxString &title, const w
 	net=(newpop->organisms[0]->net);
 	net->print_links_tofile("links.out");
 	Environment *env1=new Environment("maze.txt");
-	env1->goalattract=true;
+	env1->goalattract=false;
         env=mazesimIni(env1,net,dc);
 	timer = new wxTimer(this, 1);
 	timer->Start(50);

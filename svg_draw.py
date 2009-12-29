@@ -26,8 +26,8 @@ class Scene:
     def strarray(self):
         var = ["<?xml version=\"1.0\"?>\n",
                "<svg height=\"%d\" width=\"%d\" >\n" % (self.height,self.width),
-               " <g style=\"fill-opacity:1.0; stroke:black;\n",
-               "  stroke-width:8;\">\n"]
+               " <g style=\" stroke:black;\n",
+               "  stroke-width:3;\">\n"]
         for item in self.items: var += item.strarray()            
         var += [" </g>\n</svg>\n"]
         return var

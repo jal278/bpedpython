@@ -13,9 +13,12 @@ using namespace TCLAP;
 int main(int argc, char **argv) {
 
   CmdLine cmd("Maze evolution", ' ', "0.1");
- 
+   
   ValueArg<string> maze("m","maze","Maze file",false,"maze.txt","string");
   cmd.add(maze);
+  
+  ValueArg<string> mcmaze("","mcmaze","MC Maze file",false,"mcmaze.txt","string");
+  cmd.add(mcmaze);
 
   ValueArg<string> genes("z","sg","Starter genes",false,"mazestartgenes","string");
   cmd.add(genes);
@@ -32,16 +35,22 @@ int main(int argc, char **argv) {
   SwitchArg goal_attract("","goalnotsticky","Goal is not attractor",false);
   cmd.add(goal_attract);
 
+  SwitchArg area_of_interest("","aoi","Enforce pruning of behavior space",false);
+  cmd.add(area_of_interest);
+
   SwitchArg noveltySwitch("n","novelty","Enable novelty search",false);
   cmd.add(noveltySwitch);
 
-  SwitchArg generationalSwitch("q","gen","Enable generational search",false);
+  SwitchArg constraintSwitch("","constraint","Enable constraint-based NS",false);
+  cmd.add(constraintSwitch);
+
+  SwitchArg generationalSwitch("","gen","Enable generational search",false);
   cmd.add(generationalSwitch);
 
   SwitchArg mcSwitch("","mc","Enable minimal criteria",false);
   cmd.add(mcSwitch);
 
-  ValueArg<string> nov_measure("g","nm","Novelty Measure",false,"std","string");
+  ValueArg<string> nov_measure("","nm","Novelty Measure",false,"std","string");
   cmd.add(nov_measure);
 
   ValueArg<string> fit_measure("f","fm","Fitness Measure",false,"std","string");
@@ -88,8 +97,10 @@ int main(int argc, char **argv) {
   cout << "Maze: " << mazename << endl;
   cout << "Start genes: " << startgenes << endl;
 
+  set_mcmaze(mcmaze.getValue());
   set_fit_measure(fit_measure.getValue());
   set_nov_measure(nov_measure.getValue());
+  set_aoi(area_of_interest.getValue());
 
   cout << "Timesteps: " << time_steps.getValue() << endl;
   set_timesteps(time_steps.getValue());
@@ -104,7 +115,8 @@ int main(int argc, char **argv) {
 
   cout << "Minimal criteria engaged? " << mcSwitch.getValue() << endl;
   set_minimal_criteria(mcSwitch.getValue());
-
+  
+  set_constraint_switch(constraintSwitch.getValue());
   if(!generationalSwitch.getValue())
 {
 if(!noveltySwitch.getValue())

@@ -127,6 +127,7 @@ namespace NEAT {
 		//   to find a suitable place to make the mutation.
 		//   Generally, if they fail, they can be called again if desired. 
 
+		void mutate_gene_freeze();
 		// Mutate genome by adding a node respresentation 
 		bool mutate_add_node(std::vector<Innovation*> &innovs,int &curnode_id,double &curinnov);
 

@@ -4,6 +4,7 @@
 #include <cmath>
 #include <iostream>
 #define DISABLE_PROB 0.0
+#define FREEZEPROB 0.0
 using namespace NEAT;
 
 Species::Species(int i) {
@@ -222,6 +223,7 @@ double Species::estimate_average() {
 			//Do the mutation depending on probabilities of 
 			//various mutations
 
+                        if (randfloat()<FREEZEPROB) new_genome->mutate_gene_freeze();
 			if (randfloat()<NEAT::mutate_add_node_prob) {
 				//cout<<"mutate add node"<<endl;
 				new_genome->mutate_add_node(pop->innovations,pop->cur_node_id,pop->cur_innov_num);
@@ -398,6 +400,7 @@ double Species::estimate_average() {
 		{
 
 			//Do the mutation depending on probabilities of 
+                        if (randfloat()<FREEZEPROB) new_genome->mutate_gene_freeze();
 			//various mutations
 			if (randfloat()<NEAT::mutate_add_node_prob) {
 				new_genome->mutate_add_node(pop->innovations,pop->cur_node_id,pop->cur_innov_num);
@@ -1055,6 +1058,7 @@ bool Species::reproduce(int generation, Population *pop,std::vector<Species*> &s
 					//Do the mutation depending on probabilities of 
 					//various mutations
 
+                        if (randfloat()<FREEZEPROB) new_genome->mutate_gene_freeze();
 					if (randfloat()<NEAT::mutate_add_node_prob) {
 						//std::cout<<"mutate add node"<<std::endl;
 						new_genome->mutate_add_node(pop->innovations,pop->cur_node_id,pop->cur_innov_num);
@@ -1223,6 +1227,7 @@ new_genome->mutate_node_parameters(NEAT::time_const_mut_power,NEAT::time_const_m
 				{
 
 					//Do the mutation depending on probabilities of 
+                        if (randfloat()<FREEZEPROB) new_genome->mutate_gene_freeze();
 					//various mutations
 					if (randfloat()<NEAT::mutate_add_node_prob) {
 						new_genome->mutate_add_node(pop->innovations,pop->cur_node_id,pop->cur_innov_num);

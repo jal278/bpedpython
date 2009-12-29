@@ -44,18 +44,43 @@ p1=map(int,a[1].split(" "))
 p2=map(int,a[3].split(" "))
 p3=map(int,a[4].split(" "))
 lines=[map(int,x.split(" ")) for x in a[5:]]
-h=450
-w=450
-scene = svg_draw.Scene("test",width=w,height=h)
-scale = 0.75
+linearr=zip(*lines)
+
+border=10
+minx=min(linearr[0]+linearr[2])-border
+miny=min(linearr[1]+linearr[3])-border
+maxx=max(linearr[0]+linearr[2])+border
+maxy=max(linearr[1]+linearr[3])+border
+
+class Scaler:
+ def __init__(self,mins,maxs,dims):
+  self.mins=mins
+  self.maxs=maxs
+  self.dims=dims
+  self.sz=len(mins)
+ def scale(self,pt):
+  res=[]
+  for k in range(self.sz):
+   res.append(int(float(pt[k]-self.mins[k])/(self.maxs[k]-self.mins[k])*self.dims[k]))
+  return res
+
+width=450
+height=450
+
+scaler=Scaler((minx,miny),(maxx,maxy),(width,height))
+
+
+scene = svg_draw.Scene("test",width=450,height=450)
 
 
 for x in lines:
-    scene.add(svg_draw.Line((x[0]*scale,h-x[1]*scale),(x[2]*scale,h-x[3]*scale),(0,0,0)))
+    scene.add(svg_draw.Line(scaler.scale(x[0:2]),scaler.scale(x[2:4]),(0,0,0)))
 
-scene.add(svg_draw.Circle((p2[0]*scale,h-p2[1]*scale),5,(255,255,255),False))
-scene.add(svg_draw.Circle((p3[0]*scale,h-p3[1]*scale),3,(255,255,255),False))
+scene.add(svg_draw.Circle(map(lambda x:x,scaler.scale(p2)),7,(0,0,0),True))
+scene.add(svg_draw.Circle(map(lambda x:x,scaler.scale(p3)),4,(0,0,0),True))
+
 #cutoff=b.shape[0]
+"""
 for x in range(cutoff):
     color = 0
     #color = 200-(float(x)/cutoff)*200
@@ -63,9 +88,10 @@ for x in range(cutoff):
     if(color>255):
         color=255
     scene.add(svg_draw.Circle((int(b[x,1]*scale),int(b[x,2]*scale)),2,(0,0,255),False))
+"""
+scene.add(svg_draw.Circle(scaler.scale(p1),10,(255,255,255),False))
 
-scene.add(svg_draw.Circle((p1[0]*scale,h-p1[1]*scale),10,(255,255,255),False))
-
+#scene.add(svg_draw.Rectangle(scaler.scale(p1),20,20,(255,255,255)))
 
 scene.write_svg()
 scene.display()
