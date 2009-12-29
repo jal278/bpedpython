@@ -326,7 +326,7 @@ class Environment
     public:
         Environment(const Environment &e)
 		{
-               steps=0;	
+               steps=e.steps;	
 		hero.location = e.hero.location;
 			hero.heading = e.hero.heading;
 			hero.speed=e.hero.speed;
@@ -375,10 +375,10 @@ class Environment
 		//initialize environment from maze file
         Environment(const char* filename)
         {
-            steps=0;
             ifstream inpfile(filename);
             int num_lines; 
-            inpfile >> num_lines; //read in how many line segments
+         inpfile >> steps;    
+	inpfile >> num_lines; //read in how many line segments
             hero.location.fromfile(inpfile); //read initial location
             inpfile >> hero.heading; //read initial heading
             end.fromfile(inpfile); //read goal location
@@ -442,7 +442,6 @@ class Environment
 		//create neural net inputs from sensors
 		void generate_neural_inputs(double* inputs)
 		{	
-                        steps++;		
 			//bias
 			inputs[0]=(1.0);
 			

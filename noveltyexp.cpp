@@ -184,10 +184,13 @@ Population *maze_novelty_realtime(char* outputdir,const char* mazefile,int par,c
 	
     cout<<"START MAZE NAVIGATOR NOVELTY REAL-TIME EVOLUTION VALIDATION"<<endl;
 if(!seed_mode)
+ {
     cout<<"Reading in the start genome"<<endl;
+}
 else
     cout<<"Reading in the seed genome" <<endl;
-    //Read in the start Genome
+    
+  //Read in the start Genome
     iFile>>curword;
     iFile>>id;
     cout<<"Reading in Genome id "<<id<<endl;
@@ -201,8 +204,9 @@ else
     if(!seed_mode)
     pop=new Population(start_genome,NEAT::pop_size);
     else
-    pop=new Population(start_genome,NEAT::pop_size,0.0);   
-
+    {
+    pop=new Population(seed_name);//start_genome,NEAT::pop_size,0.0);   
+    }
     cout<<"Verifying Spawned Pop"<<endl;
     pop->verify();
       
@@ -537,7 +541,7 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record,En
 {
 	vector<float> data;
 	
-	int timesteps=simulated_timesteps;
+	int timesteps=the_env->steps; //simulated_timesteps;
 	int stepsize=10000;
 	
 	double fitness=0.0;
@@ -717,10 +721,10 @@ new_item->viable=true;
    mazesim(org->net,gather,record,mcList[x]); 
   if(!record->ToRec[3]) {
     new_item->viable=false;
-    //cout << "not viable..." << endl;
+   // cout << "not viable..." << endl;
     break;   
   }
- // cout << "viable..." << endl;
+  //cout << "viable..." << endl;
   }
 
  gather.clear();
@@ -728,7 +732,7 @@ new_item->viable=true;
  record->ToRec[0]=0;
  record->ToRec[3]=0;
  record->ToRec[4]=0;
-}
+ }
 
 if(true) //new_item->viable)
 	for(int x=0;x<envList.size();x++)
@@ -765,7 +769,7 @@ for(int x=0;x<envList.size();x++) constraint_vector.push_back(0);
 		new_item->viable=false;
            }
             else
-           if( record->ToRec[3]<envList.size())
+           if( false) //record->ToRec[3]<envList.size())
            { new_item->viable=false;
             //cout << record->ToRec[3] << endl; 
            }

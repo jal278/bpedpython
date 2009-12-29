@@ -78,7 +78,7 @@ b=readinrecord(rec)
 b=numpy.hstack((numpy.reshape(numpy.arange(b.shape[0]),(b.shape[0],1)),b))
 cutoff=b.shape[0]
 """
-
+a=a[1:]
 p1=map(int,a[1].split(" "))
 p2=map(int,a[3].split(" "))
 p3=map(int,a[4].split(" "))
