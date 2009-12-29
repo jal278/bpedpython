@@ -9,12 +9,12 @@ excess_coeff 1.0
 mutdiff_coeff 3.0
 compat_thresh 4.0
 age_significance 1.0
-survival_thresh 0.4
-mutate_only_prob 0.3
+survival_thresh 0.3
+mutate_only_prob 0.2
 mutate_random_trait_prob 0.1
 mutate_link_trait_prob 0.1
 mutate_node_trait_prob 0.1
-mutate_link_weights_prob 0.2
+mutate_link_weights_prob 0.4
 mutate_toggle_enable_prob 0.1
 mutate_gene_reenable_prob 0.05
 mutate_add_node_prob 0.02
@@ -25,7 +25,7 @@ mate_multipoint_avg_prob 0.4
 mate_singlepoint_prob 0.0
 mate_only_prob 0.2
 recur_only_prob 0.2
-pop_size 250
+pop_size 500
 dropoff_age 2000
 newlink_tries 40
 print_every 5

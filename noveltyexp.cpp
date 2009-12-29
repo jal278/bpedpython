@@ -475,10 +475,10 @@ if(activity_stats&& offspring_count % 10000 == 0)
 	}
 
     //Remove the worst organism                                                                                               
-    //if(fitness_measure ==fitness_rnd)
+    if(rand_repl || fitness_measure ==fitness_rnd)
      pop->remove_random();
-    //else    
-    // pop->remove_worst();
+    else    
+     pop->remove_worst();
 
   }
   

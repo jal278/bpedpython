@@ -17,7 +17,7 @@ def dist(x1,y1,x2,y2):
     yd=y1-y2
     return math.sqrt(xd*xd+yd*yd)
 
-a=open(sys.argv[1]).read().split("\n")[:-1]
+a=open(sys.argv[1]).read().split("\n")[1:-1]
 if(len(sys.argv)==3):
     b=readinrecord(sys.argv[2])
 else:
