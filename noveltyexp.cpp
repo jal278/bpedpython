@@ -533,7 +533,7 @@ Environment* mazesimIni(Environment* tocopy,Network *net, vector< vector<float> 
 		net->activate();
 	
 	  	//use the net's outputs to change heading and velocity of navigator
-		newenv->interpret_outputs(net->outputs[0]->activation,net->outputs[1]->activation,net->outputs[2]->activation);
+		newenv->interpret_outputs(net->outputs[0]->activation,net->outputs[1]->activation,0.0); //net->outputs[2]->activation);
 	  	//update the environment
 		newenv->Update();
 	  newenv->distance_to_poi(); 
@@ -777,7 +777,11 @@ for(int x=0;x<envList.size();x++) constraint_vector.push_back(0);
            if(area_of_interest)
            {
             if(!contained(record->ToRec[1],record->ToRec[2]))
-		new_item->viable=false;
+ 	    {
+         	new_item->viable=false;
+         	//cout << "not viable..." << endl;
+            }
+            //else cout << "viable..." << endl;
            }
             else
            if( record->ToRec[3]<envList.size())
