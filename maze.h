@@ -473,13 +473,13 @@ class Environment
                         distance = 1.0 - (distance/100.0);
                         if(distance<0.0)
 		         distance=0.0;
-                        inputs[i+j]=distance;
+                        //inputs[i+j]=distance;
                         
 			//poi radar
 			for(k=0;k<(int)hero.poi_radar.size();k++)
 			{
-				inputs[i+j+k+1]=(hero.poi_radar[k]);
-                                if(isnan(inputs[i+j+k+1]))
+				inputs[i+j+k]=(hero.poi_radar[k]);
+                                if(isnan(inputs[i+j+k]))
 					cout << "NaN in inputs" << endl;
 			}
 
@@ -488,9 +488,9 @@ class Environment
                         distance = 1.0 - (distance/100.0);
                         if(distance<0.0)
 		         distance=0.0;
-                        inputs[i+j+k+1] = distance;
+                        //inputs[i+j+k+1] = distance;
                         
-                        inputs[i+j+k+2] = reachgoal; //was reachpoi
+                        inputs[i+j+k+1] = reachgoal; //was reachpoi
 			return;
 		}
 		

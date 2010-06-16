@@ -38,15 +38,20 @@ def extract_point(d):
     return [x,y]
 
 
+justwalls=True
+start_point=[0,0]
+goal_point=[0,0]
+poi=[[0,0]]
 
 doc = minidom.parse(sys.argv[1])
 
 lines = extract_lines(doc)
-poi = extract_poi(doc)
 heading = extract_heading(doc)
+if(not justwalls):
+ poi = extract_poi(doc)
 
-start_point = extract_specific_point(doc,"start_point")
-goal_point = extract_specific_point(doc,"goal_point")
+ start_point = extract_specific_point(doc,"start_point")
+ goal_point = extract_specific_point(doc,"goal_point")
 
 scale=1.0
 

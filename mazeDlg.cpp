@@ -79,7 +79,7 @@ void mazeDlg::CreateGUIControls()
 
 	SetTitle(wxT("maze"));
 	SetIcon(wxNullIcon);
-	SetSize(8,8,783,530);
+	SetSize(8,8,700,700);
 	Center();
 	
 	////GUI Items Creation End
@@ -87,7 +87,7 @@ void mazeDlg::CreateGUIControls()
 void mazeDlg::OnTimer(wxTimerEvent& event)
 {
    
-    for(int i=0;i<3;i++)
+    for(int i=0;i<1;i++)
 	{	
 	xc.push_back(env->hero.location.x);
 	yc.push_back(env->hero.location.y);
@@ -105,7 +105,7 @@ void mazeDlg::OnTimer(wxTimerEvent& event)
 }
 void mazeDlg::OnPaint(wxPaintEvent& event)
 {
-  float scale=1.0;
+  float scale=3.0;
   wxPaintDC dc(this);
   float rad = env->hero.heading/180.0*3.1415926;
   dc.SetPen(*wxBLACK_PEN);
@@ -118,6 +118,7 @@ void mazeDlg::OnPaint(wxPaintEvent& event)
   //draw inputs
  double inputs[30];
  env->generate_neural_inputs(inputs); 
+if(false)
  for(int i=0;i<15;i++)
   {
    if(inputs[i]>0.5)
@@ -211,6 +212,7 @@ void mazeDlg::OnPaint(wxPaintEvent& event)
  //draw Fitness
  wxString outstring;
  
+if(false)
  outstring.Printf(_T("Timestep: %d, Fitness: %f"), timestep, fitness);
  dc.DrawText(outstring,50,500);
  

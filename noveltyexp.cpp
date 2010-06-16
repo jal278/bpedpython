@@ -15,7 +15,6 @@
 #include <math.h>
 
 using namespace std;
-
 enum novelty_measure_type { novelty_sample, novelty_accum, novelty_sample_free };
 static novelty_measure_type novelty_measure = novelty_sample;
 
@@ -34,10 +33,12 @@ static bool activity_stats=false;
 static bool constraint_switch=false;
 static bool area_of_interest=false;
 static bool rand_repl=false;
+
 void set_random_replace(bool val)
 {
 rand_repl = val;
 }
+
 void set_aoi(bool val)
 {
 area_of_interest=val;
@@ -111,6 +112,7 @@ static vector<Environment*> mcList;
 
 static int param=-1;
 static int push_back_size = 200;
+
 //used for discretization studies
 double discretize(double x,long bins,double low, double high)
 {
@@ -630,20 +632,24 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record,En
         if(fitness_measure == fitness_std)
         {
           fitness=SNUM;
-          float mod = 250.0 - newenv->closest_to_target;
+          float mod = 500.0 - newenv->closest_to_target;
           if(mod<0) mod=0.0;
-          float mod2 = 250.0 - newenv->distance_to_poi();
+          float mod2 = 500.0 - newenv->closest_to_poi; 
           if(mod2<0) mod2=0.0;
 
+	  fitness+=mod;
+	  fitness+=mod2;
+/*
           if(newenv->reachgoal)
 		fitness+=250.0;
           else
                 fitness+=mod;
 
-           if(newenv->reachpoi && newenv->reachgoal)
+           if(newenv->reachpoi)
 		fitness+=250.0;
            else if (newenv->reachgoal)
                 fitness+=mod2;
+*/
         }
 
 	//fitness as novelty studies
@@ -698,13 +704,25 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record,En
 bool contained(float x,float y)
 {
 Point p(x,y);
-if(envList[0]->end.distance(p) < 200)
+if (x>200)
+ return false;
+if (x<0)
+ return false;
+if (y>200)
+ return false;
+if (y<0)
+ return false;
+
+return true;
+/*
+if(envList[0]->end.distance(p) < 400)
 {
  //cout <<"contained.." << endl;
  return true;
 }
 //cout <<"notcontained..." << endl;
 return false;
+*/
 }
 
 //evaluates an individual and stores the novelty point
