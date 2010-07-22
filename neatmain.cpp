@@ -1,13 +1,14 @@
-#include <tclap/CmdLine.h>
 #include <cstring>
 #include <iostream>
+#include <fstream>
+using namespace std;
+#include <tclap/CmdLine.h>
 #include <vector>
 #include <unistd.h>	
 #include "neat.h"
 #include "population.h"
 #include "experiments.h"
 
-using namespace std;
 using namespace TCLAP;
 
 int main(int argc, char **argv) {
