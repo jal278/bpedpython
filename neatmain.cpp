@@ -1,20 +1,21 @@
+#include <iostream>
+#include <fstream>
+using namespace std;
 #include <tclap/CmdLine.h>
 #include <cstring>
-#include <iostream>
 #include <vector>
 #include <unistd.h>	
 #include "neat.h"
 #include "population.h"
 #include "experiments.h"
-
-using namespace std;
 using namespace TCLAP;
+
 
 int main(int argc, char **argv) {
 
   CmdLine cmd("Maze evolution", ' ', "0.1");
    
-  ValueArg<string> maze("m","maze","Maze file",false,"maze.txt","string");
+  ValueArg<string> maze("m","maze","Maze file",false,"medium_maze_list.txt","string");
   cmd.add(maze);
   
   ValueArg<string> mcmaze("","mcmaze","MC Maze file",false,"mcmaze.txt","string");
@@ -26,7 +27,7 @@ int main(int argc, char **argv) {
   ValueArg<string> settings("s","settings","Settings file",false,"maze.ne","string");
   cmd.add(settings);
  
-  ValueArg<string> output("o","output","Output directory",false,"./","string");
+  ValueArg<string> output("o","output","Output directory",false,"./results","string");
   cmd.add(output);
 
   ValueArg<string> seed_genome("c","seed","Seed Genome",false,"","string");
@@ -73,8 +74,8 @@ int main(int argc, char **argv) {
 
   cmd.parse(argc,argv);
 
-  char mazename[100]="hard_maze.txt";
-  char filename[100]="./";
+  char mazename[100]="hard_maze_list.txt";
+  char filename[100]="./runoutput_";
   char settingsname[100]="maze.ne";
   char startgenes[100]="mazestartgenes";
   int param;

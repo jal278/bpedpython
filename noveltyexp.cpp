@@ -14,12 +14,13 @@
 #include <fstream>
 #include <math.h>
 
+double evolvability(Organism* org,char* fn);
 using namespace std;
 enum novelty_measure_type { novelty_sample, novelty_accum, novelty_sample_free };
 static novelty_measure_type novelty_measure = novelty_sample;
 
 enum fitness_measure_type { fitness_goal, fitness_drift, fitness_std,fitness_rnd };
-static fitness_measure_type fitness_measure = fitness_std;
+static fitness_measure_type fitness_measure = fitness_goal;
 
 static int number_of_samples = 1;
 static int simulated_timesteps = 400;
@@ -320,6 +321,15 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
 	//if(offspring_count>=pop_size*1000 && firstflag)
         if(firstflag)
 	 break;
+
+int evolveupdate=20000;
+if(offspring_count % evolveupdate ==0) {
+   char fn[100];
+   sprintf(fn,"%s_evolvability%d.dat",output_dir,offspring_count/evolveupdate);
+   for (curorg = (pop->organisms).begin(); curorg != pop->organisms.end(); ++curorg) {
+    evolvability(*curorg,fn);
+   }
+}
 
 if(activity_stats&& offspring_count % 10000 == 0)
 {
@@ -724,6 +734,71 @@ if(envList[0]->end.distance(p) < 400)
 return false;
 */
 }
+#define DISABLE_PROB 0.05
+void mutate_genome(Genome* new_genome)
+{
+	double mut_power=NEAT::weight_mut_power;
+			//NOTE:  A link CANNOT be added directly after a node was added because the phenotype
+			//       will not be appropriately altered to reflect the change
+			if(1) {
+				//If we didn't do a structural mutation, we do the other kinds
+
+				if (randfloat()<NEAT::mutate_random_trait_prob) {
+					//cout<<"mutate random trait"<<endl;
+					new_genome->mutate_random_trait();
+				}
+				if (randfloat()<NEAT::mutate_link_trait_prob) {
+					//cout<<"mutate_link_trait"<<endl;
+					new_genome->mutate_link_trait(1);
+				}
+				if (randfloat()<NEAT::mutate_node_trait_prob) {
+					//cout<<"mutate_node_trait"<<endl;
+					new_genome->mutate_node_trait(1);
+					new_genome->mutate_node_parameters(NEAT::time_const_mut_power,NEAT::time_const_mut_prob,
+					                                   NEAT::bias_mut_power,NEAT::bias_mut_prob);
+				}
+				if (randfloat()<NEAT::mutate_link_weights_prob) {
+					//cout<<"mutate_link_weights"<<endl;
+					new_genome->mutate_link_weights(mut_power,1.0,GAUSSIAN);
+				}
+				if (randfloat()<NEAT::mutate_toggle_enable_prob) {
+					//cout<<"mutate toggle enable"<<endl;
+					new_genome->mutate_toggle_enable(1);
+					new_genome->struct_change=3; //JLADD
+
+				}
+                                if (randfloat()<DISABLE_PROB)
+                                   new_genome->mutate_gene_disable();
+				if (randfloat()<NEAT::mutate_gene_reenable_prob) {
+					//cout<<"mutate gene reenable"<<endl;
+					new_genome->mutate_gene_reenable();
+					new_genome->struct_change=3; //JLADD
+				}
+			}
+}
+ 
+double evolvability(Organism* org,char* fn) {
+ fstream file; 
+ file.open(fn,ios::app|ios::out);
+ cout <<"Evolvability..." << endl;
+ file << "---" << endl;
+  Organism *new_org= new Organism(*org);
+ for(int i=0;i<200;i++) { 
+  new_org->gnome = new Genome(*org->gnome);
+  for(int j=0;j<5;j++) mutate_genome(new_org->gnome);
+  new_org->net=new_org->gnome->genesis(0);
+  noveltyitem* nov_item = maze_novelty_map(new_org);
+  for(int k=0;k<nov_item->data[0].size();k++)
+    file << nov_item->data[0][k] << " ";
+  delete new_org->gnome;
+  delete new_org->net;
+  delete nov_item;
+  file << endl;
+ }  
+ file.close();
+ return 0.0;
+}
+
 
 //evaluates an individual and stores the novelty point
 noveltyitem* maze_novelty_map(Organism *org,data_record* record)
