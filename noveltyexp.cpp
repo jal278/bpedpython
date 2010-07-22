@@ -28,7 +28,7 @@ static bool seed_mode = false;
 static char seed_name[40]="";
 static char mc_mazes[40]="";
 static bool minimal_criteria=false;
-static bool goal_attract=false;
+static bool goal_attract=true;
 
 static bool activity_stats=false;
 static bool constraint_switch=false;
@@ -112,7 +112,7 @@ static vector<Environment*> envList;
 static vector<Environment*> mcList;
 
 static int param=-1;
-static int push_back_size = 200;
+static int push_back_size = 20;
 
 //used for discretization studies
 double discretize(double x,long bins,double low, double high)
@@ -237,8 +237,8 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
 
 //was 1.0*number_of_samples+1.0 for earlier results...
    float archive_thresh=(1.0*number_of_samples+1.0);// * 20.0 * envList.size(); //initial novelty threshold
-  if(!minimal_criteria)
-	archive_thresh*=20;
+  //if(!minimal_criteria)
+  //	archive_thresh*=20;
  //if(constraint_switch)
    //archive_thresh/=200.0;
   cout << "Archive threshold: " << archive_thresh << endl;
@@ -323,7 +323,7 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
 	 break;
 
 int evolveupdate=20000;
-if(offspring_count % evolveupdate ==0) {
+if(false && offspring_count % evolveupdate ==0) {
    char fn[100];
    sprintf(fn,"%s_evolvability%d.dat",output_dir,offspring_count/evolveupdate);
    for (curorg = (pop->organisms).begin(); curorg != pop->organisms.end(); ++curorg) {
@@ -473,7 +473,8 @@ if(activity_stats&& offspring_count % 10000 == 0)
 		sprintf(filename,"%srtgen_weakfirst",output_dir);
 		pop->print_to_file_by_species(filename);
 		cout << "Maze weakly solved by indiv# " << indiv_counter << endl;	
-          if(fitness_measure == fitness_goal)
+//disable quit for now
+          if(fitness_measure == fitness_goal && false) 
            firstflag=true; 
         }
 	//write out the first individual to solve maze

@@ -14,7 +14,7 @@
 
 #define SNUM 0.0000001
 
-#define ARCHIVE_SEED_AMOUNT 1
+#define ARCHIVE_SEED_AMOUNT 5
 
 inline float scale(float lo, float hi, float x)
 {
@@ -436,11 +436,12 @@ public:
     //criteria for adding to the archive
     bool add_to_novelty_archive(float novelty)
     {
-        
-        if (((float)rand()/RAND_MAX)<(0.001))
+       
+        if (((float)rand()/RAND_MAX)<(0.005))
          return true;
         return false;
-        /*
+       
+       /* 
         if (novelty>novelty_threshold)
             return true;
         else

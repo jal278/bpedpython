@@ -79,7 +79,7 @@ void mazeDlg::CreateGUIControls()
 
 	SetTitle(wxT("maze"));
 	SetIcon(wxNullIcon);
-	SetSize(8,8,700,700);
+	SetSize(8,8,900,700);
 	Center();
 	
 	////GUI Items Creation End

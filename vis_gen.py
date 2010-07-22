@@ -4,6 +4,7 @@ import numpy
 import sys
 import math
 import os
+import read_gen
 
 skip = 1
 def readinrecord(fn):
@@ -20,26 +21,7 @@ def dist(x1,y1,x2,y2):
 
 a=open(sys.argv[1]).read().split("\n")[skip:-1]
 if(len(sys.argv)==3):
-    b=readinrecord(sys.argv[2])
-else:
-    b=numpy.array([])
-
-cutoff=2000
-if(len(sys.argv)>3):
-    b=readinrecord(sys.argv[2])
-    b=numpy.hstack((numpy.reshape(numpy.arange(b.shape[0]),(b.shape[0],1)),b))
-    cutoff=b.shape[0]
-else:
-    cutoff=(-1)
-    for x in range(b.shape[0]):
-        if(b[x,3]>0):
-            cutoff=x
-            break
-
-    if(cutoff==-1):
-        cutoff=b.shape[0]
-    else:
-        cutoff+=1
+    b=read_gen.read_gen(sys.argv[2])
 
 p1=map(int,a[1].split(" "))
 p2=map(int,a[3].split(" "))
@@ -81,15 +63,13 @@ scene.add(svg_draw.Circle(map(lambda x:x,scaler.scale(p2)),7,(0,0,0),True))
 scene.add(svg_draw.Circle(map(lambda x:x,scaler.scale(p3)),4,(0,0,0),True))
 
 
-cutoff=b.shape[0]
-for x in range(cutoff):
+for x in range(len(b)):
     color = 0
     #color = 200-(float(x)/cutoff)*200
     #color = dist(b[x,1],b[x,2],p2[0],p2[1])/300.0*200+75
     if(color>255):
         color=255
-    scene.add(svg_draw.Circle(scaler.scale((b[x,1],b[x,2])),2,(0,0,255),False))
-
+    scene.add(svg_draw.Circle(scaler.scale((b[x][0],b[x][1])),2,(0,0,255),False))
 
 scene.add(svg_draw.Circle(scaler.scale(p1),10,(255,255,255),False))
 
