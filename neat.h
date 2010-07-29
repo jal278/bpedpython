@@ -3,6 +3,9 @@
 
 #include <cstdlib>
 namespace NEAT {
+    extern bool archive;
+    extern bool elitism;
+    extern bool speciation;
     //leaky integrator additions
     extern double time_const_mut_power;
     extern double bias_mut_power;

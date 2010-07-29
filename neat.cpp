@@ -4,6 +4,10 @@
 #include <cmath>
 #include <cstring>
 
+bool NEAT::elitism=true;
+bool NEAT::speciation=true;
+bool NEAT::archive=true;
+
 //ADDED
 double NEAT::time_const_mut_power=0.4;
 double NEAT::time_const_mut_prob=0.3;

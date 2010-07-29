@@ -464,7 +464,7 @@ class Environment
 			//radar
 			for(j=0;j<(int)hero.radar.size();j++)
 			{
-				inputs[i+j]=(hero.radar[j]);
+				inputs[i+j+1]=(hero.radar[j]);
 				if(isnan(inputs[i+j]))
 					cout << "NAN in inputs" << endl;
 			}
@@ -478,7 +478,7 @@ class Environment
 			//poi radar
 			for(k=0;k<(int)hero.poi_radar.size();k++)
 			{
-				inputs[i+j+k]=(hero.poi_radar[k]);
+				inputs[i+j+k+1]=(hero.poi_radar[k]);
                                 if(isnan(inputs[i+j+k]))
 					cout << "NaN in inputs" << endl;
 			}
@@ -501,8 +501,8 @@ class Environment
 				cout << "OUTPUT ISNAN" << endl;	
 			
 			//why apply accelerations?
-			//hero.ang_vel+=(o1-0.5)*1.0;
-			//hero.speed+=(o2-0.5)*1.0;
+			hero.ang_vel+=(o1-0.5)*1.0;
+			hero.speed+=(o2-0.5)*1.0;
                         
                         //if(o1<0.2)
                         //  hero.ang_vel= -0.5;
@@ -510,8 +510,10 @@ class Environment
                         // hero.ang_vel= +0.5;
 			//if(o3>0.5)
 			//  hero.collide=true;
-			hero.ang_vel=(o1-0.5)*6.0;
-			hero.speed=(o2)*3.0;
+			
+            //IF YOU WANT velocity instead of accel
+                        hero.ang_vel=(o1-0.5)*6.0;
+			hero.speed=(o2-0.5)*6.0;
 			
 			//constraints of speed & angular velocity
 			if(hero.speed>3.0) hero.speed=3.0;

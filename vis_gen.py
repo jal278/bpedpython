@@ -63,6 +63,7 @@ scene.add(svg_draw.Circle(map(lambda x:x,scaler.scale(p2)),7,(0,0,0),True))
 scene.add(svg_draw.Circle(map(lambda x:x,scaler.scale(p3)),4,(0,0,0),True))
 
 
+print "drawing points..."
 for x in range(len(b)):
     color = 0
     #color = 200-(float(x)/cutoff)*200

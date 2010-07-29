@@ -115,7 +115,7 @@ double Species::estimate_average() {
 
 	bool found;  //When a Species is found
 
-	bool champ_done=false; //Flag the preservation of the champion  
+	bool champ_done=!NEAT::elitism; //Flag the preservation of the champion  
 
 	Organism *thechamp;
 
@@ -495,7 +495,7 @@ double Species::estimate_average() {
 				if (curspecies!=(pop->species).end())
 					comporg=(*curspecies)->first();
 			}
-			else if (((baby->gnome)->compatibility(comporg->gnome))<NEAT::compat_threshold) {
+			else if (!NEAT::speciation||(((baby->gnome)->compatibility(comporg->gnome))<NEAT::compat_threshold)) {
 				//Found compatible species, so add this organism to it
 				(*curspecies)->add_Organism(baby);
 				baby->species=(*curspecies);  //Point organism to its species
@@ -971,7 +971,7 @@ bool Species::reproduce(int generation, Population *pop,std::vector<Species*> &s
 			}
 
 			//If we have a super_champ (Population champion), finish off some special clones
-			if ((thechamp->super_champ_offspring) > 0) {
+			if (NEAT::elitism && (thechamp->super_champ_offspring) > 0) {
 				mom=thechamp;
 				new_genome=(mom->gnome)->duplicate(count);
 
@@ -1310,7 +1310,7 @@ new_genome->mutate_node_parameters(NEAT::time_const_mut_power,NEAT::time_const_m
 							if (curspecies!=(pop->species).end())
 								comporg=(*curspecies)->first();
 						}
-						else if (((baby->gnome)->compatibility(comporg->gnome))<NEAT::compat_threshold) {
+						else if (!NEAT::speciation||(((baby->gnome)->compatibility(comporg->gnome))<NEAT::compat_threshold)) {
 							//Found compatible species, so add this organism to it
 							(*curspecies)->add_Organism(baby);
 							baby->species=(*curspecies);  //Point organism to its species

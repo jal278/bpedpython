@@ -395,7 +395,7 @@ bool Population::speciate() {
 			while((comporg!=0)&&
 				(curspecies!=species.end())) {
 
-					if ((((*curorg)->gnome)->compatibility(comporg->gnome))<NEAT::compat_threshold) {
+					if (!NEAT::speciation || ((((*curorg)->gnome)->compatibility(comporg->gnome))<NEAT::compat_threshold)) {
 
 						//Found compatible species, so add this organism to it
 						(*curspecies)->add_Organism(*curorg);

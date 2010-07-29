@@ -319,11 +319,11 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
 //      NEAT::compat_threshold = 1000000.0;
 	//only continue past generation 1000 if not yet solved
 	//if(offspring_count>=pop_size*1000 && firstflag)
-        if(firstflag)
-	 break;
+        // if(firstflag)
+	// break;
 
 int evolveupdate=20000;
-if(false && offspring_count % evolveupdate ==0) {
+if(offspring_count % evolveupdate ==0) {
    char fn[100];
    sprintf(fn,"%s_evolvability%d.dat",output_dir,offspring_count/evolveupdate);
    for (curorg = (pop->organisms).begin(); curorg != pop->organisms.end(); ++curorg) {
@@ -786,7 +786,8 @@ double evolvability(Organism* org,char* fn) {
   Organism *new_org= new Organism(*org);
  for(int i=0;i<200;i++) { 
   new_org->gnome = new Genome(*org->gnome);
-  for(int j=0;j<5;j++) mutate_genome(new_org->gnome);
+  if(i!=0) //first copy is clean
+  for(int j=0;j<3;j++) mutate_genome(new_org->gnome);
   new_org->net=new_org->gnome->genesis(0);
   noveltyitem* nov_item = maze_novelty_map(new_org);
   for(int k=0;k<nov_item->data[0].size();k++)
@@ -968,7 +969,7 @@ Population *maze_generational(char* outputdir,const char* mazefile,int param,con
 	bool win = maze_generational_epoch(pop,gen,Record,archive,novelty);
 
   //writing out stuff 
-  if(gen%10==0)
+  if(gen%NEAT::print_every == 0 )
   {
   char filename[100];
   sprintf(filename,"%s_record.dat",output_dir);
@@ -990,7 +991,7 @@ Population *maze_generational(char* outputdir,const char* mazefile,int param,con
   archive.Serialize(fname);
   sprintf(fname,"%s_record.dat",output_dir);
   Record.serialize(fname);
-    break;
+    //break;
   }
       
 }
@@ -1015,8 +1016,16 @@ static vector<Organism*> measure_pop;
   int winnernum;
   int indiv_counter=0;
  
-  int switch_amount = 30;
-
+  int evolveupdate=40;
+  if(generation%evolveupdate==0)
+  {
+   char fn[100];
+   sprintf(fn,"%s_evolvability%d.dat",output_dir,generation/evolveupdate);
+   for (curorg = (pop->organisms).begin(); curorg != pop->organisms.end(); ++curorg) {
+    evolvability(*curorg,fn);
+     }
+   }
+  
   //Evaluate each organism on a test
   for(curorg=(pop->organisms).begin();curorg!=(pop->organisms).end();++curorg) {
         
@@ -1102,7 +1111,7 @@ static vector<Organism*> measure_pop;
   }
 
   char fn[100];
-  sprintf(fn,"dist%d",generation);
+  sprintf(fn,"%sdist%d",output_dir,generation);
   pop->print_distribution(fn);
   
   //Average and max their fitnesses for dumping to file and snapshot

@@ -437,7 +437,7 @@ public:
     bool add_to_novelty_archive(float novelty)
     {
        
-        if (((float)rand()/RAND_MAX)<(0.005))
+        if (NEAT::archive && ((float)rand()/RAND_MAX)<(0.005))
          return true;
         return false;
        
@@ -558,7 +558,7 @@ public:
             neigh=neighbors;
         }
 
-        if (len<ARCHIVE_SEED_AMOUNT)
+        if (len<ARCHIVE_SEED_AMOUNT && NEAT::archive)
         {
             item->age=1.0;
             add_novel_item(item);
