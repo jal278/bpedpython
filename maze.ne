@@ -35,3 +35,6 @@ time_const_mut_power 0.2
 time_const_mut_prob 0.3
 bias_mut_power 0.2
 bias_mut_prob 0.3
+elitism 1
+speciation 1
+archive 1

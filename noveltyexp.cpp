@@ -322,7 +322,7 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
         // if(firstflag)
 	// break;
 
-int evolveupdate=20000;
+int evolveupdate=50000;
 if(offspring_count % evolveupdate ==0) {
    char fn[100];
    sprintf(fn,"%s_evolvability%d.dat",output_dir,offspring_count/evolveupdate);
@@ -1016,7 +1016,7 @@ static vector<Organism*> measure_pop;
   int winnernum;
   int indiv_counter=0;
  
-  int evolveupdate=40;
+  int evolveupdate=100;
   if(generation%evolveupdate==0)
   {
    char fn[100];
@@ -1112,7 +1112,7 @@ static vector<Organism*> measure_pop;
 
   char fn[100];
   sprintf(fn,"%sdist%d",output_dir,generation);
-  pop->print_distribution(fn);
+  //pop->print_distribution(fn);
   
   //Average and max their fitnesses for dumping to file and snapshot
   for(curspecies=(pop->species).begin();curspecies!=(pop->species).end();++curspecies) {

@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
   ValueArg<string> mcmaze("","mcmaze","MC Maze file",false,"mcmaze.txt","string");
   cmd.add(mcmaze);
 
-  ValueArg<string> genes("z","sg","Starter genes",false,"mazestartgenes","string");
+  ValueArg<string> genes("z","sg","Starter genes",false,"mazestart_orig","string");
   cmd.add(genes);
 
   ValueArg<string> settings("s","settings","Settings file",false,"maze.ne","string");
@@ -130,7 +130,7 @@ if(!noveltySwitch.getValue())
 }
 else
 {
- p = maze_generational(filename,mazename,param,startgenes,2000,noveltySwitch.getValue());
+ p = maze_generational(filename,mazename,param,startgenes,1000,noveltySwitch.getValue());
 }
   return(0);
  

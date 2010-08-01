@@ -382,6 +382,15 @@ bool NEAT::load_neat_params(const char *filename, bool output) {
 	paramFile>>NEAT::bias_mut_power;
 	
 	paramFile>>curword;
+	paramFile>>NEAT::elitism;
+	
+	paramFile>>curword;
+	paramFile>>NEAT::speciation;
+
+        paramFile>>curword;
+	paramFile>>NEAT::archive;
+
+	paramFile>>curword;
 	paramFile>>NEAT::bias_mut_prob;
 
     if(output) {
@@ -422,6 +431,9 @@ bool NEAT::load_neat_params(const char *filename, bool output) {
 	    printf("time_const_mut_prob=%f\n",time_const_mut_prob);
 	    printf("bias_mut_power=%f\n",bias_mut_power);
         printf("bias_mut_prob=%f\n",bias_mut_prob);
+        printf("elitism=%f\n",elitism);
+        printf("speciation=%f\n",speciation);
+        printf("archive=%f\n",archive);
     }
 
 	paramFile.close();
