@@ -3,7 +3,7 @@
 #include <fstream>
 #include <cmath>
 #include <cstring>
-
+bool NEAT::evolvabilitytest=false;
 bool NEAT::elitism=true;
 bool NEAT::speciation=true;
 bool NEAT::archive=true;
@@ -382,6 +382,9 @@ bool NEAT::load_neat_params(const char *filename, bool output) {
 	paramFile>>NEAT::bias_mut_power;
 	
 	paramFile>>curword;
+	paramFile>>NEAT::bias_mut_prob;
+	
+        paramFile>>curword;
 	paramFile>>NEAT::elitism;
 	
 	paramFile>>curword;
@@ -390,8 +393,6 @@ bool NEAT::load_neat_params(const char *filename, bool output) {
         paramFile>>curword;
 	paramFile>>NEAT::archive;
 
-	paramFile>>curword;
-	paramFile>>NEAT::bias_mut_prob;
 
     if(output) {
 	    printf("trait_param_mut_prob=%f\n",trait_param_mut_prob);
@@ -431,9 +432,9 @@ bool NEAT::load_neat_params(const char *filename, bool output) {
 	    printf("time_const_mut_prob=%f\n",time_const_mut_prob);
 	    printf("bias_mut_power=%f\n",bias_mut_power);
         printf("bias_mut_prob=%f\n",bias_mut_prob);
-        printf("elitism=%f\n",elitism);
-        printf("speciation=%f\n",speciation);
-        printf("archive=%f\n",archive);
+        printf("elitism=%s\n",elitism?"true":"false");
+        printf("speciation=%s\n",speciation?"true":"false");
+        printf("archive=%s\n",archive?"true":"false");
     }
 
 	paramFile.close();

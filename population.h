@@ -10,6 +10,9 @@
 #include "species.h"
 #include "organism.h"
 
+class noveltyitem;
+class data_record;
+
 using namespace std;
 
 void reset_activity();
@@ -38,6 +41,16 @@ namespace NEAT {
 
 	public:
 	//added for statistics
+        
+        noveltyitem* (*evaluator)(Organism*,data_record*);
+        void set_evaluator(noveltyitem* (*eval)(Organism*,data_record*)) {
+         evaluator=eval;
+        }
+        void evaluate_all() { 
+	 for (std::vector<Organism*>::iterator iter = organisms.begin(); iter != organisms.end(); ++iter) evaluate_organism(*iter);
+        }
+        void evaluate_organism(Organism* org);
+   
         void update_statistics();
 
         std::vector<Organism*> organisms; //The organisms in the Population

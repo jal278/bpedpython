@@ -216,7 +216,7 @@ else
     }
     cout<<"Verifying Spawned Pop"<<endl;
     pop->verify();
-      
+    pop->set_evaluator(&maze_novelty_map);      
     //Start the evolution loop using rtNEAT method calls 
     maze_novelty_realtime_loop(pop,novelty);
 
@@ -270,7 +270,8 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
      reset_activity();  
   //Initially, we evaluate the whole population                                                                               
   //Evaluate each organism on a test                   
-  int indiv_counter=0;  
+  int indiv_counter=0; 
+/* 
   for(curorg=(pop->organisms).begin();curorg!=(pop->organisms).end();++curorg) {
 
     //shouldn't happen                                                                                                        
@@ -287,6 +288,8 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
 	//individuals that fail to meet goal?
 	indiv_counter++;
   }
+*/
+ pop->evaluate_all();
 
   if(novelty) {
   //assign fitness scores based on novelty
@@ -323,7 +326,7 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
 	// break;
 
 int evolveupdate=50000;
-if(offspring_count % evolveupdate ==0) {
+if(NEAT::evolvabilitytest && offspring_count % evolveupdate ==0) {
    char fn[100];
    sprintf(fn,"%s_evolvability%d.dat",output_dir,offspring_count/evolveupdate);
    for (curorg = (pop->organisms).begin(); curorg != pop->organisms.end(); ++curorg) {
@@ -427,12 +430,14 @@ if(activity_stats&& offspring_count % 10000 == 0)
     cout<<"Evaluating new baby: "<<endl;
 	#endif
 	
-	data_record* newrec=new data_record();
+/*	data_record* newrec=new data_record();
 	newrec->indiv_number=indiv_counter;
 	//evaluate individual, get novelty point
 	new_org->noveltypoint = maze_novelty_map(new_org,newrec);
 	new_org->noveltypoint->indiv_number = indiv_counter;
 	new_org->fitness=new_org->noveltypoint->fitness;
+*/
+        data_record* newrec=new_org->datarec;
         //calculate novelty of new individual
 	if(novelty) {
         archive.evaluate_individual(new_org,pop->organisms);
@@ -964,6 +969,8 @@ Population *maze_generational(char* outputdir,const char* mazefile,int param,con
       cout<<"Verifying Spawned Pop"<<endl;
       pop->verify();
 
+       //set evaluator
+       pop->set_evaluator(&maze_novelty_map);
       for (gen=0;gen<=gens;gen++) {
 	cout<<"Generation "<<gen<<endl;
 	bool win = maze_generational_epoch(pop,gen,Record,archive,novelty);
@@ -1017,7 +1024,9 @@ static vector<Organism*> measure_pop;
   int indiv_counter=0;
  
   int evolveupdate=100;
-  if(generation%evolveupdate==0)
+  if(generation==0) pop->evaluate_all();
+
+  if(NEAT::evolvabilitytest && generation%evolveupdate==0)
   {
    char fn[100];
    sprintf(fn,"%s_evolvability%d.dat",output_dir,generation/evolveupdate);
@@ -1029,13 +1038,13 @@ static vector<Organism*> measure_pop;
   //Evaluate each organism on a test
   for(curorg=(pop->organisms).begin();curorg!=(pop->organisms).end();++curorg) {
         
-        data_record* newrec=new data_record();
-	newrec->indiv_number=indiv_counter;
+	//newrec->indiv_number=indiv_counter;
+        //data_record* newrec=new data_record();
 	//evaluate individual, get novelty point    
-	(*curorg)->noveltypoint = maze_novelty_map((*curorg),newrec);
-        (*curorg)->noveltypoint->indiv_number = indiv_counter;
-        (*curorg)->datarec = newrec;	
-
+	//(*curorg)->noveltypoint = maze_novelty_map((*curorg),newrec);
+        //(*curorg)->noveltypoint->indiv_number = indiv_counter;
+        //(*curorg)->datarec = newrec;	
+        data_record* newrec = (*curorg)->datarec;
 	if((newrec->ToRec[3]>=envList.size())) { // && newrec->ToRec[4]>0.0)) {
 	        if((newrec->ToRec[4]>=envList.size())) {	
                 (*curorg)->winner=true;
@@ -1052,8 +1061,10 @@ static vector<Organism*> measure_pop;
 		best_fitness = (*curorg)->noveltypoint->fitness;
 		cout << "NEW BEST " << best_fitness << endl;
 	}	
+        
         //add record of new indivdual to storage
-	Record.add_new(newrec);
+	//TODO: PUT BACK IN (to fix record.dat...)
+        //Record.add_new(newrec);
 	indiv_counter++;
 /*
 	if((*curorg)->noveltypoint->viable)

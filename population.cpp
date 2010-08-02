@@ -55,6 +55,14 @@ extern int NEAT::time_alive_minimum;
                   }
                 }
 
+        void Population::evaluate_organism(Organism* org) {
+                   data_record* newrec=new data_record();
+	           //evaluate individual, get novelty point    
+		   org->noveltypoint = evaluator(org,newrec);
+                   org->datarec=newrec;
+                   //(*curorg)->noveltypoint->indiv_number = indiv_counter   
+        }
+
 void Population::update_statistics()
 {
 

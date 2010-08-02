@@ -468,7 +468,9 @@ double Species::estimate_average() {
 	baby->mut_struct_baby=mut_struct_baby;
 	baby->mate_baby=mate_baby;
 
-	curspecies=(pop->species).begin();
+        pop->evaluate_organism(baby);
+	
+        curspecies=(pop->species).begin();
 	if (curspecies==(pop->species).end()){
 		//Create the first species
 		newspecies=new Species(++(pop->last_species),true);
@@ -1290,6 +1292,9 @@ new_genome->mutate_node_parameters(NEAT::time_const_mut_power,NEAT::time_const_m
 
 			baby->mut_struct_baby=mut_struct_baby;
 			baby->mate_baby=mate_baby;
+
+			//TODO EVALUATE BABY
+                        pop->evaluate_organism(baby);
 
 			curspecies=(pop->species).begin();
 			if (curspecies==(pop->species).end()){
