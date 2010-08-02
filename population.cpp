@@ -40,6 +40,14 @@ double calculate_average_activity()
 return calculate_cumulative_activity()/calculate_diversity();
 }
 
+double NEAT::genotypic_compatibility(Organism* x,Organism* y) {
+ return x->gnome->compatibility(y->gnome);
+}
+double NEAT::behavioral_compatibility(Organism* x,Organism* y) {
+ return 0.0;
+}
+
+
 extern int NEAT::time_alive_minimum;
 
                void  Population::print_distribution(const char* filename)
@@ -98,6 +106,7 @@ Population::Population(Genome *g,int size) {
 	highest_fitness=0.0;
 	highest_last_changed=0;
 	spawn(g,size);
+        set_compatibility(&NEAT::genotypic_compatibility);
 }
 
 Population::Population(Genome *g,int size, float power) {
@@ -105,6 +114,7 @@ Population::Population(Genome *g,int size, float power) {
 	highest_fitness=0.0;
 	highest_last_changed=0;
 	clone(g, size, power);
+        set_compatibility(&NEAT::genotypic_compatibility);
 }
 
 //used for merging populations together
@@ -136,6 +146,7 @@ Population::Population(std::vector<Organism*> organismList)
 		if(cur_innov_num<last_inno)
 			cur_innov_num = last_inno;
 	}
+        set_compatibility(&NEAT::genotypic_compatibility);
 
 	//Separate the new Population into species
 	speciate();
@@ -172,6 +183,7 @@ Population::Population(std::vector<Genome*> genomeList, float power) {
 	cur_node_id=new_genome->get_last_node_id();
 	cur_innov_num=new_genome->get_last_gene_innovnum();
 
+        set_compatibility(&NEAT::genotypic_compatibility);
 	//Separate the new Population into species
 	speciate();
 }
@@ -274,6 +286,7 @@ Population::Population(const char *filename) {
 
 		iFile.close();
 
+        set_compatibility(&NEAT::genotypic_compatibility);
 		speciate();
 
 	}

@@ -396,7 +396,7 @@ double Species::estimate_average() {
 		//This is done randomly or if the mom and dad are the same organism
 		if ((randfloat()>NEAT::mate_only_prob)||
 			((dad->gnome)->genome_id==(mom->gnome)->genome_id)||
-			(((dad->gnome)->compatibility(mom->gnome))==0.0))
+			(pop->compatibility(dad,mom)==0.0))
 		{
 
 			//Do the mutation depending on probabilities of 
@@ -497,7 +497,7 @@ double Species::estimate_average() {
 				if (curspecies!=(pop->species).end())
 					comporg=(*curspecies)->first();
 			}
-			else if (!NEAT::speciation||(((baby->gnome)->compatibility(comporg->gnome))<NEAT::compat_threshold)) {
+			else if (!NEAT::speciation||(pop->compatibility(baby,comporg)<NEAT::compat_threshold)) {
 				//Found compatible species, so add this organism to it
 				(*curspecies)->add_Organism(baby);
 				baby->species=(*curspecies);  //Point organism to its species
@@ -1225,7 +1225,7 @@ new_genome->mutate_node_parameters(NEAT::time_const_mut_power,NEAT::time_const_m
 				//This is done randomly or if the mom and dad are the same organism
 				if ((randfloat()>NEAT::mate_only_prob)||
 					((dad->gnome)->genome_id==(mom->gnome)->genome_id)||
-					(((dad->gnome)->compatibility(mom->gnome))==0.0))
+					(pop->compatibility(dad,mom)==0.0))
 				{
 
 					//Do the mutation depending on probabilities of 
@@ -1315,7 +1315,7 @@ new_genome->mutate_node_parameters(NEAT::time_const_mut_power,NEAT::time_const_m
 							if (curspecies!=(pop->species).end())
 								comporg=(*curspecies)->first();
 						}
-						else if (!NEAT::speciation||(((baby->gnome)->compatibility(comporg->gnome))<NEAT::compat_threshold)) {
+						else if (!NEAT::speciation||pop->compatibility(baby,comporg)<NEAT::compat_threshold) {
 							//Found compatible species, so add this organism to it
 							(*curspecies)->add_Organism(baby);
 							baby->species=(*curspecies);  //Point organism to its species

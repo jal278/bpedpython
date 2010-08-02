@@ -25,6 +25,8 @@ namespace NEAT {
 	class Species;
 	class Organism;
 
+        double genotypic_compatibility(Organism* x,Organism* y);
+        double behavioral_compatibility(Organism* x,Organism* y);
 	// ---------------------------------------------  
 	// POPULATION CLASS:
 	//   A Population is a group of Organisms   
@@ -43,6 +45,10 @@ namespace NEAT {
 	//added for statistics
         
         noveltyitem* (*evaluator)(Organism*,data_record*);
+        double (*compatibility)(Organism*,Organism*);
+        void set_compatibility(double (*comp)(Organism*,Organism*)) {
+         compatibility=comp;
+        }
         void set_evaluator(noveltyitem* (*eval)(Organism*,data_record*)) {
          evaluator=eval;
         }
