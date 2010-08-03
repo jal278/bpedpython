@@ -5,6 +5,7 @@
 #include <sstream>
 #include <fstream>
 #include "noveltyset.h"
+#include "histogram.h"
 using namespace std;
 using namespace NEAT;
 
@@ -43,8 +44,15 @@ return calculate_cumulative_activity()/calculate_diversity();
 double NEAT::genotypic_compatibility(Organism* x,Organism* y) {
  return x->gnome->compatibility(y->gnome);
 }
-double NEAT::behavioral_compatibility(Organism* x,Organism* y) {
- return 0.0;
+double NEAT::behavioral_compatibility(Organism* xx,Organism* yy) {
+  noveltyitem *x = xx->noveltypoint;
+  noveltyitem *y = yy->noveltypoint;
+	double diff = 0.0;
+	for(int k=0;k<(int)x->data.size();k++) 
+	{
+		diff+=hist_diff(x->data[k],y->data[k]);
+	}
+	return diff/10.0;
 }
 
 
@@ -59,7 +67,7 @@ extern int NEAT::time_alive_minimum;
                   {
                     for(int y=0;y<size;y++)
                     out << organisms[x]->noveltypoint->data[0][y] << " ";
-                    out << organisms[x]->noveltypoint->viable << " " << organisms[x]->fitness << endl;
+                    out << organisms[x]->noveltypoint->viable << " " << organisms[x]->noveltypoint->fitness << endl;
                   }
                 }
 
@@ -545,7 +553,7 @@ bool Population::epoch(int generation) {
 	bool best_ok;
 
 	//We can try to keep the number of species constant at this number
-	int num_species_target=10;
+	int num_species_target=NEAT::pop_size/20;
 	int num_species=species.size();
 	double compat_mod=0.3;  //Modify compat thresh to control speciation
 

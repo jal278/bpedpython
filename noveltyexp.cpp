@@ -19,7 +19,7 @@ using namespace std;
 enum novelty_measure_type { novelty_sample, novelty_accum, novelty_sample_free };
 static novelty_measure_type novelty_measure = novelty_sample;
 
-enum fitness_measure_type { fitness_goal, fitness_drift, fitness_std,fitness_rnd };
+enum fitness_measure_type { fitness_goal, fitness_drift, fitness_std,fitness_rnd,fitness_spin };
 static fitness_measure_type fitness_measure = fitness_goal;
 
 static int number_of_samples = 1;
@@ -91,6 +91,8 @@ if(m=="drift")
    fitness_measure=fitness_drift;
 if(m=="goal")
    fitness_measure=fitness_goal;
+if(m=="spin")
+  fitness_measure=fitness_spin;
 cout << "Fitness measure " << fitness_measure << endl;
 }
 
@@ -216,7 +218,8 @@ else
     }
     cout<<"Verifying Spawned Pop"<<endl;
     pop->verify();
-    pop->set_evaluator(&maze_novelty_map);      
+    pop->set_evaluator(&maze_novelty_map);     
+    //pop->set_compatibility(&behavioral_compatibility); 
     //Start the evolution loop using rtNEAT method calls 
     maze_novelty_realtime_loop(pop,novelty);
 
@@ -255,7 +258,7 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
   Organism *new_org;
 
   //We try to keep the number of species constant at this number                                                    
-  int num_species_target=NEAT::pop_size/15;
+  int num_species_target=NEAT::pop_size/20;
   
   //This is where we determine the frequency of compatibility threshold adjustment
   int compat_adjust_frequency = NEAT::pop_size/20;
@@ -353,7 +356,10 @@ if(activity_stats&& offspring_count % 10000 == 0)
 			archive.get_set_size() << endl;
                  }
                  cout << "GEN" << offspring_count/NEAT::pop_size << endl;
-	}
+	 char fn[100];
+         sprintf(fn,"%sdist%d",output_dir,offspring_count/NEAT::pop_size);
+         pop->print_distribution(fn);
+ }
 
 	//write out current generation and fittest individuals
     if( offspring_count % (NEAT::pop_size*NEAT::print_every) == 0 )
@@ -622,6 +628,13 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record,En
         //if (newenv->hero.collide)
 	//	fitness+=50;
 	}
+        if(fitness_measure == fitness_spin)
+        {
+        fitness=log(newenv->hero.total_spin+0.1);
+        if(fitness>7) fitness=7.0;
+        if(fitness<0) fitness=0.0;
+        fitness=7.01-fitness;
+        }
         
         if(fitness_measure ==fitness_rnd)
         {
@@ -971,6 +984,7 @@ Population *maze_generational(char* outputdir,const char* mazefile,int param,con
 
        //set evaluator
        pop->set_evaluator(&maze_novelty_map);
+    //pop->set_compatibility(&behavioral_compatibility); 
       for (gen=0;gen<=gens;gen++) {
 	cout<<"Generation "<<gen<<endl;
 	bool win = maze_generational_epoch(pop,gen,Record,archive,novelty);
@@ -1123,7 +1137,7 @@ static vector<Organism*> measure_pop;
 
   char fn[100];
   sprintf(fn,"%sdist%d",output_dir,generation);
-  //pop->print_distribution(fn);
+  pop->print_distribution(fn);
   
   //Average and max their fitnesses for dumping to file and snapshot
   for(curspecies=(pop->species).begin();curspecies!=(pop->species).end();++curspecies) {

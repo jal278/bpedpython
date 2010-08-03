@@ -580,9 +580,15 @@ public:
                     float age=(novelties[i].second)->age;
                     w=1.0-pow((float)0.95,age);
                 }
-
-                sum+=term*w;
+                
+		sum+=term*w;
                 weight+=w;
+                /*
+                if (true) {
+                 if(novelties[i].second->fitness < item->fitness)
+                 sum+=5.0f;  
+                }
+                */
                 i++;
             }
 

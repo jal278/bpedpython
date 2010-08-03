@@ -270,6 +270,7 @@ class Character
         vector<float> rangeFinders; //stores rangefinder outputs
         Point location;
         bool collide;
+        float total_spin;
         float heading;
         float speed;
         float ang_vel;
@@ -278,6 +279,7 @@ class Character
         
         Character()
         {
+            total_spin=0.0f;
             collide=false;
             heading=0.0f;
             speed=0.0f;
@@ -510,11 +512,11 @@ class Environment
                         // hero.ang_vel= +0.5;
 			//if(o3>0.5)
 			//  hero.collide=true;
-			
             //IF YOU WANT velocity instead of accel
                         hero.ang_vel=(o1-0.5)*6.0;
 			hero.speed=(o2-0.5)*6.0;
 			
+		        hero.total_spin+=fabs(hero.ang_vel);	
 			//constraints of speed & angular velocity
 			if(hero.speed>3.0) hero.speed=3.0;
 			if(hero.speed<-3.0) hero.speed=(-3.0);

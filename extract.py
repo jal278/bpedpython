@@ -11,6 +11,7 @@ if num==0:
    out.write(a[0])
 else:
    towrite=a[num]
+   print a[num+1].split("\n")[0]
    f=towrite.find("*/")
    f=towrite.find("*/",f+1)
    out.write(towrite[f+3:])
