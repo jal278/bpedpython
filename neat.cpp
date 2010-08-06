@@ -3,7 +3,8 @@
 #include <fstream>
 #include <cmath>
 #include <cstring>
-bool NEAT::evolvabilitytest=false;
+bool NEAT::printdist=false;
+bool NEAT::evolvabilitytest=true;
 bool NEAT::elitism=true;
 bool NEAT::speciation=true;
 bool NEAT::archive=true;

@@ -125,7 +125,6 @@ public:
 
 //future use
     float age;
-
 //used for analysis purposes
     float novelty_scale;
     float novelty;
@@ -583,7 +582,7 @@ public:
                 
 		sum+=term*w;
                 weight+=w;
-                /*
+               /* 
                 if (true) {
                  if(novelties[i].second->fitness < item->fitness)
                  sum+=5.0f;  

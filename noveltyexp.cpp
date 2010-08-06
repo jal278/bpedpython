@@ -800,7 +800,7 @@ double evolvability(Organism* org,char* fn) {
  fstream file; 
  file.open(fn,ios::app|ios::out);
  cout <<"Evolvability..." << endl;
- file << "---" << endl;
+ file << "---" <<  " " << org->winner << endl;
   Organism *new_org= new Organism(*org);
  for(int i=0;i<200;i++) { 
   new_org->gnome = new Genome(*org->gnome);
@@ -985,7 +985,7 @@ Population *maze_generational(char* outputdir,const char* mazefile,int param,con
        //set evaluator
        pop->set_evaluator(&maze_novelty_map);
     //pop->set_compatibility(&behavioral_compatibility); 
-      for (gen=0;gen<=gens;gen++) {
+      for (gen=0;gen<=1000;gen++) {
 	cout<<"Generation "<<gen<<endl;
 	bool win = maze_generational_epoch(pop,gen,Record,archive,novelty);
 
