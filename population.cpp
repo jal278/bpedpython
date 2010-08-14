@@ -67,14 +67,18 @@ extern int NEAT::time_alive_minimum;
                   {
                     for(int y=0;y<size;y++)
                     out << organisms[x]->noveltypoint->data[0][y] << " ";
-                    out << organisms[x]->noveltypoint->viable << " " << organisms[x]->noveltypoint->fitness << endl;
+                    out << organisms[x]->noveltypoint->viable << " " << organisms[x]->noveltypoint->fitness << " " << organisms[x]->net->all_nodes.size() << endl;
                   }
                 }
 
         void Population::evaluate_organism(Organism* org) {
                    data_record* newrec=new data_record();
 	           //evaluate individual, get novelty point    
-		   org->noveltypoint = evaluator(org,newrec);
+                   if(org->noveltypoint && !org->noveltypoint->added)
+                     delete org->noveltypoint;
+                   if(org->datarec)
+                     delete org->datarec;
+ 		   org->noveltypoint = evaluator(org,newrec);
                    org->datarec=newrec;
                    //(*curorg)->noveltypoint->indiv_number = indiv_counter   
         }

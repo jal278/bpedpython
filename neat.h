@@ -3,6 +3,7 @@
 
 #include <cstdlib>
 namespace NEAT {
+    extern bool local_competition;
     extern bool printdist;
     extern bool evolvabilitytest;
     extern bool archive;

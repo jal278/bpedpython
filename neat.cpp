@@ -3,8 +3,9 @@
 #include <fstream>
 #include <cmath>
 #include <cstring>
-bool NEAT::printdist=false;
-bool NEAT::evolvabilitytest=true;
+bool NEAT::local_competition=false;
+bool NEAT::printdist=true;
+bool NEAT::evolvabilitytest=false;
 bool NEAT::elitism=true;
 bool NEAT::speciation=true;
 bool NEAT::archive=true;
@@ -393,7 +394,9 @@ bool NEAT::load_neat_params(const char *filename, bool output) {
 
         paramFile>>curword;
 	paramFile>>NEAT::archive;
-
+         
+        paramFile>>curword;
+        paramFile>>NEAT::local_competition;
 
     if(output) {
 	    printf("trait_param_mut_prob=%f\n",trait_param_mut_prob);
@@ -436,6 +439,7 @@ bool NEAT::load_neat_params(const char *filename, bool output) {
         printf("elitism=%s\n",elitism?"true":"false");
         printf("speciation=%s\n",speciation?"true":"false");
         printf("archive=%s\n",archive?"true":"false");
+        printf("local competition=%s\n",local_competition?"true":"false");
     }
 
 	paramFile.close();

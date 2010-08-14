@@ -11,6 +11,7 @@
 #include <cstdlib>
 
 #include "population.h"
+#include "neat.h"
 
 #define SNUM 0.0000001
 
@@ -235,6 +236,7 @@ private:
     //add new items according to threshold
     bool threshold_add;
     bool generational;
+    bool local_competition;
     //current generation
     int generation;
 public:
@@ -244,6 +246,7 @@ public:
     {
         //how many nearest neighbors to consider for calculating novelty score?
         //histogram adds
+        local_competition=NEAT::local_competition;
         histogram=false;
         generational=_generational;
         minimal_criteria=mc;
@@ -448,33 +451,6 @@ public:
         */
     }
 
-    //only used in generational model (obselete)
-    void end_of_gen()
-    {
-        generation++;
-
-
-        if (threshold_add)
-        {
-            find_novel_items(true);
-        }
-
-        if (hall_of_fame)
-        {
-            find_novel_items(false);
-
-            sort(current_gen.begin(),current_gen.end(),cmp);
-            reverse(current_gen.begin(),current_gen.end());
-
-            add_novel_item(current_gen[0]);
-        }
-
-        clean_gen();
-
-
-        add_pending();
-    }
-
     //steady-state end of generation call (every so many indivudals)
     void end_of_gen_steady(Population* pop)
     {
@@ -483,49 +459,6 @@ public:
 
         add_pending();
 
-    }
-
-    void clean_gen()
-    {
-        vector<noveltyitem*>::iterator cur_item;
-
-        bool datarecord=true;
-
-        stringstream filename("");
-        filename << "novrec/out" << generation << ".dat";
-        ofstream outfile(filename.str().c_str());
-        cout << filename.str() << endl;
-
-        for (cur_item=current_gen.begin();cur_item!=current_gen.end();cur_item++)
-        {
-            if (datarecord)
-            {
-                (*cur_item)->SerializeNoveltyPoint(outfile);
-            }
-            if (!(*cur_item)->added)
-                delete (*cur_item);
-        }
-        current_gen.clear();
-    }
-
-    //see if there are any individuals in current generation
-    //that need to be added to the archive (obselete)
-    void find_novel_items(bool add=true)
-    {
-        vector<noveltyitem*>::iterator cur_item;
-        for (cur_item=current_gen.begin();cur_item!=current_gen.end();cur_item++)
-        {
-            float novelty = test_novelty((*cur_item));
-            (*cur_item)->novelty = novelty;
-            if (add && add_to_novelty_archive(novelty))
-                add_novel_item(*cur_item);
-        }
-    }
-
-    //add an item to current generation (obselete)
-    void add_to_generation(noveltyitem* item)
-    {
-        current_gen.push_back(item);
     }
 
     float novelty_histogram(noveltyitem* item)
@@ -582,12 +515,12 @@ public:
                 
 		sum+=term*w;
                 weight+=w;
-               /* 
-                if (true) {
+                
+                if (local_competition) {
                  if(novelties[i].second->fitness < item->fitness)
                  sum+=5.0f;  
                 }
-                */
+                
                 i++;
             }
 

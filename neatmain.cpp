@@ -36,6 +36,9 @@ int main(int argc, char **argv) {
   SwitchArg remove_random("","remrand","Remove random individuak",false);
   cmd.add(remove_random); 
 
+  SwitchArg extinction("","extinct","Turn on random extinctions",false);
+  cmd.add(extinction);
+
   SwitchArg goal_attract("","goalnotsticky","Goal is not attractor",false);
   cmd.add(goal_attract);
 
@@ -100,7 +103,8 @@ int main(int argc, char **argv) {
 
   cout << "Maze: " << mazename << endl;
   cout << "Start genes: " << startgenes << endl;
-
+  
+  set_extinction(extinction.getValue());
   set_mcmaze(mcmaze.getValue());
   set_fit_measure(fit_measure.getValue());
   set_nov_measure(nov_measure.getValue());

@@ -466,7 +466,7 @@ class Environment
 			//radar
 			for(j=0;j<(int)hero.radar.size();j++)
 			{
-				inputs[i+j+1]=(hero.radar[j]);
+				 inputs[i+j+1]=(hero.radar[j]);
 				if(isnan(inputs[i+j]))
 					cout << "NAN in inputs" << endl;
 			}
@@ -629,8 +629,11 @@ class Environment
             distance = 1.0 - (distance/200.0);
             if(distance<0.2)
 		distance=0.2;
-            
-            
+            bool compass=true;
+            if(compass) {
+            target.x=h.location.x;
+            target.y=h.location.y-50;    
+            }
 			//rotate goal with respect to heading of navigator
             target.rotate(-h.heading,h.location);
             

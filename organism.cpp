@@ -6,6 +6,7 @@ using namespace NEAT;
 
 Organism::Organism(double fit, Genome *g,int gen, const char* md) {
 	noveltypoint=NULL;
+        datarec=NULL;
 	fitness=fit;
 	orig_fitness=fitness;
 	gnome=g;
@@ -40,6 +41,7 @@ Organism::Organism(double fit, Genome *g,int gen, const char* md) {
 
 Organism::Organism(const Organism& org)
 {
+        datarec=NULL;
 	noveltypoint=NULL;
 	fitness = org.fitness;
 	orig_fitness = org.orig_fitness;
@@ -75,7 +77,9 @@ Organism::Organism(const Organism& org)
 Organism::~Organism() {
 	delete net;
 	delete gnome;
-	if(noveltypoint)
+        if(datarec)
+          delete datarec;
+        if(noveltypoint)
 	{
 		if(!noveltypoint->added)
 			delete noveltypoint;

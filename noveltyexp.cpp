@@ -14,13 +14,91 @@
 #include <fstream>
 #include <math.h>
 
+static Environment* env;
+static vector<Environment*> envList;
+static vector<Environment*> mcList;
+
 double evolvability(Organism* org,char* fn);
 using namespace std;
 enum novelty_measure_type { novelty_sample, novelty_accum, novelty_sample_free };
 static novelty_measure_type novelty_measure = novelty_sample;
 
-enum fitness_measure_type { fitness_goal, fitness_drift, fitness_std,fitness_rnd,fitness_spin };
+enum fitness_measure_type { fitness_goal, fitness_drift, fitness_std,fitness_rnd,fitness_spin,fitness_changegoal };
 static fitness_measure_type fitness_measure = fitness_goal;
+
+static bool mc_reach_onepoint=false;
+
+static bool population_dirty=false;
+
+static bool extinction=true;
+void set_extinction(bool _ext) { extinction=_ext; }
+static Point extinction_point(0.0,0.0);
+static float extinction_radius=50.0;
+static int change_extinction_length=5;
+
+void change_extinction_point() {
+float minx,maxx,miny,maxy;
+envList[0]->get_range(minx,miny,maxx,maxy);
+
+extinction_point.x = randfloat()*(maxx-minx)+minx;
+extinction_point.y = randfloat()*(maxy-miny)+miny;
+if(extinction)
+ population_dirty=true;
+}
+bool extinct(Point k) {
+if(k.distance(extinction_point)<extinction_radius)
+ return true;
+return false;
+}
+
+
+static Point changing_goal(0.0,0.0);
+static int change_goal_length=5;
+
+
+void change_goal_location() {
+static int count=0;
+static float vx=0.0;
+static float vy=0.0;
+static float newx;
+static float newy;
+float minx,maxx,miny,maxy;
+envList[0]->get_range(minx,miny,maxx,maxy);
+
+if(count==0) {
+newx = randfloat()*(maxx-minx)+minx;
+newy = randfloat()*(maxy-miny)+miny;
+changing_goal.x=newx;
+changing_goal.y=newy;
+}
+
+if(count%10==0) {
+newx = randfloat()*(maxx-minx)+minx;
+newy = randfloat()*(maxy-miny)+miny;
+vx=(newx-changing_goal.x)/10.0;
+vy=(newy-changing_goal.y)/10.0;
+}
+
+count++;
+
+changing_goal.x+=vx;
+changing_goal.y+=vy;
+if(changing_goal.x<minx) changing_goal.x=minx;
+else if(changing_goal.x>maxx) changing_goal.x=maxx;
+if(changing_goal.y<miny) changing_goal.y=miny;
+else if(changing_goal.y>maxy) changing_goal.y=maxy;
+
+
+if(fitness_measure==fitness_changegoal)
+{
+ cout << "New goal: " << changing_goal.x << " " << changing_goal.y << endl;
+ population_dirty=true;
+}
+
+}
+
+
+
 
 static int number_of_samples = 1;
 static int simulated_timesteps = 400;
@@ -93,6 +171,8 @@ if(m=="goal")
    fitness_measure=fitness_goal;
 if(m=="spin")
   fitness_measure=fitness_spin;
+if(m=="changegoal")
+  fitness_measure=fitness_changegoal;
 cout << "Fitness measure " << fitness_measure << endl;
 }
 
@@ -109,9 +189,6 @@ cout << "Novelty measure " << novelty_measure << endl;
 
 static char output_dir[30]="";
 
-static Environment* env;
-static vector<Environment*> envList;
-static vector<Environment*> mcList;
 
 static int param=-1;
 static int push_back_size = 20;
@@ -274,24 +351,6 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
   //Initially, we evaluate the whole population                                                                               
   //Evaluate each organism on a test                   
   int indiv_counter=0; 
-/* 
-  for(curorg=(pop->organisms).begin();curorg!=(pop->organisms).end();++curorg) {
-
-    //shouldn't happen                                                                                                        
-    if (((*curorg)->gnome)==0) {
-      cout<<"ERROR EMPTY GEMOME!"<<endl;
-      cin>>pause;
-    }
-
-	//evaluate each individual
-	(*curorg)->noveltypoint = maze_novelty_map((*curorg));
-	(*curorg)->noveltypoint->indiv_number=indiv_counter;
-	(*curorg)->fitness = (*curorg)->noveltypoint->fitness;
-        //make sure that we are resetting novelty metric of
-	//individuals that fail to meet goal?
-	indiv_counter++;
-  }
-*/
  pop->evaluate_all();
 
   if(novelty) {
@@ -348,6 +407,15 @@ if(activity_stats&& offspring_count % 10000 == 0)
 	//end of generation
     if(offspring_count % (NEAT::pop_size*1) == 0)
 	{
+          if((offspring_count/NEAT::pop_size)%change_extinction_length==0)
+            change_extinction_point();
+          if((offspring_count/NEAT::pop_size)%change_goal_length==0)
+            change_goal_location();
+
+          if(population_dirty) {
+           pop->evaluate_all();
+           population_dirty=false;
+          }
                  if(novelty) {
 			archive.end_of_gen_steady(pop);
 			//archive.add_randomly(pop);
@@ -458,14 +526,14 @@ if(activity_stats&& offspring_count % 10000 == 0)
                 //reset behavioral characterization
                 new_org->noveltypoint->reset_behavior();
                 //cout << "fail" << endl;
-               // cout << " :( " << endl;
+              //  cout << " :( " << endl;
 	}	
         else
         {
-             //cout << ":)" << new_org->noveltypoint->indiv_number << endl;
+            // cout << ":)" << new_org->noveltypoint->indiv_number << endl;
         }	
         //add record of new indivdual to storage
-	Record.add_new(newrec);
+	//Record.add_new(newrec);
 	indiv_counter++;
 	
 	//update fittest list
@@ -513,13 +581,14 @@ if(activity_stats&& offspring_count % 10000 == 0)
   char fname[100];
   sprintf(fname,"%srtarchive.dat",output_dir);
   archive.Serialize(fname);
-  Record.serialize(filename);
+  //Record.serialize(filename);
   
   sprintf(fname,"%sfittest_final",output_dir);
   archive.serialize_fittest(fname);
 
   sprintf(fname,"%srtgen_final",output_dir);
   pop->print_to_file_by_species(fname);
+  delete pop;
   exit(0);
   return 0;
 }
@@ -567,8 +636,10 @@ Environment* mazesimIni(Environment* tocopy,Network *net, vector< vector<float> 
 	  
 	  return fitness;
   }
-double mazesim(Network* net, vector< vector<float> > &dc, data_record *record,Environment* the_env)
+double mazesim(Network* net, vector< vector<float> > &dc, data_record *record,Environment* the_env,Organism* o=NULL)
 {
+                 
+ 
 	vector<float> data;
 	
 	int timesteps=the_env->steps; //simulated_timesteps;
@@ -619,7 +690,11 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record,En
 			accum->add_point(loc);
 		}
 	}
-
+        if(extinction) {
+         if(extinct(newenv->hero.location)) {
+          if(o!=NULL) o->eliminate=true;
+         }
+        }
 	//calculate fitness of individual as closeness to target
 	if(fitness_measure == fitness_goal)
         {
@@ -634,6 +709,12 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record,En
         if(fitness>7) fitness=7.0;
         if(fitness<0) fitness=0.0;
         fitness=7.01-fitness;
+        }
+
+        if(fitness_measure == fitness_changegoal) 
+        {
+        fitness=500-changing_goal.distance(newenv->hero.location);
+        if(fitness<0.1) fitness=0.1;
         }
         
         if(fitness_measure ==fitness_rnd)
@@ -805,13 +886,13 @@ double evolvability(Organism* org,char* fn) {
  for(int i=0;i<200;i++) { 
   new_org->gnome = new Genome(*org->gnome);
   if(i!=0) //first copy is clean
-  for(int j=0;j<3;j++) mutate_genome(new_org->gnome);
+  for(int j=0;j<2;j++) mutate_genome(new_org->gnome);
   new_org->net=new_org->gnome->genesis(0);
   noveltyitem* nov_item = maze_novelty_map(new_org);
   for(int k=0;k<nov_item->data[0].size();k++)
     file << nov_item->data[0][k] << " ";
-  delete new_org->gnome;
   delete new_org->net;
+  delete new_org->gnome;
   delete nov_item;
   file << endl;
  }  
@@ -836,7 +917,7 @@ noveltyitem* maze_novelty_map(Organism *org,data_record* record)
   double fitness=0.0;
   static float highest_fitness=0.0;
   
-new_item->viable=true;
+ new_item->viable=true;
 
   if(record!=NULL && minimal_criteria) 
   for(int x=0;x<mcList.size();x++)
@@ -866,8 +947,13 @@ if(true) //new_item->viable)
            c2old = record->ToRec[4];
  	 }
 
-         fitness+=mazesim(org->net,gather,record,envList[x]);
-
+         org->eliminate=false;
+         fitness+=mazesim(org->net,gather,record,envList[x],org);
+         if(org->eliminate) {
+          new_item->viable=false;
+          org->eliminate=false;
+         }
+      
          if(record!=NULL) {
 	   constraint_vector.push_back(record->ToRec[3]-c1old);
            constraint_vector.push_back(record->ToRec[4]-c2old);
@@ -896,7 +982,7 @@ for(int x=0;x<envList.size();x++) constraint_vector.push_back(0);
             }
             //else cout << "viable..." << endl;
            }
-            else
+            else if(mc_reach_onepoint)
            if( record->ToRec[3]<envList.size())
            { new_item->viable=false;
             //cout << record->ToRec[3] << endl; 
@@ -987,6 +1073,10 @@ Population *maze_generational(char* outputdir,const char* mazefile,int param,con
     //pop->set_compatibility(&behavioral_compatibility); 
       for (gen=0;gen<=1000;gen++) {
 	cout<<"Generation "<<gen<<endl;
+        if(gen%change_extinction_length==0)
+           change_extinction_point();
+        if(gen%change_goal_length==0) 
+           change_goal_location();
 	bool win = maze_generational_epoch(pop,gen,Record,archive,novelty);
 
   //writing out stuff 
@@ -997,7 +1087,7 @@ Population *maze_generational(char* outputdir,const char* mazefile,int param,con
   char fname[100];
   sprintf(fname,"%s_archive.dat",output_dir);
   archive.Serialize(fname);
-  Record.serialize(filename);
+  //Record.serialize(filename);
   sprintf(fname,"%sgen_%d",output_dir,gen);
   pop->print_to_file_by_species(fname);
   }

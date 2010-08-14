@@ -24,6 +24,7 @@ using namespace std;
 
 using namespace NEAT;
 
+void set_extinction(bool _ext);
 void set_random_replace(bool val);
 void  set_constraint_switch(bool val);
 void set_aoi(bool val);
