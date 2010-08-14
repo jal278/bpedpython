@@ -5,6 +5,7 @@
 #include "maze.h"
 
 #include "histogram.h"
+#include "calc_evol.h"
 
 //#define DEBUG_OUTPUT 1
 #include <algorithm>
@@ -838,6 +839,8 @@ return false;
 void mutate_genome(Genome* new_genome)
 {
 	double mut_power=NEAT::weight_mut_power;
+	new_genome->mutate_link_weights(mut_power,1.0,GAUSSIAN);
+        return;
 			//NOTE:  A link CANNOT be added directly after a node was added because the phenotype
 			//       will not be appropriately altered to reflect the change
 			if(1) {
@@ -877,25 +880,35 @@ void mutate_genome(Genome* new_genome)
 			}
 }
  
+#define MUTATIONS 200
 double evolvability(Organism* org,char* fn) {
  fstream file; 
  file.open(fn,ios::app|ios::out);
  cout <<"Evolvability..." << endl;
- file << "---" <<  " " << org->winner << endl;
-  Organism *new_org= new Organism(*org);
- for(int i=0;i<200;i++) { 
+// file << "---" <<  " " << org->winner << endl;
+ double points[MUTATIONS*2];
+ float minx,maxx,miny,maxy;
+ envList[0]->get_range(minx,miny,maxx,maxy);
+ 
+ Organism *new_org= new Organism(*org);
+ for(int i=0;i<MUTATIONS;i++) { 
   new_org->gnome = new Genome(*org->gnome);
-  if(i!=0) //first copy is clean
-  for(int j=0;j<2;j++) mutate_genome(new_org->gnome);
+  //if(i!=0) //first copy is clean
+  for(int j=0;j<1;j++) mutate_genome(new_org->gnome);
   new_org->net=new_org->gnome->genesis(0);
   noveltyitem* nov_item = maze_novelty_map(new_org);
-  for(int k=0;k<nov_item->data[0].size();k++)
-    file << nov_item->data[0][k] << " ";
+  //for(int k=0;k<nov_item->data[0].size();k++)
+  //  file << nov_item->data[0][k] << " ";
+  points[i*2]=(nov_item->data[0][0]-minx)/(maxx-minx);
+  points[i*2+1]=(nov_item->data[0][1]-miny)/(maxy-miny);
   delete new_org->net;
   delete new_org->gnome;
   delete nov_item;
-  file << endl;
+  //file << endl;
  }  
+ int dist = distinct(points,MUTATIONS);
+ double evol = test_indiv(points,MUTATIONS);
+ file << dist << " " << evol << endl; 
  file.close();
  return 0.0;
 }
