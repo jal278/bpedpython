@@ -24,7 +24,7 @@ using namespace std;
 enum novelty_measure_type { novelty_sample, novelty_accum, novelty_sample_free };
 static novelty_measure_type novelty_measure = novelty_sample;
 
-enum fitness_measure_type { fitness_goal, fitness_drift, fitness_std,fitness_rnd,fitness_spin,fitness_changegoal };
+enum fitness_measure_type { fitness_goal, fitness_drift, fitness_std,fitness_rnd,fitness_spin,fitness_changegoal,fitness_collisions };
 static fitness_measure_type fitness_measure = fitness_goal;
 
 static bool mc_reach_onepoint=false;
@@ -174,6 +174,8 @@ if(m=="spin")
   fitness_measure=fitness_spin;
 if(m=="changegoal")
   fitness_measure=fitness_changegoal;
+if(m=="collisions")
+  fitness_measure=fitness_collisions;
 cout << "Fitness measure " << fitness_measure << endl;
 }
 
@@ -427,6 +429,7 @@ if(activity_stats&& offspring_count % 10000 == 0)
                  cout << "GEN" << offspring_count/NEAT::pop_size << endl;
 	 char fn[100];
          sprintf(fn,"%sdist%d",output_dir,offspring_count/NEAT::pop_size);
+         if(NEAT::printdist)
          pop->print_distribution(fn);
  }
 
@@ -704,6 +707,10 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record,En
         //if (newenv->hero.collide)
 	//	fitness+=50;
 	}
+        if(fitness_measure == fitness_collisions)
+        {
+        fitness= (-newenv->hero.collisions);
+        }
         if(fitness_measure == fitness_spin)
         {
         fitness=log(newenv->hero.total_spin+0.1);
@@ -889,26 +896,35 @@ double evolvability(Organism* org,char* fn) {
  double points[MUTATIONS*2];
  float minx,maxx,miny,maxy;
  envList[0]->get_range(minx,miny,maxx,maxy);
- 
- Organism *new_org= new Organism(*org);
- for(int i=0;i<MUTATIONS;i++) { 
-  new_org->gnome = new Genome(*org->gnome);
-  //if(i!=0) //first copy is clean
-  for(int j=0;j<1;j++) mutate_genome(new_org->gnome);
-  new_org->net=new_org->gnome->genesis(0);
+ double ox,oy,fit;
+ int nodes;
+ int connections; 
+ for(int i=0;i<MUTATIONS;i++) {
+  Genome *new_gene= new Genome(*org->gnome); 
+  //new_org->gnome = new Genome(*org->gnome);
+  if(i!=0) //first copy is clean
+   for(int j=0;j<1;j++) mutate_genome(new_gene);
+  Organism *new_org= new Organism(0.0,new_gene,0);
+  
   noveltyitem* nov_item = maze_novelty_map(new_org);
-  //for(int k=0;k<nov_item->data[0].size();k++)
+  if(i==0) {
+   fit=nov_item->fitness;
+   nodes=new_org->net->nodecount();
+   connections=new_org->net->linkcount();
+   ox=nov_item->data[0][0];
+   oy=nov_item->data[0][1];
+  }
+   //for(int k=0;k<nov_item->data[0].size();k++)
   //  file << nov_item->data[0][k] << " ";
   points[i*2]=(nov_item->data[0][0]-minx)/(maxx-minx);
   points[i*2+1]=(nov_item->data[0][1]-miny)/(maxy-miny);
-  delete new_org->net;
-  delete new_org->gnome;
+  delete new_org;
   delete nov_item;
   //file << endl;
  }  
  int dist = distinct(points,MUTATIONS);
  double evol = test_indiv(points,MUTATIONS);
- file << dist << " " << evol << endl; 
+ file << dist << " " << evol << " " << ox << " " << oy << " " << nodes << " " <<connections << " " << fit << endl; 
  file.close();
  return 0.0;
 }
@@ -1240,6 +1256,7 @@ static vector<Organism*> measure_pop;
 
   char fn[100];
   sprintf(fn,"%sdist%d",output_dir,generation);
+  if(NEAT::printdist)
   pop->print_distribution(fn);
   
   //Average and max their fitnesses for dumping to file and snapshot

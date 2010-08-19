@@ -7,7 +7,7 @@ using namespace std;
 #define POPSIZE 500
 #define TRIALS 200
 #define SAMPLES_PER 20
-#define DELTA 0.001
+#define DELTA 0.01
 double coords[POPSIZE][TRIALS][2];
 
 double dist(double x[2],double y[2]) {

@@ -270,6 +270,7 @@ class Character
         vector<float> rangeFinders; //stores rangefinder outputs
         Point location;
         bool collide;
+        int collisions;
         float total_spin;
         float heading;
         float speed;
@@ -281,6 +282,7 @@ class Character
         {
             total_spin=0.0f;
             collide=false;
+            collisions=0;
             heading=0.0f;
             speed=0.0f;
             ang_vel=0.0f;
@@ -552,6 +554,7 @@ class Environment
             }
 	    else
             { 
+             hero.collisions++;
             //hero.collide=true;
             }		
             update_rangefinders(hero);
