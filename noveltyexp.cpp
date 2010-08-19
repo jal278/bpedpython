@@ -14,7 +14,6 @@
 #include <iostream>
 #include <fstream>
 #include <math.h>
-
 static Environment* env;
 static vector<Environment*> envList;
 static vector<Environment*> mcList;
@@ -29,7 +28,7 @@ static fitness_measure_type fitness_measure = fitness_goal;
 
 static bool mc_reach_onepoint=false;
 
-static bool population_dirty=false;
+bool population_dirty=false;
 
 static bool extinction=true;
 void set_extinction(bool _ext) { extinction=_ext; }
@@ -103,10 +102,10 @@ if(fitness_measure==fitness_changegoal)
 
 static int number_of_samples = 1;
 static int simulated_timesteps = 400;
-static bool seed_mode = false;
-static char seed_name[40]="";
+bool seed_mode = false;
+char seed_name[40]="";
 static char mc_mazes[40]="";
-static bool minimal_criteria=false;
+bool minimal_criteria=false;
 static bool goal_attract=true;
 
 static bool activity_stats=false;
@@ -190,7 +189,7 @@ if(m=="sample_free")
 cout << "Novelty measure " << novelty_measure << endl;
 }
 
-static char output_dir[30]="";
+char output_dir[30]="";
 
 
 static int param=-1;
@@ -304,7 +303,7 @@ else
     maze_novelty_realtime_loop(pop,novelty);
 
 	//clean up
-	delete env;
+    delete env;
     return pop;
 }
 
@@ -847,7 +846,12 @@ void mutate_genome(Genome* new_genome)
 {
 	double mut_power=NEAT::weight_mut_power;
 	new_genome->mutate_link_weights(mut_power,1.0,GAUSSIAN);
-        return;
+	if (randfloat()<NEAT::mutate_node_trait_prob) {
+					//cout<<"mutate_node_trait"<<endl;
+					new_genome->mutate_node_parameters(NEAT::time_const_mut_power,NEAT::time_const_mut_prob,
+					                                   NEAT::bias_mut_power,NEAT::bias_mut_prob);
+				}
+			        return;
 			//NOTE:  A link CANNOT be added directly after a node was added because the phenotype
 			//       will not be appropriately altered to reflect the change
 			if(1) {

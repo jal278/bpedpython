@@ -23,6 +23,7 @@
 using namespace std;
 
 using namespace NEAT;
+void mutate_genome(Genome* new_genome);
 
 void set_extinction(bool _ext);
 void set_random_replace(bool val);

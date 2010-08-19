@@ -8,8 +8,9 @@ using namespace std;
 #include "neat.h"
 #include "population.h"
 #include "experiments.h"
+#include "biped.h"
 using namespace TCLAP;
-
+static bool biped=true;
 
 int main(int argc, char **argv) {
 
@@ -127,10 +128,17 @@ int main(int argc, char **argv) {
   set_constraint_switch(constraintSwitch.getValue());
   if(!generationalSwitch.getValue())
 {
-if(!noveltySwitch.getValue())
+ if(!biped) {
+  if(!noveltySwitch.getValue())
       p = maze_novelty_realtime(filename,mazename,param,startgenes,false);
   else
       p = maze_novelty_realtime(filename,mazename,param,startgenes,true);
+ } else {
+  if(!noveltySwitch.getValue())
+      p = biped_novelty_realtime(filename,mazename,param,startgenes,false);
+  else
+      p = biped_novelty_realtime(filename,mazename,param,startgenes,true);
+ }
 }
 else
 {
