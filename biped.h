@@ -11,8 +11,8 @@
 #include "noveltyset.h"
 #include "datarec.h"
 #include <ode/ode.h>
-#define NF_COGSAMPSQ 0
-#define NF_RANDOM 1
+#define NF_COGSAMPSQ 1
+#define NF_RANDOM 2
 
 class Controller;
 class Creature;
