@@ -18,7 +18,7 @@ static Environment* env;
 static vector<Environment*> envList;
 static vector<Environment*> mcList;
 
-double evolvability(Organism* org,char* fn);
+void evolvability(Organism* org,char* fn,int *a=NULL,double* b=NULL);
 using namespace std;
 enum novelty_measure_type { novelty_sample, novelty_accum, novelty_sample_free };
 static novelty_measure_type novelty_measure = novelty_sample;
@@ -103,16 +103,17 @@ if(fitness_measure==fitness_changegoal)
 static int number_of_samples = 1;
 static int simulated_timesteps = 400;
 bool seed_mode = false;
-char seed_name[40]="";
+char seed_name[100]="";
 static char mc_mazes[40]="";
 bool minimal_criteria=false;
+bool evaluate_switch=false;
 static bool goal_attract=true;
 
 static bool activity_stats=false;
 static bool constraint_switch=false;
 static bool area_of_interest=false;
 static bool rand_repl=false;
-
+void set_evaluate(bool val) { evaluate_switch=val; }
 void set_random_replace(bool val)
 {
 rand_repl = val;
@@ -294,6 +295,14 @@ else
     else
     {
     pop=new Population(seed_name);//start_genome,NEAT::pop_size,0.0);   
+    if(evaluate_switch) { 
+     int dist=0;
+     double evol=0.0;
+     evolvability(pop->organisms[0],"dummyfile",&dist,&evol); 
+     cout << endl << dist << " " << evol << endl;
+     return 0;
+    }
+
     }
     cout<<"Verifying Spawned Pop"<<endl;
     pop->verify();
@@ -891,8 +900,8 @@ void mutate_genome(Genome* new_genome)
 			}
 }
  
-#define MUTATIONS 200
-double evolvability(Organism* org,char* fn) {
+#define MUTATIONS 400
+void evolvability(Organism* org,char* fn,int* di,double* ev) {
  fstream file; 
  file.open(fn,ios::app|ios::out);
  cout <<"Evolvability..." << endl;
@@ -927,10 +936,12 @@ double evolvability(Organism* org,char* fn) {
   //file << endl;
  }  
  int dist = distinct(points,MUTATIONS);
+ if(di!=NULL) *di=dist;
  double evol = test_indiv(points,MUTATIONS);
+ if(ev!=NULL) *ev=evol;
  file << dist << " " << evol << " " << ox << " " << oy << " " << nodes << " " <<connections << " " << fit << endl; 
  file.close();
- return 0.0;
+ return;
 }
 
 

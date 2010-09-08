@@ -15,6 +15,7 @@
 #include "experiments.h"
 #include "calc_evol.h"
 
+extern bool evaluate_switch;
 extern bool seed_mode;
 extern bool minimal_criteria;
 extern bool population_dirty;
@@ -322,6 +323,14 @@ else
     else
     {
     pop=new Population(seed_name);//start_genome,NEAT::pop_size,0.0);   
+    if(evaluate_switch) { 
+      int dist=0;
+      double evol=0.0;
+      evolvability_biped(pop->organisms[0],"dummyfile",&dist,&evol);
+      cout << endl << dist << " " << evol << endl;
+      return 0;
+    }
+
     }
     cout<<"Verifying Spawned Pop"<<endl;
     pop->verify();
@@ -399,7 +408,7 @@ int biped_novelty_realtime_loop(Population *pop,bool novelty) {
   //Now create offspring one at a time, testing each offspring,                                                               
   // and replacing the worst with the new offspring if its better
   for 
-(offspring_count=0;offspring_count<NEAT::pop_size*1001;offspring_count++) 
+(offspring_count=0;offspring_count<NEAT::pop_size*2001;offspring_count++) 
 {
 //fix compat_threshold, so no speciation...
 //      NEAT::compat_threshold = 1000000.0;
@@ -589,8 +598,8 @@ if(NEAT::evolvabilitytest && offspring_count % evolveupdate ==0) {
   return 0;
 }
  
-#define BIPEDMUTATIONS 100
-double evolvability_biped(Organism* org,char* fn) {
+#define BIPEDMUTATIONS 200
+void evolvability_biped(Organism* org,char* fn,int* di,double* ev) {
  fstream file; 
  file.open(fn,ios::app|ios::out);
  cout <<"Evolvability..." << endl;
@@ -625,8 +634,9 @@ double evolvability_biped(Organism* org,char* fn) {
   //file << endl;
  }  
  int dist = distinct(points,BIPEDMUTATIONS);
+ if(di!=NULL) *di=dist;
  double evol = test_indiv(points,BIPEDMUTATIONS);
+ if(ev!=NULL) *ev=evol;
  file << dist << " " << evol << " " << ox << " " << oy << " " << nodes << " " <<connections << " " << fit << endl; 
  file.close();
- return 0.0;
 }

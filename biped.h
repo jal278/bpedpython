@@ -25,7 +25,7 @@ float walker_novelty_metric(noveltyitem* x,noveltyitem* y);
 int biped_novelty_realtime_loop(Population *pop,bool novelty);
 int biped_epoch(NEAT::Population *pop,bool novelty=false);
 Population *biped_novelty_realtime(char* outputdir,const char* mazefile,int par,const char* genes,bool novelty);
-double evolvability_biped(Organism* org,char* fn);
+void evolvability_biped(Organism* org,char* fn,int* d=NULL,double *e=NULL);
 	
 void biped_neat_initeval(NEAT::Population *pop,bool novelty=false);
 NEAT::Population *biped_neat_init(bool novelty=false);

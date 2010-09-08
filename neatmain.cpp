@@ -10,7 +10,7 @@ using namespace std;
 #include "experiments.h"
 #include "biped.h"
 using namespace TCLAP;
-static bool biped=true;
+static bool biped=false;
 
 int main(int argc, char **argv) {
 
@@ -48,6 +48,9 @@ int main(int argc, char **argv) {
 
   SwitchArg noveltySwitch("n","novelty","Enable novelty search",false);
   cmd.add(noveltySwitch);
+
+  SwitchArg evaluateSwitch("","eval","Evaluate a genome",false);
+  cmd.add(evaluateSwitch);
 
   SwitchArg constraintSwitch("","constraint","Enable constraint-based NS",false);
   cmd.add(constraintSwitch);
@@ -105,6 +108,7 @@ int main(int argc, char **argv) {
   cout << "Maze: " << mazename << endl;
   cout << "Start genes: " << startgenes << endl;
   
+  set_evaluate(evaluateSwitch.getValue());
   set_extinction(extinction.getValue());
   set_mcmaze(mcmaze.getValue());
   set_fit_measure(fit_measure.getValue());
