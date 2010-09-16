@@ -900,7 +900,7 @@ void mutate_genome(Genome* new_genome)
 			}
 }
  
-#define MUTATIONS 400
+#define MUTATIONS 200
 void evolvability(Organism* org,char* fn,int* di,double* ev) {
  fstream file; 
  file.open(fn,ios::app|ios::out);
