@@ -924,6 +924,7 @@ void evolvability(Organism* org,char* fn,int* di,double* ev) {
    fit=nov_item->fitness;
    nodes=new_org->net->nodecount();
    connections=new_org->net->linkcount();
+   //cout << fit << endl;
    ox=nov_item->data[0][0];
    oy=nov_item->data[0][1];
   }
