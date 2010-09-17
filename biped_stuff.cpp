@@ -237,6 +237,7 @@ dReal evaluate_controller(Controller* controller,noveltyitem* ni,data_record* re
             cout << creatures[0]->fitness() << endl;
     }
     int time=timestep;
+    
     //for (int x=timestep+1; x<=simtime; x++)
     //    if (x%100==0)
     while(k.size()< (simtime/100*2))
@@ -250,6 +251,7 @@ dReal evaluate_controller(Controller* controller,noveltyitem* ni,data_record* re
         //ni->time=time;
         ni->novelty_scale = 1.0; 
         ni->data.push_back(k);
+        ni->secondary=time;
     }
 
     if (record!=NULL)

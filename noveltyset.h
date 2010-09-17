@@ -130,6 +130,7 @@ public:
     float novelty_scale;
     float novelty;
     float fitness;
+    float secondary;
     float generation;
 
 //this will write a novelty item to file
@@ -170,6 +171,7 @@ public:
         genotype=NULL;
         phenotype=NULL;
         age=0.0;
+        secondary=0.0;
         generation=0.0;
         indiv_number=(-1);
     }
@@ -227,6 +229,7 @@ private:
     int time_out;
     //parameter for how many neighbors to look at for N-nearest neighbor distance novelty
     int neighbors;
+    int localneighbors;
     //radius for SOG-type (not currently used)
     float radius;
     int this_gen_index;
@@ -265,7 +268,9 @@ public:
 
         hist = new histogram_multiple(k);
 
-        neighbors=15;
+        neighbors=30; //was 15
+        localneighbors=15; 
+
         generation=0;
         time_out=0; //used for adaptive threshold
         novelty_threshold=threshold;
@@ -516,8 +521,8 @@ public:
 		sum+=term*w;
                 weight+=w;
                 
-                if (local_competition) {
-                 if(novelties[i].second->fitness < item->fitness)
+                if (local_competition && weight<localneighbors && neigh!=1) {
+                 if(novelties[i].second->secondary < item->secondary)
                  sum+=5.0f;  
                 }
                 

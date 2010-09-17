@@ -815,7 +815,7 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record,En
 		record->ToRec[2]=newenv->hero.location.y;
 		record->ToRec[3]+=newenv->reachgoal;
 		record->ToRec[4]+=newenv->reachpoi;
-                record->ToRec[5]=newenv->hero.collide;		
+                record->ToRec[5]= (-newenv->hero.collisions);
 	}
 
 	if(novelty_measure==novelty_accum)
@@ -962,7 +962,7 @@ noveltyitem* maze_novelty_map(Organism *org,data_record* record)
   double fitness=0.0;
   static float highest_fitness=0.0;
   
- new_item->viable=true;
+  new_item->viable=true;
 
   if(record!=NULL && minimal_criteria) 
   for(int x=0;x<mcList.size();x++)
@@ -1003,6 +1003,7 @@ if(true) //new_item->viable)
 	   constraint_vector.push_back(record->ToRec[3]-c1old);
            constraint_vector.push_back(record->ToRec[4]-c2old);
            c1old=record->ToRec[3];
+           new_item->secondary=record->ToRec[5];
            //if(record->ToRec[5]==1)
            //  new_item->viable=false;
          }

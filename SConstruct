@@ -1,5 +1,5 @@
 import glob
-ode_path = '/home/joel/ode-0.11/'
+ode_path = '/home/jlehman/ode-0.11/'
 
 env = Environment(CCFLAGS = ' -DdTRIMESH_ENABLED -DdDOUBLE -DGRAPHICS -O3 -g -I./include')
 env.AppendENVPath('CPLUS_INCLUDE_PATH', ode_path+'include')

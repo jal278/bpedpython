@@ -27,7 +27,8 @@ noveltyitem::noveltyitem(const noveltyitem& item)
 	novelty=item.novelty;
 	generation=item.generation;
 	indiv_number=item.indiv_number;
-	for(int i=0;i<(int)item.data.size();i++)
+        secondary=item.secondary;
+ 	for(int i=0;i<(int)item.data.size();i++)
 	{
 		vector<float> temp;
 		for(int j=0;j<(int)item.data[i].size();j++)
