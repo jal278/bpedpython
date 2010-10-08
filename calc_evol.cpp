@@ -4,8 +4,8 @@
 #include <string.h>
 using namespace std;
 
-#define POPSIZE 500
-#define TRIALS 200
+#define POPSIZE 250 //TODO: 500 for biped 
+#define TRIALS 300
 #define SAMPLES_PER 20
 #define DELTA 0.01
 double coords[POPSIZE][TRIALS][2];

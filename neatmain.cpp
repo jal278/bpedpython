@@ -64,7 +64,7 @@ int main(int argc, char **argv) {
   ValueArg<string> nov_measure("","nm","Novelty Measure",false,"std","string");
   cmd.add(nov_measure);
 
-  ValueArg<string> fit_measure("f","fm","Fitness Measure",false,"std","string");
+  ValueArg<string> fit_measure("f","fm","Fitness Measure",false,"goal","string");
   cmd.add(fit_measure);
 
   ValueArg<int> extra_param("p","parameter","Extra Parameter",false,0,"int");

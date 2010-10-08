@@ -427,7 +427,7 @@ class Environment
 			}
 			if(dist<10.0  && !reachgoal) {
                          reachgoal=1; //if within 5 units, success!
-                         closest_to_poi=10000000;
+                         //closest_to_poi=10000000;
                         }
                         else if (!goalattract) reachgoal=0; //must we
 						            //remain close?
@@ -447,7 +447,7 @@ class Environment
                         if(dist<closest_to_poi)
 				closest_to_poi=dist;
 
-			if(dist<10.0 && reachgoal) reachpoi=1; //if within 5 units, success!
+			if(dist<10.0) reachpoi=1; //if within 5 units, success!
 			return dist;
 		}
 		//create neural net inputs from sensors
@@ -632,7 +632,8 @@ class Environment
             distance = 1.0 - (distance/200.0);
             if(distance<0.2)
 		distance=0.2;
-            bool compass=true;
+            bool compass=false; //if you want it to be compass instead of
+				//target indicator
             if(compass) {
             target.x=h.location.x;
             target.y=h.location.y-50;    

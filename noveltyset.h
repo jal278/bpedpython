@@ -268,7 +268,7 @@ public:
 
         hist = new histogram_multiple(k);
 
-        neighbors=30; //was 15
+        neighbors=15; //was 15
         localneighbors=15; 
 
         generation=0;

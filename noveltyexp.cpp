@@ -353,6 +353,9 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
   if (compat_adjust_frequency < 1)
     compat_adjust_frequency = 1;
 
+char sol_evo_fn[100];
+sprintf(sol_evo_fn,"%s_solution_evolvability.dat",output_dir);
+
 //activity stat log file
   char asfn[100];
   sprintf(asfn,"%s_activitystats.dat",output_dir);
@@ -398,7 +401,7 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
         // if(firstflag)
 	// break;
 
-int evolveupdate=50000;
+int evolveupdate=6250;
 if(NEAT::evolvabilitytest && offspring_count % evolveupdate ==0) {
    char fn[100];
    sprintf(fn,"%s_evolvability%d.dat",output_dir,offspring_count/evolveupdate);
@@ -558,7 +561,17 @@ if(activity_stats&& offspring_count % 10000 == 0)
 	
     //Now we reestimate the baby's species' fitness
     new_org->species->estimate_average();
-        if(!weakfirst && (newrec->ToRec[3]>=envList.size())) {
+
+    //if solution, do evolvability
+    if(newrec->ToRec[3]>=envList.size() && newrec->ToRec[4]>=envList.size()) {
+      if(false) //NEAT::evolvabilitytest)
+      {
+       cout << "solution found" << endl;
+        evolvability(new_org,sol_evo_fn);
+      }
+    }
+    
+    if(!weakfirst && (newrec->ToRec[3]>=envList.size())) {
 		weakfirst=true;
 		char filename[100];
 		sprintf(filename,"%srtgen_weakfirst",output_dir);
@@ -710,7 +723,7 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record,En
 	//calculate fitness of individual as closeness to target
 	if(fitness_measure == fitness_goal)
         {
-	fitness=500.0 - newenv->distance_to_target();
+	fitness=300.0 - newenv->distance_to_target(); //was 500 for MCNS
 	if(fitness<0.1) fitness=0.1;
         //if (newenv->hero.collide)
 	//	fitness+=50;
@@ -902,6 +915,7 @@ void mutate_genome(Genome* new_genome)
  
 #define MUTATIONS 200
 void evolvability(Organism* org,char* fn,int* di,double* ev) {
+ bool solution=false;
  fstream file; 
  file.open(fn,ios::app|ios::out);
  cout <<"Evolvability..." << endl;
@@ -928,6 +942,7 @@ void evolvability(Organism* org,char* fn,int* di,double* ev) {
    ox=nov_item->data[0][0];
    oy=nov_item->data[0][1];
   }
+  if(nov_item->fitness>490) solution=true;
    //for(int k=0;k<nov_item->data[0].size();k++)
   //  file << nov_item->data[0][k] << " ";
   points[i*2]=(nov_item->data[0][0]-minx)/(maxx-minx);
@@ -940,7 +955,7 @@ void evolvability(Organism* org,char* fn,int* di,double* ev) {
  if(di!=NULL) *di=dist;
  double evol = test_indiv(points,MUTATIONS);
  if(ev!=NULL) *ev=evol;
- file << dist << " " << evol << " " << ox << " " << oy << " " << nodes << " " <<connections << " " << fit << endl; 
+ file << dist << " " << evol << " " << ox << " " << oy << " " << nodes << " " <<connections << " " << fit << " " << solution << endl; 
  file.close();
  return;
 }
