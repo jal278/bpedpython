@@ -942,7 +942,7 @@ void evolvability(Organism* org,char* fn,int* di,double* ev) {
    ox=nov_item->data[0][0];
    oy=nov_item->data[0][1];
   }
-  if(nov_item->fitness>490) solution=true;
+  if(nov_item->fitness>340) solution=true;
    //for(int k=0;k<nov_item->data[0].size();k++)
   //  file << nov_item->data[0][k] << " ";
   points[i*2]=(nov_item->data[0][0]-minx)/(maxx-minx);
