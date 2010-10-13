@@ -573,6 +573,7 @@ if(activity_stats&& offspring_count % 10000 == 0)
     
     if(!weakfirst && (newrec->ToRec[3]>=envList.size())) {
 		weakfirst=true;
+                NEAT::evolvabilitytest=true; //TODO REMOVE LATER
 		char filename[100];
 		sprintf(filename,"%srtgen_weakfirst",output_dir);
 		pop->print_to_file_by_species(filename);
