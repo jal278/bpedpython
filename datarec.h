@@ -12,6 +12,11 @@ using namespace std;
 class data_record
 {
 	public:
+        data_record(data_record& x) {
+		for(int i=0;i<RECSIZE;i++)
+			ToRec[i]=x.ToRec[i];
+		indiv_number=x.indiv_number;
+        }
 	data_record()
 	{
 		for(int i=0;i<RECSIZE;i++)

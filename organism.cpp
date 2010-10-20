@@ -39,7 +39,7 @@ Organism::Organism(double fit, Genome *g,int gen, const char* md) {
 	modified = true;
 }
 
-Organism::Organism(const Organism& org)
+Organism::Organism(const Organism& org,bool copy_data)
 {
         datarec=NULL;
 	noveltypoint=NULL;
@@ -49,6 +49,10 @@ Organism::Organism(const Organism& org)
 	{
 		noveltypoint=new noveltyitem(*(org.noveltypoint));
 	}
+        if(copy_data) {
+                datarec=new data_record(*(org.datarec));
+        }
+
 	gnome = new Genome(*(org.gnome));	// Associative relationship
 	//gnome = org.gnome->duplicate(org.gnome->genome_id);
 	net = new Network(*(org.net)); // Associative relationship

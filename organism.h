@@ -61,7 +61,7 @@ namespace NEAT {
 		bool write_to_file(std::ostream &outFile);
 
 		Organism(double fit, Genome *g, int gen, const char* md = 0);
-		Organism(const Organism& org);	// Copy Constructor
+		Organism(const Organism& org,bool copy_data=false);	// Copy Constructor
 		~Organism();
 
 	};

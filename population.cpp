@@ -74,11 +74,13 @@ extern int NEAT::time_alive_minimum;
         void Population::evaluate_organism(Organism* org) {
                    data_record* newrec=new data_record();
 	           //evaluate individual, get novelty point    
+                   
                    if(org->noveltypoint && !org->noveltypoint->added)
                      delete org->noveltypoint;
                    if(org->datarec)
                      delete org->datarec;
- 		   org->noveltypoint = evaluator(org,newrec);
+                   
+                   org->noveltypoint = evaluator(org,newrec);
                    org->datarec=newrec;
                    //(*curorg)->noveltypoint->indiv_number = indiv_counter   
         }
@@ -149,7 +151,7 @@ Population::Population(std::vector<Organism*> organismList)
 	{
 
 		old_organism=(*iter); 
-		new_organism=new Organism(*old_organism);
+		new_organism=new Organism(*old_organism,true);
 		organisms.push_back(new_organism);
 	        int last_node = new_organism->gnome->get_last_node_id();
 		int last_inno = new_organism->gnome->get_last_gene_innovnum();

@@ -3,6 +3,7 @@
 #include <fstream>
 #include <cmath>
 #include <cstring>
+bool NEAT::multiobjective=true;
 bool NEAT::local_competition=false;
 bool NEAT::printdist=false;
 bool NEAT::evolvabilitytest=false;

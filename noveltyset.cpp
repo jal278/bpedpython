@@ -25,7 +25,9 @@ noveltyitem::noveltyitem(const noveltyitem& item)
 	age=item.age;
 	fitness=item.fitness;
 	novelty=item.novelty;
+        rank=item.rank;
 	generation=item.generation;
+        competition=item.competition;
 	indiv_number=item.indiv_number;
         secondary=item.secondary;
  	for(int i=0;i<(int)item.data.size();i++)
@@ -118,7 +120,55 @@ return new Population(merged_orgs);
 
 
 }
+   
+void noveltyarchive::rank(vector<Organism*>& orgs)
+{
+     evaluate_population(orgs); //assign novelty, local competition etc.
+     int sz=orgs.size();
+     
+     //reset vars
+     for(int i=0;i<sz;i++) {
+       orgs[i]->noveltypoint->dominationcount=0; 
+       orgs[i]->noveltypoint->dominationList.clear();
+     }
 
+     //do domination
+     for(int i=0;i<sz;i++)
+      for(int j=0;j<sz;j++)
+       orgs[i]->noveltypoint->dominate(orgs[j]->noveltypoint);
+
+     int ranked=0;
+     int cur_rank=0;
+     
+     //assign ranks
+     vector<noveltyitem*> front;
+     while(ranked!=sz) {
+      for(int i=0;i<sz;i++)
+      {
+        if(orgs[i]->noveltypoint->dominationcount==0) {
+          front.push_back(orgs[i]->noveltypoint);
+          orgs[i]->noveltypoint->dominationcount = -1;
+          orgs[i]->noveltypoint->rank=cur_rank;
+          orgs[i]->fitness=sz-cur_rank;
+          ranked++;
+        }
+      }
+
+      //undominate those that the front dominated
+      int frsz = front.size();
+      for(int i=0;i<frsz;i++) {
+       front[i]->undominate(); 
+      }
+
+      front.clear();
+      cur_rank++;
+     }
+    
+     //sort population based on rank 
+     std::sort(orgs.begin(), orgs.end(), order_orgs);
+
+     
+}
 //evaluate the novelty of the whole population
 void noveltyarchive::evaluate_population(Population* p1,vector<Organism*> p2,bool fitness)
 {
@@ -134,6 +184,14 @@ void noveltyarchive::evaluate_population(Population* pop,bool fitness)
 	vector<Organism*>::iterator it;
 	for(it=p->organisms.begin();it<p->organisms.end();it++)
 		evaluate_individual((*it),pop->organisms,fitness);
+}
+
+//evaluate the novelty of a list of organisms
+void noveltyarchive::evaluate_population(vector<Organism*> orgs, bool fitness) 
+{
+	vector<Organism*>::iterator it;
+	for(it=orgs.begin();it!=orgs.end();it++)
+		evaluate_individual((*it),orgs,fitness);
 }
 
 //evaluate the novelty of a single individual

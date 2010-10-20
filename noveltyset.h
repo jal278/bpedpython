@@ -132,6 +132,33 @@ public:
     float fitness;
     float secondary;
     float generation;
+    int competition;
+    int rank;
+    bool ranked;
+    int dominationcount;
+
+    vector< noveltyitem* > dominationList;
+    void undominate() { 
+     for(int i=0;i<dominationList.size();i++) {
+        dominationList[i]->dominationcount--;
+     }
+     dominationList.clear();
+    }
+
+    void dominate(noveltyitem* k) {
+     if(dominates(k)) {
+        k->dominationcount++;
+        dominationList.push_back(k);
+     }
+    }
+ 
+    bool dominates(noveltyitem* k) {
+     if (competition < k->competition || novelty < k->novelty)
+        return false;
+     if (competition > k->competition || novelty > k->novelty)
+        return true;
+      return false;
+    }
 
 //this will write a novelty item to file
     void reset_behavior() 
@@ -338,9 +365,11 @@ public:
     noveltyitem *get_item(int i) {
         return novel_items[i];
     } 
-
+    void rank(vector<Organism*>& orgs);
     //merge two populations into one
     Population* merge_populations(Population* p1, vector<Organism*> p2);
+    //evaluate group of organisms against each other
+    void evaluate_population(vector<Organism*> orgs, bool fitness=true); 
     //evaluate one pop in terms of another (generational ns)
     void evaluate_population(Population* to_eval, vector<Organism*> against,bool fitness=true);
     //re-evaluate entire population for novelty
@@ -502,6 +531,7 @@ public:
         }
         else
         {
+            item->competition=0;
             len=neigh;
             if ((int)novelties.size()<len)
                 len=novelties.size();
@@ -521,9 +551,10 @@ public:
 		sum+=term*w;
                 weight+=w;
                 
-                if (local_competition && weight<localneighbors && neigh!=1) {
+                if (weight<localneighbors && neigh!=1) {
                  if(novelties[i].second->secondary < item->secondary)
-                 sum+=5.0f;  
+                  item->competition++;
+                  //sum+=5.0f;  
                 }
                 
                 i++;

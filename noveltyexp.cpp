@@ -1092,6 +1092,9 @@ Population *maze_generational(char* outputdir,const char* mazefile,int param,con
     noveltyarchive archive(archive_thresh,*maze_novelty_metric,true,push_back_size,minimal_criteria,true);
 
 
+    //if doing multiobjective, turn off speciation, TODO:maybe turn off elitism
+    if(NEAT::multiobjective) NEAT::speciation=false;
+
     Population *pop;
 
     Genome *start_genome;
@@ -1191,6 +1194,21 @@ static vector<Organism*> measure_pop;
  
   int evolveupdate=100;
   if(generation==0) pop->evaluate_all();
+  else if (NEAT::multiobjective) {  //merge and filter population
+   for(curorg=(pop->organisms).begin();curorg!=(pop->organisms).end();++curorg) {
+    measure_pop.push_back(new Organism(*(*curorg),true)); //TODO:maybe make a copy?
+   }
+
+   //evaluate this 'super-population'
+   archive.rank(measure_pop);
+   
+   //chop population down by half (maybe delete orgs that aren't used)
+   measure_pop.erase(measure_pop.begin()+(measure_pop.size()/2),measure_pop.end());
+     
+   //set new pop
+   pop=new Population(measure_pop);
+   pop->set_evaluator(&maze_novelty_map);
+  }
 
   if(NEAT::evolvabilitytest && generation%evolveupdate==0)
   {
@@ -1264,6 +1282,7 @@ static vector<Organism*> measure_pop;
 	///now add to the archive (maybe remove & only add randomly?)
 	archive.evaluate_population(pop,false);
        
+        archive.rank(pop->organisms);
  
   for(curorg=(pop->organisms).begin();curorg!=(pop->organisms).end();++curorg) {
 	if( !(*curorg)->noveltypoint->viable && minimal_criteria)
@@ -1326,9 +1345,13 @@ if(win && !firstflag)
    firstflag = true;
 }
 
-
- 
- 
+if (NEAT::multiobjective) {  //merge and filter population
+//clear the old population
+measure_pop.clear();
+for(curorg=(pop->organisms).begin();curorg!=(pop->organisms).end();++curorg) {
+ measure_pop.push_back(new Organism(*(*curorg),true)); 
+}
+} 
  //Create the next generation
   pop->epoch(generation);
 
