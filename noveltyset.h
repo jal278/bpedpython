@@ -151,12 +151,26 @@ public:
         dominationList.push_back(k);
      }
     }
+    bool dominates(noveltyitem*k) {
+     if(NEAT::dominates_local) return dominates_local(k);
+     return dominates_global(k);
+    } 
+    bool dominates_global(noveltyitem* k) {
  
-    bool dominates(noveltyitem* k) {
-     if (competition < k->competition || novelty < k->novelty)
+     if (secondary < k->secondary || novelty < k->novelty)
+        return false;
+     if (secondary > k->secondary || novelty > k->novelty)
+        return true;
+
+      return false;
+     }
+ 
+    bool dominates_local(noveltyitem* k) {
+    if (competition < k->competition || novelty < k->novelty)
         return false;
      if (competition > k->competition || novelty > k->novelty)
         return true;
+
       return false;
     }
 
@@ -209,6 +223,7 @@ public:
             delete genotype;
         if (phenotype)
             delete phenotype;
+         
     }
 
 
@@ -320,6 +335,11 @@ public:
         {
             datafile->close();
         }
+        vector<noveltyitem*>::iterator it;
+	for(it=novel_items.begin();it!=novel_items.end();it++)
+         delete (*it);
+        for(it=fittest.begin();it!=fittest.end();it++)
+         delete (*it);
         //probably want to delete all the noveltyitems at this point
     }
 
@@ -339,9 +359,11 @@ public:
     {
         if (histogram)
             return;
+/*
         item->added=true;
         item->generation=generation;
-        novel_items.push_back(item);
+*/
+        novel_items.push_back(new noveltyitem(*item));
         if (aq)
             add_queue.push_back(item);
     }
@@ -522,8 +544,8 @@ public:
         if (neigh==-1)
         {
             neigh=neighbors;
+            item->competition=0;
         }
-
         if (len<ARCHIVE_SEED_AMOUNT && NEAT::archive)
         {
             item->age=1.0;
@@ -531,7 +553,6 @@ public:
         }
         else
         {
-            item->competition=0;
             len=neigh;
             if ((int)novelties.size()<len)
                 len=novelties.size();

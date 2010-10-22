@@ -57,18 +57,21 @@ double NEAT::behavioral_compatibility(Organism* xx,Organism* yy) {
 
 
 extern int NEAT::time_alive_minimum;
+void Population::print_distribution(const char* filename,vector<Organism*> orgs) {
+                 ofstream out(filename);
+                  int size = orgs[0]->noveltypoint->data[0].size();
+                  
+                  for(int x=0;x<orgs.size();x++)
+                  {
+                    for(int y=0;y<size;y++)
+                    out << orgs[x]->noveltypoint->data[0][y] << " ";
+                    out << orgs[x]->noveltypoint->viable << " " << orgs[x]->noveltypoint->fitness << " " << orgs[x]->noveltypoint->secondary << " " << " " << orgs[x]->noveltypoint->competition << " " <<  orgs[x]->noveltypoint->novelty << " " << orgs[x]->noveltypoint->rank << endl;
+                  }
+}
 
                void  Population::print_distribution(const char* filename)
                 {
-                  ofstream out(filename);
-                  int size = organisms[0]->noveltypoint->data[0].size();
-                  
-                  for(int x=0;x<organisms.size();x++)
-                  {
-                    for(int y=0;y<size;y++)
-                    out << organisms[x]->noveltypoint->data[0][y] << " ";
-                    out << organisms[x]->noveltypoint->viable << " " << organisms[x]->noveltypoint->fitness << " " << organisms[x]->net->all_nodes.size() << endl;
-                  }
+                 print_distribution(filename,organisms);
                 }
 
         void Population::evaluate_organism(Organism* org) {

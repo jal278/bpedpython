@@ -1083,271 +1083,296 @@ for(int x=0;x<envList.size();x++) constraint_vector.push_back(0);
   return new_item;
 }
 
-
+int maxgens=2000;
 //Perform evolution on single pole balacing, for gens generations
 Population *maze_generational(char* outputdir,const char* mazefile,int param,const char *genes, int gens,bool novelty) 
 {
-    float archive_thresh=3.0;
+float archive_thresh=3.0;
 
-    noveltyarchive archive(archive_thresh,*maze_novelty_metric,true,push_back_size,minimal_criteria,true);
+noveltyarchive archive(archive_thresh,*maze_novelty_metric,true,push_back_size,minimal_criteria,true);
 
+//if doing multiobjective, turn off speciation, TODO:maybe turn off elitism
+if(NEAT::multiobjective) NEAT::speciation=false;
 
-    //if doing multiobjective, turn off speciation, TODO:maybe turn off elitism
-    if(NEAT::multiobjective) NEAT::speciation=false;
+Population *pop;
 
-    Population *pop;
+Genome *start_genome;
+char curword[20];
+int id;
+data_rec Record;
 
-    Genome *start_genome;
-    char curword[20];
-    int id;
-    data_rec Record;
+ostringstream *fnamebuf;
+int gen;
 
-    ostringstream *fnamebuf;
-    int gen;
+ifstream iFile(genes,ios::in);
 
-    ifstream iFile(genes,ios::in);
+read_in_environments(mazefile,envList);	
 
-    read_in_environments(mazefile,envList);	
+if(strlen(mc_mazes)>0)
+ read_in_environments(mc_mazes,mcList);
 
-    if(strlen(mc_mazes)>0)
-	 read_in_environments(mc_mazes,mcList);
-    
-    if(outputdir!=NULL) strcpy(output_dir,outputdir);
-    cout<<"START GENERATIONAL MAZE EVOLUTION"<<endl;
+if(outputdir!=NULL) strcpy(output_dir,outputdir);
+cout<<"START GENERATIONAL MAZE EVOLUTION"<<endl;
 
-    cout<<"Reading in the start genome"<<endl;
-    //Read in the start Genome
-    iFile>>curword;
-    iFile>>id;
-    cout<<"Reading in Genome id "<<id<<endl;
-    start_genome=new Genome(id,iFile);
-    iFile.close();
-  
-      cout<<"Start Genome: "<<start_genome<<endl;
-      
-      //Spawn the Population
-      cout<<"Spawning Population off Genome"<<endl;
-      
-      pop=new Population(start_genome,NEAT::pop_size);
-      
-      cout<<"Verifying Spawned Pop"<<endl;
-      pop->verify();
+cout<<"Reading in the start genome"<<endl;
+//Read in the start Genome
+iFile>>curword;
+iFile>>id;
+cout<<"Reading in Genome id "<<id<<endl;
+start_genome=new Genome(id,iFile);
+iFile.close();
 
-       //set evaluator
-       pop->set_evaluator(&maze_novelty_map);
-    //pop->set_compatibility(&behavioral_compatibility); 
-      for (gen=0;gen<=1000;gen++) {
-	cout<<"Generation "<<gen<<endl;
-        if(gen%change_extinction_length==0)
-           change_extinction_point();
-        if(gen%change_goal_length==0) 
-           change_goal_location();
-	bool win = maze_generational_epoch(pop,gen,Record,archive,novelty);
+cout<<"Start Genome: "<<start_genome<<endl;
 
-  //writing out stuff 
-  if(gen%NEAT::print_every == 0 )
-  {
-  char filename[100];
-  sprintf(filename,"%s_record.dat",output_dir);
-  char fname[100];
-  sprintf(fname,"%s_archive.dat",output_dir);
-  archive.Serialize(fname);
-  //Record.serialize(filename);
-  sprintf(fname,"%sgen_%d",output_dir,gen);
-  pop->print_to_file_by_species(fname);
-  }
+//Spawn the Population
+cout<<"Spawning Population off Genome"<<endl;
 
-  if (win)
-  {
-   char fname[100];
-   sprintf(fname,"%s_wingen",output_dir);
-    ofstream winfile(fname);
-    winfile << gen << endl;
-  sprintf(fname,"%s_archive.dat",output_dir);
-  archive.Serialize(fname);
-  sprintf(fname,"%s_record.dat",output_dir);
-  Record.serialize(fname);
-    //break;
-  }
-      
-}
+pop=new Population(start_genome,NEAT::pop_size);
+
+cout<<"Verifying Spawned Pop"<<endl;
+pop->verify();
+
+//set evaluator
+pop->set_evaluator(&maze_novelty_map);
+//pop->set_compatibility(&behavioral_compatibility); 
+for (gen=0;gen<=maxgens;gen++)  { //WAS 1000
+cout<<"Generation "<<gen<<endl;
+if(gen%change_extinction_length==0)
+   change_extinction_point();
+if(gen%change_goal_length==0) 
+   change_goal_location();
+bool win = maze_generational_epoch(&pop,gen,Record,archive,novelty);
 
 
-    return pop;
-
-}
-
-int maze_generational_epoch(Population *pop,int generation,data_rec& Record, noveltyarchive& archive, bool novelty) {
-  vector<Organism*>::iterator curorg;
-  vector<Species*>::iterator curspecies;
-static double best_fitness =0.0;  
-static vector<Organism*> measure_pop;
-  //char cfilename[100];
-  //strncpy( cfilename, filename.c_str(), 100 );
-
-  //ofstream cfilename(filename.c_str());
-
-  static bool win=false;
-  static bool firstflag=false;
-  int winnernum;
-  int indiv_counter=0;
- 
-  int evolveupdate=100;
-  if(generation==0) pop->evaluate_all();
-  else if (NEAT::multiobjective) {  //merge and filter population
-   for(curorg=(pop->organisms).begin();curorg!=(pop->organisms).end();++curorg) {
-    measure_pop.push_back(new Organism(*(*curorg),true)); //TODO:maybe make a copy?
-   }
-
-   //evaluate this 'super-population'
-   archive.rank(measure_pop);
-   
-   //chop population down by half (maybe delete orgs that aren't used)
-   measure_pop.erase(measure_pop.begin()+(measure_pop.size()/2),measure_pop.end());
-     
-   //set new pop
-   pop=new Population(measure_pop);
-   pop->set_evaluator(&maze_novelty_map);
-  }
-
-  if(NEAT::evolvabilitytest && generation%evolveupdate==0)
-  {
-   char fn[100];
-   sprintf(fn,"%s_evolvability%d.dat",output_dir,generation/evolveupdate);
-   for (curorg = (pop->organisms).begin(); curorg != pop->organisms.end(); ++curorg) {
-    evolvability(*curorg,fn);
-     }
-   }
-  
-  //Evaluate each organism on a test
-  for(curorg=(pop->organisms).begin();curorg!=(pop->organisms).end();++curorg) {
-        
-	//newrec->indiv_number=indiv_counter;
-        //data_record* newrec=new data_record();
-	//evaluate individual, get novelty point    
-	//(*curorg)->noveltypoint = maze_novelty_map((*curorg),newrec);
-        //(*curorg)->noveltypoint->indiv_number = indiv_counter;
-        //(*curorg)->datarec = newrec;	
-        data_record* newrec = (*curorg)->datarec;
-	if((newrec->ToRec[3]>=envList.size())) { // && newrec->ToRec[4]>0.0)) {
-	        if((newrec->ToRec[4]>=envList.size())) {	
-                (*curorg)->winner=true;
-                win=true;	
-                }
-                if(fitness_measure==fitness_goal) {
-                (*curorg)->winner=true;
-                win=true;
-                }
-	}
-  
-        if((*curorg)->noveltypoint->fitness > best_fitness)
-	{
-		best_fitness = (*curorg)->noveltypoint->fitness;
-		cout << "NEW BEST " << best_fitness << endl;
-	}	
-        
-        //add record of new indivdual to storage
-	//TODO: PUT BACK IN (to fix record.dat...)
-        //Record.add_new(newrec);
-	indiv_counter++;
-/*
-	if((*curorg)->noveltypoint->viable)
-             cout << "viable..." << endl;
-        else
-             cout << "not viable..." << endl;
-*/
-	if( !(*curorg)->noveltypoint->viable && minimal_criteria)
-	{
-		(*curorg)->fitness = SNUM/1000.0;
-                //new_org->novelty = 0.00000001;
-                //reset behavioral characterization
-                (*curorg)->noveltypoint->reset_behavior();
-                //cout << "fail" << endl;
-               // cout << " :( " << endl;
-	}	
-       	
-	//update fittest list
-	archive.update_fittest(*curorg);
-	
-        if(!novelty)
-    	   (*curorg)->fitness = (*curorg)->noveltypoint->fitness;
-  }
- 
-  if(novelty)
-  {
-  
-	//NEED TO CHANGE THESE TO GENERATIONAL EQUIVALENTS...
-	//assign fitness scores based on novelty
- 	archive.evaluate_population(pop,true);
-	///now add to the archive (maybe remove & only add randomly?)
-	archive.evaluate_population(pop,false);
-       
-        archive.rank(pop->organisms);
- 
-  for(curorg=(pop->organisms).begin();curorg!=(pop->organisms).end();++curorg) {
-	if( !(*curorg)->noveltypoint->viable && minimal_criteria)
-	{
-		(*curorg)->fitness = SNUM/1000.0;
-                //new_org->novelty = 0.00000001;
-                //reset behavioral characterization
-                //cout << "fail" << endl;
-               // cout << " :( " << endl;
-	}	
-      } 
-        cout << "ARCHIVE SIZE:" << archive.get_set_size() << endl;  
-        cout << "THRESHOLD:" << archive.get_threshold() << endl;
-	archive.end_of_gen_steady(pop);
-	//adjust novelty of infeasible individuals
-	/*
-	if(!newrec->ToRec[3] && novelty_measure != novelty_sample_free)
-	{
-		(*curorg)->fitness = 0.00001;
-	}
-	*/	
-  }
-
-  char fn[100];
-  sprintf(fn,"%sdist%d",output_dir,generation);
-  if(NEAT::printdist)
-  pop->print_distribution(fn);
-  
-  //Average and max their fitnesses for dumping to file and snapshot
-  for(curspecies=(pop->species).begin();curspecies!=(pop->species).end();++curspecies) {
-
-    //This experiment control routine issues commands to collect ave
-    //and max fitness, as opposed to having the snapshot do it, 
-    //because this allows flexibility in terms of what time
-    //to observe fitnesses at
-
-    (*curspecies)->compute_average_fitness();
-    (*curspecies)->compute_max_fitness();
-  }
-
-  //Take a snapshot of the population, so that it can be
-  //visualized later on
-  //if ((generation%1)==0)
-  //  pop->snapshot();
-
-  //Only print to file every print_every generations
- // if  (win||
- //      ((generation%(NEAT::print_every))==0))
-if(win && !firstflag)
+if (win)
 {
-    for(curorg=(pop->organisms).begin();curorg!=(pop->organisms).end();++curorg) {
-      if ((*curorg)->winner) {
-	winnernum=((*curorg)->gnome)->genome_id;
-	cout<<"WINNER IS #"<<((*curorg)->gnome)->genome_id<<endl;
-	char filename[100];
-        sprintf(filename,"%s_winner", output_dir);	
-       (*curorg)->print_to_file(filename);
-      }
-    }    
-   firstflag = true;
+char fname[100];
+sprintf(fname,"%s_wingen",output_dir);
+ofstream winfile(fname);
+winfile << gen << endl;
+sprintf(fname,"%s_archive.dat",output_dir);
+archive.Serialize(fname);
+sprintf(fname,"%s_record.dat",output_dir);
+Record.serialize(fname);
+//break;
 }
+
+}
+
+delete pop;
+return pop;
+
+}
+
+int maze_generational_epoch(Population **pop2,int generation,data_rec& Record, noveltyarchive& archive, bool novelty) {
+Population* pop= *pop2;
+vector<Organism*>::iterator curorg;
+vector<Species*>::iterator curspecies;
+static double best_fitness =0.0;  
+static double best_secondary =  -100000.0;
+static vector<Organism*> measure_pop;
+//char cfilename[100];
+//strncpy( cfilename, filename.c_str(), 100 );
+
+//ofstream cfilename(filename.c_str());
+
+static bool win=false;
+static bool firstflag=false;
+int winnernum;
+int indiv_counter=0;
+
+int evolveupdate=100;
+if(generation==0) pop->evaluate_all();
 
 if (NEAT::multiobjective) {  //merge and filter population
+for(curorg=(pop->organisms).begin();curorg!=(pop->organisms).end();++curorg) {
+measure_pop.push_back(new Organism(*(*curorg),true)); //TODO:maybe make a copy?
+}
+
+//evaluate this 'super-population'
+archive.rank(measure_pop);
+/*  
+for(int i=0;i<measure_pop.size();i++) {
+cout << measure_pop[i]->noveltypoint->competition << " " << measure_pop[i]->noveltypoint->novelty << " " <<  measure_pop[i]->noveltypoint->rank << endl;
+}
+*/
+if(generation!=0) {
+//chop population down by half (maybe delete orgs that aren't used)
+int start=measure_pop.size()/2;
+vector<Organism*>::iterator it;
+for(it=measure_pop.begin()+start;it!=measure_pop.end();it++) 
+delete (*it);
+measure_pop.erase(measure_pop.begin()+(measure_pop.size()/2),measure_pop.end());     
+}
+//delete old pop, create new pop
+delete pop;
+pop=new Population(measure_pop);
+
+pop->set_evaluator(&maze_novelty_map);
+*pop2= pop;
+}
+
+if(NEAT::evolvabilitytest && generation%evolveupdate==0)
+{
+char fn[100];
+sprintf(fn,"%s_evolvability%d.dat",output_dir,generation/evolveupdate);
+for (curorg = (pop->organisms).begin(); curorg != pop->organisms.end(); ++curorg) {
+evolvability(*curorg,fn);
+}
+}
+
+//Evaluate each organism on a test
+for(curorg=(pop->organisms).begin();curorg!=(pop->organisms).end();++curorg) {
+
+//newrec->indiv_number=indiv_counter;
+//data_record* newrec=new data_record();
+//evaluate individual, get novelty point    
+//(*curorg)->noveltypoint = maze_novelty_map((*curorg),newrec);
+//(*curorg)->noveltypoint->indiv_number = indiv_counter;
+//(*curorg)->datarec = newrec;	
+data_record* newrec = (*curorg)->datarec;
+if((newrec->ToRec[3]>=envList.size())) { // && newrec->ToRec[4]>0.0)) {
+	if((newrec->ToRec[4]>=envList.size())) {	
+	(*curorg)->winner=true;
+	win=true;	
+	}
+	if(fitness_measure==fitness_goal) {
+	(*curorg)->winner=true;
+	win=true;
+        if((*curorg)->noveltypoint->secondary >best_secondary) {
+         best_secondary=(*curorg)->noveltypoint->secondary;
+	cout << "NEW BEST SEC " << best_secondary << endl;
+       
+        }
+	}
+}
+
+if((*curorg)->noveltypoint->fitness > best_fitness)
+{
+	best_fitness = (*curorg)->noveltypoint->fitness;
+	cout << "NEW BEST " << best_fitness << endl;
+}	
+
+//add record of new indivdual to storage
+//TODO: PUT BACK IN (to fix record.dat...)
+//Record.add_new(newrec);
+indiv_counter++;
+/*
+if((*curorg)->noveltypoint->viable)
+     cout << "viable..." << endl;
+else
+     cout << "not viable..." << endl;
+*/
+if( !(*curorg)->noveltypoint->viable && minimal_criteria)
+{
+	(*curorg)->fitness = SNUM/1000.0;
+	//new_org->novelty = 0.00000001;
+	//reset behavioral characterization
+	(*curorg)->noveltypoint->reset_behavior();
+	//cout << "fail" << endl;
+       // cout << " :( " << endl;
+}	
+
+//update fittest list
+archive.update_fittest(*curorg);
+
+if(!novelty)
+   (*curorg)->fitness = (*curorg)->noveltypoint->fitness;
+}
+
+
+if(novelty)
+{
+
+//NEED TO CHANGE THESE TO GENERATIONAL EQUIVALENTS...
+//assign fitness scores based on novelty
+archive.evaluate_population(pop,true);
+///now add to the archive (maybe remove & only add randomly?)
+archive.evaluate_population(pop,false);
+
+if(NEAT::multiobjective)      
+archive.rank(pop->organisms);
+
+for(curorg=(pop->organisms).begin();curorg!=(pop->organisms).end();++curorg) {
+if( !(*curorg)->noveltypoint->viable && minimal_criteria)
+{
+	(*curorg)->fitness = SNUM/1000.0;
+	//new_org->novelty = 0.00000001;
+	//reset behavioral characterization
+	//cout << "fail" << endl;
+       // cout << " :( " << endl;
+}	
+} 
+cout << "ARCHIVE SIZE:" << archive.get_set_size() << endl;  
+cout << "THRESHOLD:" << archive.get_threshold() << endl;
+archive.end_of_gen_steady(pop);
+//adjust novelty of infeasible individuals
+/*
+if(!newrec->ToRec[3] && novelty_measure != novelty_sample_free)
+{
+	(*curorg)->fitness = 0.00001;
+}
+*/	
+}
+
+
+
+char fn[100];
+sprintf(fn,"%sdist%d",output_dir,generation);
+if(NEAT::printdist)
+pop->print_distribution(fn);
+//Average and max their fitnesses for dumping to file and snapshot
+for(curspecies=(pop->species).begin();curspecies!=(pop->species).end();++curspecies) {
+
+//This experiment control routine issues commands to collect ave
+//and max fitness, as opposed to having the snapshot do it, 
+//because this allows flexibility in terms of what time
+//to observe fitnesses at
+
+(*curspecies)->compute_average_fitness();
+(*curspecies)->compute_max_fitness();
+}
+
+//Take a snapshot of the population, so that it can be
+//visualized later on
+//if ((generation%1)==0)
+//  pop->snapshot();
+
+//Only print to file every print_every generations
+// if  (win||
+//      ((generation%(NEAT::print_every))==0))
+if(win && !firstflag)
+{
+for(curorg=(pop->organisms).begin();curorg!=(pop->organisms).end();++curorg) {
+if ((*curorg)->winner) {
+winnernum=((*curorg)->gnome)->genome_id;
+cout<<"WINNER IS #"<<((*curorg)->gnome)->genome_id<<endl;
+char filename[100];
+sprintf(filename,"%s_winner", output_dir);	
+(*curorg)->print_to_file(filename);
+}
+}    
+firstflag = true;
+}
+
+//writing out stuff 
+if(generation%NEAT::print_every == 0 )
+{
+char filename[100];
+sprintf(filename,"%s_record.dat",output_dir);
+char fname[100];
+sprintf(fname,"%s_archive.dat",output_dir);
+archive.Serialize(fname);
+//Record.serialize(filename);
+sprintf(fname,"%sgen_%d",output_dir,generation);
+pop->print_to_file_by_species(fname);
+}
+
+if (NEAT::multiobjective) {
+for(curorg=measure_pop.begin();curorg!=measure_pop.end();curorg++) delete (*curorg);
 //clear the old population
 measure_pop.clear();
+if(generation!=maxgens)
 for(curorg=(pop->organisms).begin();curorg!=(pop->organisms).end();++curorg) {
  measure_pop.push_back(new Organism(*(*curorg),true)); 
 }

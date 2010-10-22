@@ -17,10 +17,11 @@ return a->fitness < b->fitness;
 
 noveltyitem::noveltyitem(const noveltyitem& item)
 {
-	added=item.added;
+	added=false;
         //TODO: this might cause memory leak in
         //merge_population?
-	genotype=new Genome(*(item.genotype));
+	viable=item.viable;
+        genotype=new Genome(*(item.genotype));
 	phenotype=new Network(*(item.phenotype));
 	age=item.age;
 	fitness=item.fitness;

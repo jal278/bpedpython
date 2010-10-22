@@ -5,12 +5,12 @@
 #include <cstring>
 bool NEAT::multiobjective=true;
 bool NEAT::local_competition=false;
-bool NEAT::printdist=false;
+bool NEAT::printdist=true;
 bool NEAT::evolvabilitytest=false;
 bool NEAT::elitism=true;
 bool NEAT::speciation=true;
 bool NEAT::archive=true;
-
+bool NEAT::dominates_local=false;
 //ADDED
 double NEAT::time_const_mut_power=0.4;
 double NEAT::time_const_mut_prob=0.3;

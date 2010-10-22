@@ -91,7 +91,7 @@ namespace NEAT {
 		// Print Population to a file in speciated order with comments separating each species
 		bool print_to_file_by_species(std::ostream& outFile);
 		bool print_to_file_by_species(char *filename);
-
+                void print_distribution(const char* filename,vector<Organism*> orgs);
                 void print_distribution(const char* filename);
 
                 void print_compatibility_matrix(const char* filename);

@@ -41,7 +41,7 @@ void set_seed(string s);
 void set_goal_attract(bool s);
 //generational maze experiments
 Population *maze_generational(char* output_dir,const char* mazefile,int param, const char *genes, int gens, bool novelty); 
-int maze_generational_epoch(Population *pop,int generation,data_rec& Record,noveltyarchive& archive,bool novelty);
+int maze_generational_epoch(Population **pop,int generation,data_rec& Record,noveltyarchive& archive,bool novelty);
 
 //Walker novelty steady-state 
 int maze_novelty_realtime_loop(Population *pop,bool novelty=false);
