@@ -22,8 +22,12 @@ void destroy_world();
 
 float walker_novelty_metric(noveltyitem* x,noveltyitem* y);
 
+Population *biped_generational(char* outputdir,const char *genes, int gens,bool novelty);
+int biped_generational_epoch(Population **pop2,int generation,data_rec& Record, noveltyarchive& archive, bool novelty);
+
 int biped_novelty_realtime_loop(Population *pop,bool novelty);
 int biped_epoch(NEAT::Population *pop,bool novelty=false);
+
 Population *biped_novelty_realtime(char* outputdir,const char* mazefile,int par,const char* genes,bool novelty);
 void evolvability_biped(Organism* org,char* fn,int* d=NULL,double *e=NULL);
 	

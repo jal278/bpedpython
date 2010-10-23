@@ -34,6 +34,9 @@ int main(int argc, char **argv) {
   ValueArg<string> seed_genome("c","seed","Seed Genome",false,"","string");
   cmd.add(seed_genome);
 
+  SwitchArg biped_switch("","biped","Biped domain",false);
+  cmd.add(biped_switch);
+ 
   SwitchArg remove_random("","remrand","Remove random individuak",false);
   cmd.add(remove_random); 
 
@@ -128,6 +131,8 @@ int main(int argc, char **argv) {
 
   cout << "Minimal criteria engaged? " << mcSwitch.getValue() << endl;
   set_minimal_criteria(mcSwitch.getValue());
+
+if(biped_switch.getValue()) biped=true;
   
   set_constraint_switch(constraintSwitch.getValue());
   if(!generationalSwitch.getValue())
@@ -146,8 +151,12 @@ int main(int argc, char **argv) {
 }
 else
 {
+ if(!biped) 
  p = maze_generational(filename,mazename,param,startgenes,1000,noveltySwitch.getValue());
+ else
+ p = biped_generational(filename,startgenes,1000,noveltySwitch.getValue());
 }
+
   return(0);
  
 }

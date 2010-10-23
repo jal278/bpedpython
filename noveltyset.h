@@ -151,10 +151,12 @@ public:
         dominationList.push_back(k);
      }
     }
+
     bool dominates(noveltyitem*k) {
-     if(NEAT::dominates_local) return dominates_local(k);
+     if(NEAT::local_competition) return dominates_local(k);
      return dominates_global(k);
-    } 
+    }
+ 
     bool dominates_global(noveltyitem* k) {
  
      if (secondary < k->secondary || novelty < k->novelty)
