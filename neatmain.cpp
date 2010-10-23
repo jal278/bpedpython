@@ -33,6 +33,9 @@ int main(int argc, char **argv) {
 
   ValueArg<string> seed_genome("c","seed","Seed Genome",false,"","string");
   cmd.add(seed_genome);
+ 
+  SwitchArg local_switch("","lc","Local competition",false);
+  cmd.add(local_switch);
 
   SwitchArg biped_switch("","biped","Biped domain",false);
   cmd.add(biped_switch);
@@ -105,6 +108,10 @@ int main(int argc, char **argv) {
   strcpy(startgenes,genes.getValue().c_str());
 
   NEAT::load_neat_params(settingsname,true);
+  
+  if(local_switch.getValue()) 
+   NEAT::local_competition=true;
+
   param = extra_param.getValue();
   cout<<"loaded"<<endl;
 
