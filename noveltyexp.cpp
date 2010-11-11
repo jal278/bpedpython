@@ -441,7 +441,15 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
                 cout << "ARCHIVE SIZE:" <<
                      archive.get_set_size() << endl;
             }
-            cout << "GEN" << offspring_count/NEAT::pop_size << endl;
+        double mx=0.0;  
+double tot=0.0;    
+    Organism* b;  
+	for (curorg = (pop->organisms).begin(); curorg != pop->organisms.end(); ++curorg) {
+tot+=(*curorg)->noveltypoint->fitness;
+if( (*curorg)->noveltypoint->fitness > mx) {
+mx=(*curorg)->noveltypoint->fitness; b=(*curorg); }
+} 
+           cout << "GEN" << offspring_count/NEAT::pop_size << " " << tot << " " << mx <<  endl;
             char fn[100];
             sprintf(fn,"%sdist%d",output_dir,offspring_count/NEAT::pop_size);
             if (NEAT::printdist)

@@ -279,6 +279,7 @@ noveltyitem* biped_evaluate(NEAT::Organism *org,data_record* data)
 
     CTRNNController* cont = new CTRNNController(org->net);
     new_item->fitness=evaluate_controller(cont,new_item,data);
+    org->fitness=new_item->fitness;
     if (new_item->fitness < 2.5) new_item->viable=false;
     else new_item->viable=true;
     delete cont;
@@ -450,7 +451,17 @@ int biped_novelty_realtime_loop(Population *pop,bool novelty) {
                 cout << "ARCHIVE SIZE:" <<
                      archive.get_set_size() << endl;
             }
-            cout << "GEN" << offspring_count/NEAT::pop_size << endl;
+        double mx=0.0;  
+double tot=0.0;    
+    Organism* b;  
+	for (curorg = (pop->organisms).begin(); curorg != pop->organisms.end(); ++curorg) {
+tot+=(*curorg)->noveltypoint->fitness;
+if( (*curorg)->noveltypoint->fitness > mx) {
+mx=(*curorg)->noveltypoint->fitness; b=(*curorg); }
+} 
+           cout << "GEN" << offspring_count/NEAT::pop_size << " " << tot << " " << mx <<  endl;
+
+  //evolvability_biped(b,"dummy");
             char fn[100];
             sprintf(fn,"%sdist%d",output_dir,offspring_count/NEAT::pop_size);
             if (NEAT::printdist)
@@ -553,7 +564,7 @@ int biped_novelty_realtime_loop(Population *pop,bool novelty) {
             //new_org->novelty = 0.00000001;
             //reset behavioral characterization
             new_org->noveltypoint->reset_behavior();
-            //cout << "fail" << endl;
+            cout << "fail" << endl;
             //  cout << " :( " << endl;
         }
         else
@@ -617,6 +628,7 @@ void evolvability_biped(Organism* org,char* fn,int* di,double* ev) {
     for (int i=0; i<BIPEDMUTATIONS; i++) {
         Genome *new_gene= new Genome(*org->gnome);
         //new_org->gnome = new Genome(*org->gnome);
+        
         if (i!=0) //first copy is clean
             for (int j=0; j<1; j++) mutate_genome(new_gene);
         Organism *new_org= new Organism(0.0,new_gene,0);
@@ -633,7 +645,8 @@ void evolvability_biped(Organism* org,char* fn,int* di,double* ev) {
         //  file << nov_item->data[0][k] << " ";
         points[i*2]=(rec.ToRec[1]-minx)/(maxx-minx);
         points[i*2+1]=(rec.ToRec[2]-miny)/(maxy-miny);
-        delete new_org;
+        cout << points[i*2] << " " << points[i*2+1] << endl;
+         delete new_org;
         delete nov_item;
         //file << endl;
     }
