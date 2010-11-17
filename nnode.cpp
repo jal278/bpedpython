@@ -221,7 +221,7 @@ double NNode::get_active_out_td() {
 // This recursively flushes everything leading into and including this NNode, including recurrencies
 void NNode::flushback() {
 	std::vector<Link*>::iterator curlink;
-
+        activation=0;
 	//A sensor should not flush black
 	if (type!=SENSOR) {
 

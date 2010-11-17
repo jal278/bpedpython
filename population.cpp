@@ -392,7 +392,9 @@ bool Population::spawn(Genome *g,int size) {
 
 		new_genome=g->duplicate(count); 		
 		//new_genome->mutate_link_weights(1.0,1.0,GAUSSIAN);
-		new_genome->mutate_link_weights(1.0,1.0,COLDGAUSSIAN);
+		new_genome->mutate_link_weights(2.0,1.0,COLDGAUSSIAN);
+		new_genome->mutate_node_parameters(0.01,1.0,3.0,1.0,true);
+		//new_genome->mutate_node_parameters(3.0,1.0,4.0,1.0,true);
 		new_genome->randomize_traits();
 		new_organism=new Organism(0.0,new_genome,1);
 		organisms.push_back(new_organism);
@@ -562,7 +564,7 @@ bool Population::epoch(int generation) {
 	bool best_ok;
 
 	//We can try to keep the number of species constant at this number
-	int num_species_target=NEAT::pop_size/20;
+	int num_species_target=10; //was prior NEAT::pop_size/20;
 	int num_species=species.size();
 	double compat_mod=0.3;  //Modify compat thresh to control speciation
 

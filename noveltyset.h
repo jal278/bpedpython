@@ -15,7 +15,7 @@
 
 #define SNUM 0.0000001
 
-#define ARCHIVE_SEED_AMOUNT 5
+#define ARCHIVE_SEED_AMOUNT 1
 
 inline float scale(float lo, float hi, float x)
 {
@@ -319,7 +319,7 @@ public:
         time_out=0; //used for adaptive threshold
         novelty_threshold=threshold;
         novelty_metric=nm; //set the novelty metric via function pointer
-        novelty_floor=0.0; //lowest threshold is allowed to get
+        novelty_floor=0.1; //lowest threshold is allowed to get
         record=rec;
         this_gen_index=ARCHIVE_SEED_AMOUNT;
         hall_of_fame=false;
@@ -496,17 +496,17 @@ public:
     //criteria for adding to the archive
     bool add_to_novelty_archive(float novelty)
     {
-       
+       /*
         if (NEAT::archive && ((float)rand()/RAND_MAX)<(0.005))
          return true;
         return false;
+       */
        
-       /* 
         if (novelty>novelty_threshold)
             return true;
         else
             return false;
-        */
+        
     }
 
     //steady-state end of generation call (every so many indivudals)
@@ -588,9 +588,9 @@ public:
                 density = sum/weight;
             }
         }
-        if(density <SNUM)
+        if(density <SNUM*100)
         {
-          density=SNUM; // + (((float)rand()/RAND_MAX)*SNUM);
+          density=SNUM*100; // + (((float)rand()/RAND_MAX)*SNUM);
         }
         item->novelty=density;
         item->generation=generation;
