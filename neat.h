@@ -3,6 +3,8 @@
 
 #include <cstdlib>
 namespace NEAT {
+    extern bool production;
+    extern bool mut_control;
     extern bool multiobjective;
     extern bool local_competition;
     extern bool printdist;

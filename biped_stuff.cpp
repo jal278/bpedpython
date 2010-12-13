@@ -65,7 +65,6 @@ float walker_novelty_metric(noveltyitem* x,noveltyitem* y)
     int size2 = y->data[0].size();
     if (size!=size2) {
         cout << size << " " << size2 << endl;
-        cout << "fucking horseshit." << endl;
         exit(0);
     }
 
@@ -331,7 +330,9 @@ Population *biped_novelty_realtime(char* outputdir,const char* mazefile,int par,
         if (evaluate_switch) {
             int dist=0;
             double evol=0.0;
-            evolvability_biped(pop->organisms[0],"dummyfile",&dist,&evol);
+           cout << "Evaluating..." << endl; 
+           cout << pop->organisms.size() << endl;
+            evolvability_biped(pop->organisms[0],"dummyfile",&dist,&evol,true);
             cout << endl << dist << " " << evol << endl;
             return 0;
         }
@@ -554,6 +555,16 @@ mx=(*curorg)->noveltypoint->fitness; b=(*curorg); }
         //calculate novelty of new individual
         if (novelty) {
             archive.evaluate_individual(new_org,pop->organisms);
+             //production of novelty tracking...
+            int looking_for = new_org->gnome->parent_id;
+            for (curorg = (pop->organisms).begin(); curorg != pop->organisms.end(); ++curorg) {
+              if((*curorg)->gnome->genome_id==looking_for) {
+               (*curorg)->gnome->production+=new_org->noveltypoint->novelty;
+               (*curorg)->gnome->production_count++;
+               //cout << "Parent " << looking_for << " found...parent avg prod: " << (*curorg)->gnome->production/(*curorg)->gnome->production_count << endl;
+              }
+            }
+        
             //newrec->ToRec[5] = archive.get_threshold();
             newrec->ToRec[6] = archive.get_set_size();
             newrec->ToRec[RECSIZE-2] = new_org->noveltypoint->novelty;
@@ -614,13 +625,14 @@ mx=(*curorg)->noveltypoint->fitness; b=(*curorg); }
 }
 
 #define BIPEDMUTATIONS 200
-void evolvability_biped(Organism* org,char* fn,int* di,double* ev) {
+#define BDIM 30
+void evolvability_biped(Organism* org,char* fn,int* di,double* ev,bool recall) {
     fstream file;
     file.open(fn,ios::app|ios::out);
     cout <<"Evolvability..." << endl;
 // file << "---" <<  " " << org->winner << endl;
-    double points[BIPEDMUTATIONS*2];
-    float minx=-3.0,maxx=3.0,miny=-3.0,maxy=3.0;
+    double points[BIPEDMUTATIONS*BDIM];
+    float minx=-10.0,maxx=10.0,miny=-10.0,maxy=10.0;
     double ox,oy,fit;
     int nodes;
     int connections;
@@ -641,21 +653,33 @@ void evolvability_biped(Organism* org,char* fn,int* di,double* ev) {
             ox=rec.ToRec[1];
             oy=rec.ToRec[2];
         }
-        //for(int k=0;k<nov_item->data[0].size();k++)
-        //  file << nov_item->data[0][k] << " ";
+        if(recall)
+{
+         for(int k=0;k<nov_item->data[0].size();k++)
+          file << nov_item->data[0][k] << " ";
+file << endl; 
+}   
+    //file << rec.ToRec[1] << " " << rec.ToRec[2]<< endl;
+        for(int k=0;k<nov_item->data[0].size();k++) {
+         points[i*BDIM+k]=nov_item->data[0][k]/25.0;
+       }
+/*   
         points[i*2]=(rec.ToRec[1]-minx)/(maxx-minx);
         points[i*2+1]=(rec.ToRec[2]-miny)/(maxy-miny);
         cout << points[i*2] << " " << points[i*2+1] << endl;
+*/
          delete new_org;
         delete nov_item;
         //file << endl;
     }
-    int dist = distinct(points,BIPEDMUTATIONS);
+    int dist = distinct(points,BIPEDMUTATIONS,BDIM);
     if (di!=NULL) *di=dist;
-    double evol = test_indiv(points,BIPEDMUTATIONS);
+    double evol = 0; //test_indiv(points,BIPEDMUTATIONS);
     if (ev!=NULL) *ev=evol;
+    if(!recall) {
     file << dist << " " << evol << " " << ox << " " << oy << " " << nodes << " " <<connections << " " << fit << endl;
     file.close();
+    }
 }
 
 static int maxgens;

@@ -22,9 +22,12 @@ Genome::Genome(int id, std::vector<Trait*> t, std::vector<NNode*> n, std::vector
 	nodes=n; 
 	genes=g;
 	//added by JAL
+	parent_id=0;
 	parent1=-1;
 	parent2=-1;
 	struct_change=-1;
+        production=0.0;
+        production_count=0;
 }
 
 
@@ -110,6 +113,8 @@ Genome::Genome(const Genome& genome)
 	parent1=genome.parent1;
 	parent2=genome.parent2;
 	struct_change=genome.struct_change;
+        production=genome.production;
+        production_count=genome.production_count;
 }
 
 Genome::Genome(int id, std::ifstream &iFile) {
@@ -230,7 +235,7 @@ Genome::Genome(int id, std::ifstream &iFile) {
 		}
 
 	}
-
+production=0; production_count=0.0;
 }
 
 
@@ -389,6 +394,7 @@ Genome::Genome(int new_id,int i, int o, int n,int nmax, bool r, double linkprob)
 		}
 
 		delete [] cm;
+ production=0; production_count=0;
 }
 
 
@@ -1025,7 +1031,7 @@ Genome *Genome::duplicate(int new_id) {
 
 	//Finally, return the genome
 	newgenome=new Genome(new_id,traits_dup,nodes_dup,genes_dup);
-
+        newgenome->parent_id=genome_id;
 	return newgenome;
 
 }
@@ -1174,78 +1180,20 @@ void Genome::mutate_link_weights(double power,double rate,mutator mut_type) {
 	std::vector<Gene*>::iterator curgene;
 	double num;  //counts gene placement
 	double gene_total;
+        bool trait_modulated=NEAT::mut_control;
 	double powermod; //Modified power by gene number
 	//The power of mutation will rise farther into the genome
 	//on the theory that the older genes are more fit since
 	//they have stood the test of time
 
 	double randnum;
+        double randweight;
 	double randchoice; //Decide what kind of mutation to do on a gene
 	double endpart; //Signifies the last part of the genome
 	double gausspoint;
 	double coldgausspoint;
 
 	bool severe;  //Once in a while really shake things up
-
-	//Wright variables
-	//double oldval;
-	//double perturb;
-
-
-	// --------------- WRIGHT'S MUTATION METHOD -------------- 
-
-	////Use the fact that we know ends are newest
-	//gene_total=(double) genes.size();
-	//endpart=gene_total*0.8;
-	//num=0.0;
-
-	//for(curgene=genes.begin();curgene!=genes.end();curgene++) {
-
-	////Mutate rate 0.2 controls how many params mutate in the list
-	//if ((randfloat()<rate)||
-	//((gene_total>=10.0)&&(num>endpart))) {
-
-	//oldval=((*curgene)->lnk)->weight;
-
-	////The amount to perturb the value by
-	//perturb=randfloat()*power;
-
-	////Once in a while leave the end part alone
-	//if (num>endpart)
-	//if (randfloat()<0.2) perturb=0;  
-
-	////Decide positive or negative
-	//if (gRandGen.randI()%2) {
-	////Positive case
-
-	////if it goes over the max, find something smaller
-	//if (oldval+perturb>100.0) {
-	//perturb=(100.0-oldval)*randfloat();
-	//}
-
-	//((*curgene)->lnk)->weight+=perturb;
-
-	//}
-	//else {
-	////Negative case
-
-	////if it goes below the min, find something smaller
-	//if (oldval-perturb<100.0) {
-	//perturb=(oldval+100.0)*randfloat();
-	//}
-
-	//((*curgene)->lnk)->weight-=perturb;
-
-	//}
-	//}
-
-	//num+=1.0;
-
-	//}
-
-	
-
-	// ------------------------------------------------------ 
 
 	if (randfloat()>0.5) severe=true;
 	else severe=false;
@@ -1254,64 +1202,11 @@ void Genome::mutate_link_weights(double power,double rate,mutator mut_type) {
 	num=0.0;
 	gene_total=(double) genes.size();
 	endpart=gene_total*0.8;
-	//powermod=randposneg()*power*randfloat();  //Make power of mutation random
-	//powermod=randfloat();
 	powermod=1.0;
-
-	//Possibility: Jiggle the newest gene randomly
-	//if (gene_total>10.0) {
-	//  lastgene=genes.end();
-	//  lastgene--;
-	//  if (randfloat()>0.4)
-	//    ((*lastgene)->lnk)->weight+=0.5*randposneg()*randfloat();
-	//}
-
-/*
-	//KENHACK: NOTE THIS HAS BEEN MAJORLY ALTERED
-	//     THE LOOP BELOW IS THE ORIGINAL METHOD
-	if (mut_type==COLDGAUSSIAN) {
-		//printf("COLDGAUSSIAN");
-		for(curgene=genes.begin();curgene!=genes.end();curgene++) {
-			if (randfloat()<0.9) {
-				randnum=randposneg()*randfloat()*power*powermod;
-				((*curgene)->lnk)->weight+=randnum;
-			}
-		}
-	}
-
-	
-	for(curgene=genes.begin();curgene!=genes.end();curgene++) {
-		if (randfloat()<0.2) {
-			randnum=randposneg()*randfloat()*power*powermod;
-			((*curgene)->lnk)->weight+=randnum;
-
-			//Cap the weights at 20.0 (experimental)
-			if (((*curgene)->lnk)->weight>1.0) ((*curgene)->lnk)->weight=1.0;
-			else if (((*curgene)->lnk)->weight<-1.0) ((*curgene)->lnk)->weight=-1.0;
-		}
-	}
-
-	*/
 
 
 	//Loop on all genes  (ORIGINAL METHOD)
 	for(curgene=genes.begin();curgene!=genes.end();curgene++) {
-
-		
-		//Possibility: Have newer genes mutate with higher probability
-		//Only make mutation power vary along genome if it's big enough
-		//if (gene_total>=10.0) {
-		//This causes the mutation power to go up towards the end up the genome
-		//powermod=((power-0.7)/gene_total)*num+0.7;
-		//}
-		//else powermod=power;
-
-		//The following if determines the probabilities of doing cold gaussian
-		//mutation, meaning the probability of replacing a link weight with
-		//another, entirely random weight.  It is meant to bias such mutations
-		//to the tail of a genome, because that is where less time-tested genes
-		//reside.  The gausspoint and coldgausspoint represent values above
-		//which a random float will signify that kind of mutation.  
 
 		//Don't mutate weights of frozen links
 		if (!((*curgene)->frozen)) {
@@ -1336,28 +1231,35 @@ void Genome::mutate_link_weights(double power,double rate,mutator mut_type) {
 				}
 			}
 
-			//Possible methods of setting the perturbation:
-			//randnum=gaussrand()*powermod;
-			//randnum=gaussrand();
 
 			randnum=randposneg()*randfloat()*power*powermod;
-            //std::cout << "RANDOM: " << randnum << " " << randposneg() << " " << randfloat() << " " << power << " " << powermod << std::endl;
-			if (mut_type==GAUSSIAN) {
+	                randweight=randposneg()*randfloat()*power*powermod;
+                        bool skip=false;
+            	        if(trait_modulated) {
+                         Trait* ptr_trait=((*curgene)->lnk)->linktrait; 
+                         double p1=ptr_trait->params[0];
+                         double p2=ptr_trait->params[1];
+                         double modulation=p1*2.0;
+                         double skip_prob=p2;
+                         if (randfloat()>skip_prob) skip=true;
+                         randnum*=modulation;
+                        }
+	                
+                        if(!skip) {
+                        if (mut_type==GAUSSIAN) {
 				randchoice=randfloat();
 				if (randchoice>gausspoint)
 					((*curgene)->lnk)->weight+=randnum;
 				else if (randchoice>coldgausspoint)
-					((*curgene)->lnk)->weight=randnum;
+					((*curgene)->lnk)->weight=randweight;
 			}
 			else if (mut_type==COLDGAUSSIAN)
-				((*curgene)->lnk)->weight=randnum;
-
+				((*curgene)->lnk)->weight=randweight;
+                         }
 			//Cap the weights at 20.0 (experimental)
 			if (((*curgene)->lnk)->weight > 5.0) ((*curgene)->lnk)->weight = 5.0;
 			else if (((*curgene)->lnk)->weight < -5.0) ((*curgene)->lnk)->weight = -5.0;
 
-			//Record the innovation
-			//(*curgene)->mutation_num+=randnum;
 			(*curgene)->mutation_num=((*curgene)->lnk)->weight;
 
 			num+=1.0;

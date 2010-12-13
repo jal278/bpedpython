@@ -245,7 +245,7 @@ class noveltyarchive
 private:
     histogram_multiple* hist;
     bool histogram;
-
+    bool production_score; 
     //are we collecting data?
     bool record;
 
@@ -291,6 +291,7 @@ public:
     //constructor
     noveltyarchive(float threshold,float (*nm)(noveltyitem*,noveltyitem*),bool rec=true,int pbs=-1,bool mc=false,bool _generational=false)
     {
+        production_score=NEAT::production;
         //how many nearest neighbors to consider for calculating novelty score?
         //histogram adds
         local_competition=NEAT::local_competition;
@@ -496,17 +497,17 @@ public:
     //criteria for adding to the archive
     bool add_to_novelty_archive(float novelty)
     {
-       /*
+       
         if (NEAT::archive && ((float)rand()/RAND_MAX)<(0.005))
          return true;
         return false;
-       */
        
+      /* 
         if (novelty>novelty_threshold)
             return true;
         else
             return false;
-        
+        */
     }
 
     //steady-state end of generation call (every so many indivudals)

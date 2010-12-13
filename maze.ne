@@ -25,7 +25,7 @@ mate_multipoint_avg_prob 0.4
 mate_singlepoint_prob 0.0
 mate_only_prob 0.2
 recur_only_prob 0.2
-pop_size 250
+pop_size 259
 dropoff_age 2000
 newlink_tries 40
 print_every 2000
@@ -39,3 +39,6 @@ elitism 1
 speciation 1
 archive 1
 localcompetition 0
+production 0
+mutation_control 1
+evolvability 0

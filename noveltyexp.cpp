@@ -18,7 +18,7 @@ static Environment* env;
 static vector<Environment*> envList;
 static vector<Environment*> mcList;
 static ofstream *logfile;
-void evolvability(Organism* org,char* fn,int *a=NULL,double* b=NULL);
+void evolvability(Organism* org,char* fn,int *a=NULL,double* b=NULL,bool recall=false);
 using namespace std;
 enum novelty_measure_type { novelty_sample, novelty_accum, novelty_sample_free };
 static novelty_measure_type novelty_measure = novelty_sample;
@@ -302,7 +302,7 @@ Population *maze_novelty_realtime(char* outputdir,const char* mazefile,int par,c
         if (evaluate_switch) {
             int dist=0;
             double evol=0.0;
-            evolvability(pop->organisms[0],"dummyfile",&dist,&evol);
+            evolvability(pop->organisms[0],"dummyfile",&dist,&evol,true);
             cout << endl << dist << " " << evol << endl;
             return 0;
         }
@@ -396,7 +396,7 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
     //Now create offspring one at a time, testing each offspring,
     // and replacing the worst with the new offspring if its better
     for
-    (offspring_count=0; offspring_count<NEAT::pop_size*1001; offspring_count++)
+    (offspring_count=0; offspring_count<NEAT::pop_size*2001; offspring_count++)
     {
 //fix compat_threshold, so no speciation...
 //      NEAT::compat_threshold = 1000000.0;
@@ -575,6 +575,7 @@ mx=(*curorg)->noveltypoint->fitness; b=(*curorg); }
         new_org->species->estimate_average();
 
         //if solution, do evolvability
+        
         if (newrec->ToRec[3]>=envList.size() && newrec->ToRec[4]>=envList.size()) {
             if (false) //NEAT::evolvabilitytest)
             {
@@ -582,10 +583,11 @@ mx=(*curorg)->noveltypoint->fitness; b=(*curorg); }
                 evolvability(new_org,sol_evo_fn);
             }
         }
+        
 
         if (!weakfirst && (newrec->ToRec[3]>=envList.size())) {
             weakfirst=true;
-            NEAT::evolvabilitytest=true; //TODO REMOVE LATER
+            //NEAT::evolvabilitytest=true; //TODO REMOVE LATER
             char filename[100];
             sprintf(filename,"%srtgen_weakfirst",output_dir);
             pop->print_to_file_by_species(filename);
@@ -876,58 +878,15 @@ bool contained(float x,float y)
     return false;
     */
 }
-#define DISABLE_PROB 0.05
 void mutate_genome(Genome* new_genome)
 {
     double mut_power=NEAT::weight_mut_power;
     new_genome->mutate_link_weights(mut_power,1.0,GAUSSIAN);
-    if (randfloat()<NEAT::mutate_node_trait_prob) {
-        //cout<<"mutate_node_trait"<<endl;
-        new_genome->mutate_node_parameters(NEAT::time_const_mut_power,NEAT::time_const_mut_prob,
-                                           NEAT::bias_mut_power,NEAT::bias_mut_prob);
-    }
     return;
-    //NOTE:  A link CANNOT be added directly after a node was added because the phenotype
-    //       will not be appropriately altered to reflect the change
-    if (1) {
-        //If we didn't do a structural mutation, we do the other kinds
-
-        if (randfloat()<NEAT::mutate_random_trait_prob) {
-            //cout<<"mutate random trait"<<endl;
-            new_genome->mutate_random_trait();
-        }
-        if (randfloat()<NEAT::mutate_link_trait_prob) {
-            //cout<<"mutate_link_trait"<<endl;
-            new_genome->mutate_link_trait(1);
-        }
-        if (randfloat()<NEAT::mutate_node_trait_prob) {
-            //cout<<"mutate_node_trait"<<endl;
-            new_genome->mutate_node_trait(1);
-            new_genome->mutate_node_parameters(NEAT::time_const_mut_power,NEAT::time_const_mut_prob,
-                                               NEAT::bias_mut_power,NEAT::bias_mut_prob);
-        }
-        if (randfloat()<NEAT::mutate_link_weights_prob) {
-            //cout<<"mutate_link_weights"<<endl;
-            new_genome->mutate_link_weights(mut_power,1.0,GAUSSIAN);
-        }
-        if (randfloat()<NEAT::mutate_toggle_enable_prob) {
-            //cout<<"mutate toggle enable"<<endl;
-            new_genome->mutate_toggle_enable(1);
-            new_genome->struct_change=3; //JLADD
-
-        }
-        if (randfloat()<DISABLE_PROB)
-            new_genome->mutate_gene_disable();
-        if (randfloat()<NEAT::mutate_gene_reenable_prob) {
-            //cout<<"mutate gene reenable"<<endl;
-            new_genome->mutate_gene_reenable();
-            new_genome->struct_change=3; //JLADD
-        }
-    }
 }
 
 #define MUTATIONS 200
-void evolvability(Organism* org,char* fn,int* di,double* ev) {
+void evolvability(Organism* org,char* fn,int* di,double* ev,bool recall) {
     bool solution=false;
     fstream file;
     file.open(fn,ios::app|ios::out);
@@ -951,23 +910,26 @@ void evolvability(Organism* org,char* fn,int* di,double* ev) {
             fit=nov_item->fitness;
             nodes=new_org->net->nodecount();
             connections=new_org->net->linkcount();
-            //cout << fit << endl;
             ox=nov_item->data[0][0];
             oy=nov_item->data[0][1];
         }
         if (nov_item->fitness>340) solution=true;
-        //for(int k=0;k<nov_item->data[0].size();k++)
-        //  file << nov_item->data[0][k] << " ";
+        if(recall) {
+         for(int k=0;k<nov_item->data[0].size();k++)
+          file << nov_item->data[0][k] << " ";
+         file << endl;
+        }
         points[i*2]=(nov_item->data[0][0]-minx)/(maxx-minx);
         points[i*2+1]=(nov_item->data[0][1]-miny)/(maxy-miny);
         delete new_org;
         delete nov_item;
         //file << endl;
     }
-    int dist = distinct(points,MUTATIONS);
+    int dist = distinct(points,MUTATIONS,2);
     if (di!=NULL) *di=dist;
-    double evol = test_indiv(points,MUTATIONS);
+    double evol = 0.0; // test_indiv(points,MUTATIONS);
     if (ev!=NULL) *ev=evol;
+    if(!recall)
     file << dist << " " << evol << " " << ox << " " << oy << " " << nodes << " " <<connections << " " << fit << " " << solution << endl;
     file.close();
     return;
@@ -1022,7 +984,7 @@ noveltyitem* maze_novelty_map(Organism *org,data_record* record)
 
             org->eliminate=false;
             fitness+=mazesim(org->net,gather,record,envList[x],org);
-            if (org->eliminate) {
+             if (org->eliminate) {
                 new_item->viable=false;
                 org->eliminate=false;
             }

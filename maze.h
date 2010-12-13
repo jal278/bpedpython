@@ -6,6 +6,8 @@
 #include <math.h>
 using namespace std;
 
+static bool disable=true;
+
 void inline scale1(float &v, float min, float max)
 {
 v= (v-min)/(max-min);
@@ -382,6 +384,7 @@ class Environment
         {
             ifstream inpfile(filename);
             int num_lines; 
+         inpfile >> disable;
          inpfile >> steps;    
 	inpfile >> num_lines; //read in how many line segments
             hero.location.fromfile(inpfile); //read initial location
@@ -553,9 +556,10 @@ class Environment
                 hero.location.y=newloc.y;
             }
 	    else
-            { 
+            {
              hero.collisions++;
-            //hero.collide=true;
+             if(disable)
+              hero.collide=true;
             }		
             update_rangefinders(hero);
             update_radar(hero);

@@ -3,7 +3,7 @@ trait_mutation_power 1.0
 linktrait_mut_sig 1.0
 nodetrait_mut_sig 0.5
 weight_mut_power 2.5
-recur_prob 0.35
+recur_prob 0.5
 disjoint_coeff 1.0
 excess_coeff 1.0
 mutdiff_coeff 3.0
@@ -39,3 +39,5 @@ elitism 1
 speciation 1
 archive 1
 localcompetition 0
+production 0
+mutation_control 0

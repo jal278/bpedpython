@@ -31,6 +31,9 @@ namespace NEAT {
 	public:
 		int genome_id;
 		int parent1,parent2,struct_change; //added by JAL
+                double production;
+                int production_count;             
+                int parent_id;
 
 		std::vector<Trait*> traits; //parameter conglomerations
 		std::vector<NNode*> nodes; //List of NNodes for the Network

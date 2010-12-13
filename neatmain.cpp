@@ -76,10 +76,10 @@ int main(int argc, char **argv) {
   ValueArg<int> extra_param("p","parameter","Extra Parameter",false,0,"int");
   cmd.add(extra_param);
 
-  ValueArg<int> num_samples("a","samples","Num Samples",false,1,"int");
+  ValueArg<int> num_samples("","samples","Num Samples",false,1,"int");
   cmd.add(num_samples);
 
-  ValueArg<int> time_steps("b","timesteps","Num Timesteps",false,400,"int");
+  ValueArg<int> time_steps("","timesteps","Num Timesteps",false,400,"int");
   cmd.add(time_steps);
 
   ValueArg<int> rng_seed("r","random_seed","Random Seed",false,-1,"int");

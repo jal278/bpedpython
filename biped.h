@@ -29,7 +29,7 @@ int biped_novelty_realtime_loop(Population *pop,bool novelty);
 int biped_epoch(NEAT::Population *pop,bool novelty=false);
 
 Population *biped_novelty_realtime(char* outputdir,const char* mazefile,int par,const char* genes,bool novelty);
-void evolvability_biped(Organism* org,char* fn,int* d=NULL,double *e=NULL);
+void evolvability_biped(Organism* org,char* fn,int* d=NULL,double *e=NULL,bool recall=false);
 	
 void biped_neat_initeval(NEAT::Population *pop,bool novelty=false);
 NEAT::Population *biped_neat_init(bool novelty=false);

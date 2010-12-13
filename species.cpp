@@ -133,8 +133,6 @@ double Species::estimate_average() {
 	double spin;  //Fitness total while the wheel is spinning
 
 
-	//printf("In reproduce_one");
-
 	//Check for a mistake
 	if ((organisms.size()==0)) {
 		//    cout<<"ERROR:  ATTEMPT TO REPRODUCE OUT OF EMPTY SPECIES"<<endl;
@@ -158,14 +156,8 @@ double Species::estimate_average() {
 		}		
 	}
 
-	//std::cout<<"Eligible orgs: "<<elig_orgs.size()<<std::endl;
-
-	//Now elig_orgs is guaranteed to contain either an ordered list of mature orgs or all the orgs (Ken)
-	//We may also want to check to see if we are getting pools of >1 organism (to make sure our survival_thresh is sensible) (Ken)
-
 	//Only choose from among the top ranked orgs
 	poolsize=(elig_orgs.size() - 1) * NEAT::survival_thresh;
-	//poolsize=(organisms.size()-1)*.9;
 
 	//Compute total fitness of species for a roulette wheel
 	//Note: You don't get much advantage from a roulette here
@@ -174,9 +166,6 @@ double Species::estimate_average() {
 	for(curorg=elig_orgs.begin();curorg!=elig_orgs.end();++curorg) {
 	  total_fitness+=(*curorg)->fitness;
 	}
-
-	//In reproducing only one offspring, the champ shouldn't matter  
-	//thechamp=(*(organisms.begin()));
 
 	//Create one offspring for the Species
 
@@ -261,6 +250,8 @@ double Species::estimate_average() {
 				}
 				if (randfloat()<NEAT::mutate_link_weights_prob) {
 					//cout<<"mutate_link_weights"<<endl;
+			//double power=(new_genome->traits[0]->params[0])*2.0*mut_power;	
+                           //new_genome->mutate_link_weights(power,1.0,GAUSSIAN);
 					new_genome->mutate_link_weights(mut_power,1.0,GAUSSIAN);
 				}
 				if (randfloat()<NEAT::mutate_toggle_enable_prob) {

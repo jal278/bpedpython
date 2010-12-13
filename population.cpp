@@ -564,7 +564,7 @@ bool Population::epoch(int generation) {
 	bool best_ok;
 
 	//We can try to keep the number of species constant at this number
-	int num_species_target=10; //was prior NEAT::pop_size/20;
+	int num_species_target=NEAT::pop_size/20;
 	int num_species=species.size();
 	double compat_mod=0.3;  //Modify compat thresh to control speciation
 

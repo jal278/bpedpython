@@ -215,7 +215,21 @@ void noveltyarchive::evaluate_individual(Organism* ind,vector<Organism*> pop,boo
 			result = novelty_histogram(ind->noveltypoint);
 		}
                 }
-		ind->fitness = result;
+                //NEW WAY: production of novelty important
+                if(production_score) {
+                int init_weight=10;
+                double fit_weight=init_weight;
+                double fit_tot=ind->noveltypoint->novelty*init_weight;
+                fit_tot+= ind->gnome->production;
+                fit_weight+= ind->gnome->production_count;
+                ind->fitness = fit_tot/fit_weight;
+                //cout << fit_weight << endl;
+                //cout << "adjusting novelty, weight " << fit_weight << ", from " << ind->noveltypoint->novelty << " to " << ind->fitness << endl;
+
+                //END NEW WAY
+               } else {
+		ind->fitness = result;  //old way
+               }
 	} 
 	else  //consider adding a point to archive based on dist to nearest neighbor
 	{

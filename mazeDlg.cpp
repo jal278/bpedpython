@@ -97,7 +97,7 @@ void mazeDlg::OnTimer(wxTimerEvent& event)
 	else
 		env->Update();
 	
-        cout << env->hero.collisions << endl;
+        cout << env->hero.collide << endl;
 	if(timestep<400) fitness+=fit;	
 	timestep++;
 	}
