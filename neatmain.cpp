@@ -1,14 +1,26 @@
+<<<<<<< HEAD
 #include <iostream>
 #include <fstream>
 using namespace std;
 #include <tclap/CmdLine.h>
 #include <cstring>
+=======
+#include <cstring>
+#include <iostream>
+#include <fstream>
+using namespace std;
+#include <tclap/CmdLine.h>
+>>>>>>> 988ecadd502b1857b91e735ddec9eb2a599a7b9f
 #include <vector>
 #include <unistd.h>	
 #include "neat.h"
 #include "population.h"
 #include "experiments.h"
+<<<<<<< HEAD
 #include "biped.h"
+=======
+
+>>>>>>> 988ecadd502b1857b91e735ddec9eb2a599a7b9f
 using namespace TCLAP;
 static bool biped=false;
 

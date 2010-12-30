@@ -4,7 +4,10 @@
 #include <cmath>
 #include <iostream>
 #define DISABLE_PROB 0.0
+<<<<<<< HEAD
 #define FREEZEPROB 0.0
+=======
+>>>>>>> 988ecadd502b1857b91e735ddec9eb2a599a7b9f
 using namespace NEAT;
 
 Species::Species(int i) {

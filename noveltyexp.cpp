@@ -112,6 +112,7 @@ bool evaluate_switch=false;
 static bool goal_attract=true;
 
 static bool activity_stats=false;
+<<<<<<< HEAD
 static bool constraint_switch=false;
 static bool area_of_interest=false;
 static bool rand_repl=false;
@@ -122,6 +123,8 @@ void set_random_replace(bool val)
 {
     rand_repl = val;
 }
+=======
+>>>>>>> 988ecadd502b1857b91e735ddec9eb2a599a7b9f
 
 void set_aoi(bool val)
 {
