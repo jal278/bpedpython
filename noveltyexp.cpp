@@ -112,7 +112,7 @@ bool evaluate_switch=false;
 static bool goal_attract=true;
 
 static bool activity_stats=false;
-<<<<<<< HEAD
+
 static bool constraint_switch=false;
 static bool area_of_interest=false;
 static bool rand_repl=false;
@@ -123,8 +123,6 @@ void set_random_replace(bool val)
 {
     rand_repl = val;
 }
-=======
->>>>>>> 988ecadd502b1857b91e735ddec9eb2a599a7b9f
 
 void set_aoi(bool val)
 {
@@ -723,8 +721,14 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record,En
                 novelty_measure==novelty_sample_free)
             if ((timesteps-i-1)%stepsize==0)
             {
+               if(!newenv->hero.collide) {
                 data.push_back(newenv->hero.location.x);
                 data.push_back(newenv->hero.location.y);
+               }
+               else {
+                data.push_back(-10.0);
+                data.push_back(-10.0);
+               }
             }
 
         float loc[2]={newenv->hero.location.x,newenv->hero.location.y};
