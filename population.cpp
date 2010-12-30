@@ -1159,6 +1159,54 @@ bool Population::remove_species(Species *spec) {
 		return true;
 	}
 }
+
+void Population::remove_old() {
+	double adjusted_fitness;
+	double min_fitness=999999;
+	std::vector<Organism*>::iterator curorg;
+	Organism *org_to_kill = 0;
+	std::vector<Organism*>::iterator deadorg;
+	Species *orgs_species; //The species of the dead organism
+
+	//Make sure the organism is deleted from its species and the population
+
+	//First find the organism with minimum *adjusted* fitness
+	for(curorg=organisms.begin();curorg!=organisms.end();++curorg) {
+		adjusted_fitness= -((*curorg)->gnome->production_count);
+		if ((adjusted_fitness<min_fitness)&&
+			(((*curorg)->time_alive) >= NEAT::time_alive_minimum))
+		{
+			min_fitness=adjusted_fitness;
+			org_to_kill=(*curorg);
+			deadorg=curorg;
+			orgs_species=(*curorg)->species;
+		}
+	}
+       cout << "oldest: " << min_fitness << endl;
+	if (org_to_kill) {
+
+//		printf("Org to kill: species = %d",org_to_kill->species->id);
+
+		//Remove the organism from its species and the population
+		orgs_species->remove_org(org_to_kill);  //Remove from species
+		delete org_to_kill;  //Delete the organism itself 
+		organisms.erase(deadorg); //Remove from population list
+
+		//Did the species become empty?
+		if ((orgs_species->organisms.size())==0) {
+
+			remove_species(orgs_species);
+			delete orgs_species;
+		}
+		//If not, re-estimate the species average after removing the organism
+		else {
+			orgs_species->estimate_average();
+		}
+	}
+
+	//return org_to_kill;
+} 
+
 void Population::remove_random() {
  Organism* org_to_kill=0;
  int org_num = randint(0,organisms.size()-1);

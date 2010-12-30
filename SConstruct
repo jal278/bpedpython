@@ -1,5 +1,5 @@
 import glob
-ode_path = '/home/jlehman/ode-0.11/'
+ode_path = '/home/joel/ode-0.11.1/'
 
 #env = Environment(CCFLAGS = ' -DdTRIMESH_ENABLED -DdDOUBLE -DGRAPHICS -g -I./include')
 env = Environment(CCFLAGS = ' -march=native -DdTRIMESH_ENABLED -DdDOUBLE -DGRAPHICS -O2 -g -I./include')

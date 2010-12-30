@@ -1237,9 +1237,10 @@ void Genome::mutate_link_weights(double power,double rate,mutator mut_type) {
                         bool skip=false;
             	        if(trait_modulated) {
                          Trait* ptr_trait=((*curgene)->lnk)->linktrait; 
+                         //Trait* ptr_trait=traits[0];//((*curgene)->lnk)->linktrait; 
                          double p1=ptr_trait->params[0];
                          double p2=ptr_trait->params[1];
-                         double modulation=p1*2.0;
+                         double modulation=p1;
                          double skip_prob=p2;
                          if (randfloat()>skip_prob) skip=true;
                          randnum*=modulation;
@@ -1251,11 +1252,11 @@ void Genome::mutate_link_weights(double power,double rate,mutator mut_type) {
 				if (randchoice>gausspoint)
 					((*curgene)->lnk)->weight+=randnum;
 				else if (randchoice>coldgausspoint)
-					((*curgene)->lnk)->weight=randweight;
+					((*curgene)->lnk)->weight=randnum;
 			}
 			else if (mut_type==COLDGAUSSIAN)
-				((*curgene)->lnk)->weight=randweight;
-                         }
+				((*curgene)->lnk)->weight=randnum;
+                        }
 			//Cap the weights at 20.0 (experimental)
 			if (((*curgene)->lnk)->weight > 5.0) ((*curgene)->lnk)->weight = 5.0;
 			else if (((*curgene)->lnk)->weight < -5.0) ((*curgene)->lnk)->weight = -5.0;

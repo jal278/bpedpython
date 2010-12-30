@@ -601,8 +601,10 @@ mx=(*curorg)->noveltypoint->fitness; b=(*curorg); }
         //if(rand_repl || fitness_measure ==fitness_rnd)
         // pop->remove_random();
         //else
+        if(randfloat()<0.99)
         pop->remove_worst();
-
+        else 
+        pop->remove_old();
     }
 
     //write out run information, archive, and final generation
