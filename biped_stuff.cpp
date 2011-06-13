@@ -24,7 +24,7 @@ extern char seed_name[40];
 
 static ofstream *logfile;
 
-int novelty_function = NF_COGSAMPSQ;
+int novelty_function = NF_TRAIT; //NF_COGSAMPSQ;
 vector<dGeomID> geoms;
 vector<Creature*> creatures;
 //NEAT + NS stuff
@@ -159,7 +159,15 @@ void create_world(Controller* controller,bool log,bool bMoviePlay)
     world = dWorldCreate();
     space = dHashSpaceCreate (0);
     contactgroup = dJointGroupCreate (0);
-    dWorldSetGravity (world,0,0,-9.8);
+     
+   //grab gravity settings from world
+   CTRNNController* cc= (CTRNNController*)controller;
+   float discrete =  int(cc->genes->traits[0]->params[0] * 20.0)+1.0; 
+   float gravitysetting = -9.8 * (discrete/20.0);
+   //cout << "gravity: " << gravitysetting << endl;
+   //gravitysetting= -9.8;
+    dWorldSetGravity (world,0,0,gravitysetting);
+    
     floorplane = dCreatePlane (space,0,0,1, 0.0);
     dWorldSetERP(world,0.1);
     dWorldSetCFM(world,1E-4);
@@ -217,6 +225,12 @@ void update_behavior(vector<float> &k, Creature* c,bool good=true)
             k.push_back(0.0);
         }
     }
+   if(novelty_function==NF_TRAIT) {
+
+    Biped* b = ((Biped*)c);
+    NEAT::Genome* g = ((CTRNNController*)b->controller)->genes;
+    k.push_back(g->traits[0]->params[0]); 
+   }
 }
 
 dReal evaluate_controller(Controller* controller,noveltyitem* ni,data_record* record,bool log)
@@ -252,7 +266,7 @@ dReal evaluate_controller(Controller* controller,noveltyitem* ni,data_record* re
         //ni->time=time;
         ni->novelty_scale = 1.0;
         ni->data.push_back(k);
-        ni->secondary=time;
+        ni->secondary=fitness;
     }
 
     if (record!=NULL)
@@ -276,7 +290,7 @@ noveltyitem* biped_evaluate(NEAT::Organism *org,data_record* data)
     new_item->genotype=new Genome(*org->gnome);
     new_item->phenotype=new Network(*org->net);
 
-    CTRNNController* cont = new CTRNNController(org->net);
+    CTRNNController* cont = new CTRNNController(org->net,org->gnome);
     new_item->fitness=evaluate_controller(cont,new_item,data);
     org->fitness=new_item->fitness;
     if (new_item->fitness < 2.5) new_item->viable=false;
@@ -331,9 +345,11 @@ Population *biped_novelty_realtime(char* outputdir,const char* mazefile,int par,
             int dist=0;
             double evol=0.0;
            cout << "Evaluating..." << endl; 
-           cout << pop->organisms.size() << endl;
-            evolvability_biped(pop->organisms[0],"dummyfile",&dist,&evol,true);
-            cout << endl << dist << " " << evol << endl;
+            cout << pop->organisms.size() << endl;
+            //evolvability_biped(pop->organisms[0],"dummyfile",&dist,&evol,true);
+            //cout << endl << dist << " " << evol << endl;
+            noveltyitem* i= biped_evaluate(pop->organisms[0]); 
+            cout << "fitness: " << i->fitness << endl;
             return 0;
         }
 
@@ -601,10 +617,14 @@ mx=(*curorg)->noveltypoint->fitness; b=(*curorg); }
         //if(rand_repl || fitness_measure ==fitness_rnd)
         // pop->remove_random();
         //else
+        
+        pop->remove_worst();
+          /*
         if(randfloat()<0.99)
         pop->remove_worst();
         else 
         pop->remove_old();
+         */
     }
 
     //write out run information, archive, and final generation
@@ -699,7 +719,7 @@ Population *biped_generational(char* outputdir,const char *genes, int gens,bool 
     noveltyarchive archive(archive_thresh,*walker_novelty_metric,true,push_back_size,minimal_criteria,true);
 
 //if doing multiobjective, turn off speciation, TODO:maybe turn off elitism
-    if (NEAT::multiobjective) NEAT::speciation=false;
+    //if (NEAT::multiobjective) NEAT::speciation=false;
 
     Population *pop;
 
@@ -785,11 +805,6 @@ int biped_generational_epoch(Population **pop2,int generation,data_rec& Record, 
 
 //evaluate this 'super-population'
         archive.rank(measure_pop);
-        /*
-        for(int i=0;i<measure_pop.size();i++) {
-        cout << measure_pop[i]->noveltypoint->competition << " " << measure_pop[i]->noveltypoint->novelty << " " <<  measure_pop[i]->noveltypoint->rank << endl;
-        }
-        */
         if (generation!=0) {
 //chop population down by half (maybe delete orgs that aren't used)
             int start=measure_pop.size()/2;

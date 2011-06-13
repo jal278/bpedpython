@@ -28,7 +28,7 @@ recur_only_prob 0.5
 pop_size 500
 dropoff_age 1500
 newlink_tries 20
-print_every 500
+print_every 100
 babies_stolen 0
 num_runs 1
 time_const_mut_power 0.2
@@ -38,7 +38,7 @@ bias_mut_prob 0.3
 elitism 1
 speciation 1
 archive 1
-localcompetition 0
+localcompetition 1
 production 0
 Mutation_control 0
 evolvability 0

@@ -1181,7 +1181,8 @@ void Genome::mutate_link_weights(double power,double rate,mutator mut_type) {
 	double num;  //counts gene placement
 	double gene_total;
         bool trait_modulated=NEAT::mut_control;
-	double powermod; //Modified power by gene number
+	//cout << trait_modulated << endl;
+         double powermod; //Modified power by gene number
 	//The power of mutation will rise farther into the genome
 	//on the theory that the older genes are more fit since
 	//they have stood the test of time

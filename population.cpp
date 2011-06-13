@@ -63,6 +63,7 @@ void Population::print_distribution(const char* filename,vector<Organism*> orgs)
                   
                   for(int x=0;x<orgs.size();x++)
                   {
+                    out << orgs[x]->gnome->traits[0]->params[0] << " ";
                     for(int y=0;y<size;y++)
                     out << orgs[x]->noveltypoint->data[0][y] << " ";
                     out << orgs[x]->noveltypoint->viable << " " << orgs[x]->noveltypoint->fitness << " " << orgs[x]->noveltypoint->secondary << " " << " " << orgs[x]->noveltypoint->competition << " " <<  orgs[x]->noveltypoint->novelty << " " << orgs[x]->noveltypoint->rank << endl;

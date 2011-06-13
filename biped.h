@@ -13,6 +13,7 @@
 #include <ode/ode.h>
 #define NF_COGSAMPSQ 1
 #define NF_RANDOM 2
+#define NF_TRAIT 3
 
 class Controller;
 class Creature;
@@ -88,10 +89,12 @@ class CTRNNController: public Controller
 {
 public:
     NEAT::Network* net;
-    CTRNNController(NEAT::Network* n,bool dbg=false):Controller(6,dbg)
+    NEAT::Genome* genes;
+    CTRNNController(NEAT::Network* n,NEAT::Genome *g=NULL,bool dbg=false):Controller(6,dbg)
     {
         scale=true;
         net=n;
+        genes=g;
         n->init_ctrnn();
         for (int x=0; x<50; x++)
             net->activate_ctrnn(0.02);

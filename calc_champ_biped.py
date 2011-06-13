@@ -1,10 +1,10 @@
 import os
 import sys
-template="./mazesim --eval --seed ./bipedres/%s%d_fittest_final.bst > out.txt"
+template="./mazesim -s %s --eval --seed ./res/biped_champ/%s%d_fittest_final.bst --biped > out.txt"
 
-def read_in(prefix,num):
+def read_in(prefix,num,sg):
  global template
- cmd = template % (prefix,num)
+ cmd = template % (sg,prefix,num)
  #print cmd
  os.system(cmd)
  a=map(float,open("out.txt").read().split("\n")[-2].split())
@@ -13,11 +13,13 @@ def read_in(prefix,num):
 
 fitss=[]
 novss=[]
-for k in range(8):
- fitss.append(read_in("fitbiped",k))
+sg="biped.ne"
 
-for k in range(8):
- novss.append(read_in("novbiped",k))
+for k in range(7,8):
+ fitss.append(read_in("fr_novbiped",k,sg))
+
+#for k in range(1):
+# novss.append(read_in("fr_fitbiped",k,sg))
 
 f1,f2=zip(*fitss)
 n1,n2=zip(*novss)
