@@ -13,7 +13,7 @@
 #include <ode/ode.h>
 #define NF_COGSAMPSQ 1
 #define NF_RANDOM 2
-#define NF_TRAIT 3
+#define NF_TRAIT 4
 
 class Controller;
 class Creature;
@@ -413,8 +413,8 @@ static dReal FOOT_DENSITY=0.1;
 static dReal MAXTORQUE_KNEE= 5.0;
 static dReal MAXTORQUE_HIPMINOR= 5.0;
 static dReal MAXTORQUE_HIPMAJOR= 5.0;
-static dReal P_CONSTANT= 9.0;
-static dReal D_CONSTANT= 0.0;
+extern dReal P_CONSTANT; //= 9.0;
+extern dReal D_CONSTANT; //= 0.0;
 
 class Biped: public Creature
 {

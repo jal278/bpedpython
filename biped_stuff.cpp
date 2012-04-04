@@ -22,9 +22,12 @@ extern bool population_dirty;
 extern char output_dir[30];
 extern char seed_name[40];
 
+dReal P_CONSTANT=9.0;
+dReal D_CONSTANT=0.0;
+
 static ofstream *logfile;
 
-int novelty_function = NF_TRAIT; //NF_COGSAMPSQ;
+int novelty_function = NF_COGSAMPSQ;
 vector<dGeomID> geoms;
 vector<Creature*> creatures;
 //NEAT + NS stuff
@@ -162,10 +165,12 @@ void create_world(Controller* controller,bool log,bool bMoviePlay)
      
    //grab gravity settings from world
    CTRNNController* cc= (CTRNNController*)controller;
-   float discrete =  int(cc->genes->traits[0]->params[0] * 20.0)+1.0; 
-   float gravitysetting = -9.8 * (discrete/20.0);
+   float discrete =  ((1.0-cc->genes->traits[0]->params[4]) * 4.0)+1.0; 
+   float gravitysetting = -9.8 * (discrete/5.0);
+   float discrete2 =  ((1.0-cc->genes->traits[0]->params[5]) * 4.0)+1.0; 
    //cout << "gravity: " << gravitysetting << endl;
-   //gravitysetting= -9.8;
+   gravitysetting= -9.8;
+   P_CONSTANT = 9.0;// * (discrete/3);
     dWorldSetGravity (world,0,0,gravitysetting);
     
     floorplane = dCreatePlane (space,0,0,1, 0.0);
@@ -201,7 +206,7 @@ void destroy_world()
     dCloseODE();
 }
 
-void update_behavior(vector<float> &k, Creature* c,bool good=true)
+void update_behavior(vector<float> &k, Creature* c,bool good=true,float time=0.0)
 {
 
     if (novelty_function==NF_COGSAMPSQ)
@@ -229,7 +234,14 @@ void update_behavior(vector<float> &k, Creature* c,bool good=true)
 
     Biped* b = ((Biped*)c);
     NEAT::Genome* g = ((CTRNNController*)b->controller)->genes;
-    k.push_back(g->traits[0]->params[0]); 
+    k.push_back(g->traits[0]->params[4]); 
+    float count = b->lft.size();
+    if(b->rft.size()<count) count=b->rft.size();
+    count/=7.0;
+    if(count>1.0) count=1.0;
+    //k.push_back(count);
+    //k.push_back(time);
+    //k.push_back(g->traits[0]->params[1]); 
    }
 }
 
@@ -255,8 +267,14 @@ dReal evaluate_controller(Controller* controller,noveltyitem* ni,data_record* re
 
     //for (int x=timestep+1; x<=simtime; x++)
     //    if (x%100==0)
+    if(novelty_function%2==1)
+    {
     while (k.size()< (simtime/100*2))
         update_behavior(k,creatures[0]);
+    }
+    else {
+        update_behavior(k,creatures[0],true,(float)time/(float)simtime);
+    }
 
     fitness=creatures[0]->fitness();
     ((Biped*)creatures[0])->lft.push_back(timestep);
@@ -266,7 +284,7 @@ dReal evaluate_controller(Controller* controller,noveltyitem* ni,data_record* re
         //ni->time=time;
         ni->novelty_scale = 1.0;
         ni->data.push_back(k);
-        ni->secondary=fitness;
+        ni->secondary=time; //fitness;
     }
 
     if (record!=NULL)
@@ -433,7 +451,7 @@ int biped_novelty_realtime_loop(Population *pop,bool novelty) {
     (offspring_count=0; offspring_count<NEAT::pop_size*2001; offspring_count++)
     {
 //fix compat_threshold, so no speciation...
-//      NEAT::compat_threshold = 1000000.0;
+      NEAT::compat_threshold = 1000000.0;
         //only continue past generation 1000 if not yet solved
         //if(offspring_count>=pop_size*1000 && firstflag)
         // if(firstflag)
@@ -719,7 +737,8 @@ Population *biped_generational(char* outputdir,const char *genes, int gens,bool 
     noveltyarchive archive(archive_thresh,*walker_novelty_metric,true,push_back_size,minimal_criteria,true);
 
 //if doing multiobjective, turn off speciation, TODO:maybe turn off elitism
-    //if (NEAT::multiobjective) NEAT::speciation=false;
+    
+    if (NEAT::multiobjective) NEAT::speciation=false;
 
     Population *pop;
 
@@ -797,7 +816,9 @@ int biped_generational_epoch(Population **pop2,int generation,data_rec& Record, 
 
     int evolveupdate=100;
     if (generation==0) pop->evaluate_all();
+bool speciation=false;
 
+if(!speciation)
     if (NEAT::multiobjective) {  //merge and filter population
         for (curorg=(pop->organisms).begin(); curorg!=(pop->organisms).end(); ++curorg) {
             measure_pop.push_back(new Organism(*(*curorg),true)); //TODO:maybe make a copy?
@@ -840,7 +861,8 @@ int biped_generational_epoch(Population **pop2,int generation,data_rec& Record, 
 //(*curorg)->noveltypoint->indiv_number = indiv_counter;
 //(*curorg)->datarec = newrec;
         data_record* newrec = (*curorg)->datarec;
-        if ((*curorg)->noveltypoint->secondary >best_secondary) {
+
+         if ((*curorg)->noveltypoint->secondary >best_secondary) {
             best_secondary=(*curorg)->noveltypoint->secondary;
             cout << "NEW BEST SEC " << best_secondary << endl;
 
@@ -879,7 +901,6 @@ int biped_generational_epoch(Population **pop2,int generation,data_rec& Record, 
             (*curorg)->fitness = (*curorg)->noveltypoint->fitness;
     }
 
-
 //write line to log file
     cout << "writing line to log" << endl;
     (*logfile) << generation << " " << best_fitness << " " << best_secondary << endl;
@@ -896,7 +917,9 @@ int biped_generational_epoch(Population **pop2,int generation,data_rec& Record, 
         if (NEAT::multiobjective)
             archive.rank(pop->organisms);
 
+    float divtotal=0.0;
         for (curorg=(pop->organisms).begin(); curorg!=(pop->organisms).end(); ++curorg) {
+        divtotal+=(*curorg)->noveltypoint->genodiv;
             if ( !(*curorg)->noveltypoint->viable && minimal_criteria)
             {
                 (*curorg)->fitness = SNUM/1000.0;
@@ -906,6 +929,7 @@ int biped_generational_epoch(Population **pop2,int generation,data_rec& Record, 
                 // cout << " :( " << endl;
             }
         }
+       cout << "DIVTOTAL: " << divtotal << endl;
         cout << "ARCHIVE SIZE:" << archive.get_set_size() << endl;
         cout << "THRESHOLD:" << archive.get_threshold() << endl;
         archive.end_of_gen_steady(pop);
@@ -970,7 +994,7 @@ int biped_generational_epoch(Population **pop2,int generation,data_rec& Record, 
         sprintf(fname,"%sgen_%d",output_dir,generation);
         pop->print_to_file_by_species(fname);
     }
-
+if(!speciation)
     if (NEAT::multiobjective) {
         for (curorg=measure_pop.begin(); curorg!=measure_pop.end(); curorg++) delete (*curorg);
 //clear the old population
@@ -981,6 +1005,7 @@ int biped_generational_epoch(Population **pop2,int generation,data_rec& Record, 
             }
     }
 //Create the next generation
+
     pop->epoch(generation);
 
 

@@ -4,6 +4,13 @@
 #include <sstream>
 using namespace NEAT;
 
+
+double static roundfix(double unrounded)
+{
+	double rounded = (double)(((int)((unrounded*10000)+.5))/10000.0);
+	return rounded;
+}
+
 Trait::Trait () {
 	for (int count=0;count<NEAT::num_trait_params;count++)
 		params[count]=0;
@@ -12,13 +19,13 @@ Trait::Trait () {
 
 Trait::Trait(int id,double p1,double p2,double p3,double p4,double p5,double p6,double p7,double p8,double p9) {
 	trait_id=id;
-	params[0]=p1;
-	params[1]=p2;
-	params[2]=p3;
-	params[3]=p4;
-	params[4]=p5;
-	params[5]=p6;
-	params[6]=p7;
+	params[0]=roundfix(p1);
+	params[1]=roundfix(p2);
+	params[2]=roundfix(p3);
+	params[3]=roundfix(p4);
+	params[4]=roundfix(p5);
+	params[5]=roundfix(p6);
+	params[6]=roundfix(p7);
 	params[7]=0;
 }
 
@@ -32,7 +39,7 @@ Trait::Trait(const Trait& t) {
 
 Trait::Trait(Trait *t) {
 	for(int count=0;count<NEAT::num_trait_params;count++)
-		params[count]=(t->params)[count];
+		params[count]=roundfix((t->params)[count]);
 
 	trait_id=t->trait_id;
 }
@@ -58,6 +65,7 @@ Trait::Trait(const char *argline) {
 		//strcpy(curword, NEAT::getUnit(argline, curwordnum++, delimiters));
 		//params[count] = atof(curword);
         ss >> params[count];
+        params[count]=roundfix(params[count]);
 		//iFile>>params[count];
 	}
 
@@ -65,7 +73,7 @@ Trait::Trait(const char *argline) {
 
 Trait::Trait(Trait *t1,Trait *t2) {
 	for(int count=0;count<NEAT::num_trait_params;count++)
-		params[count]=(((t1->params)[count])+((t2->params)[count]))/2.0;
+		params[count]=roundfix((((t1->params)[count])+((t2->params)[count]))/2.0);
 	trait_id=t1->trait_id;
 }
 
@@ -105,6 +113,7 @@ void Trait::mutate() {
 			params[count]+=(randposneg()*randfloat())*NEAT::trait_mutation_power;
 			if (params[count]<0) params[count]=0;
 			if (params[count]>1.0) params[count]=1.0;
+                        params[count]=roundfix(params[count]);
 		}
 	}
 }

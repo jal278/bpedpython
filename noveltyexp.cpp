@@ -1213,6 +1213,7 @@ int maze_generational_epoch(Population **pop2,int generation,data_rec& Record, n
     }
 
 //Evaluate each organism on a test
+    float divtotal=0.0;
     for (curorg=(pop->organisms).begin(); curorg!=(pop->organisms).end(); ++curorg) {
 
 //newrec->indiv_number=indiv_counter;
@@ -1237,7 +1238,7 @@ int maze_generational_epoch(Population **pop2,int generation,data_rec& Record, n
                 }
             }
         }
-
+        divtotal+=(*curorg)->noveltypoint->genodiv;
         if ((*curorg)->noveltypoint->fitness > best_fitness)
         {
             best_fitness = (*curorg)->noveltypoint->fitness;
@@ -1271,7 +1272,7 @@ int maze_generational_epoch(Population **pop2,int generation,data_rec& Record, n
         if (!novelty)
             (*curorg)->fitness = (*curorg)->noveltypoint->fitness;
     }
-
+    cout << "DIVTOTAL:" << divtotal << endl;
 
     (*logfile) << generation << " " << best_fitness << " " << best_secondary << endl;
     

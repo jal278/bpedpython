@@ -164,7 +164,10 @@ void noveltyarchive::rank(vector<Organism*>& orgs)
       front.clear();
       cur_rank++;
      }
-    
+     int max_rank = cur_rank; 
+
+     for(int i=0;i<sz;i++)
+       orgs[i]->fitness=max_rank-orgs[i]->noveltypoint->rank;
      //sort population based on rank 
      std::sort(orgs.begin(), orgs.end(), order_orgs);
 

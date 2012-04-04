@@ -163,7 +163,7 @@ else
  if(!biped) 
  p = maze_generational(filename,mazename,param,startgenes,1000,noveltySwitch.getValue());
  else
- p = biped_generational(filename,startgenes,1000,noveltySwitch.getValue());
+ p = biped_generational(filename,startgenes,2000,noveltySwitch.getValue());
 }
 
   return(0);
