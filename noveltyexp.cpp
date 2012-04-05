@@ -257,17 +257,34 @@ class passive_niche {
 	//niches, whether niches have been explored
 	vector<Organism*> niches[MAX_NICHES];
 	bool explored[MAX_NICHES];
+	int order[MAX_NICHES];
 	//params
 	int niche_size;
         int evals;
 	int density;
+	int nc;
+	bool firstsolved;
         float minx,miny,maxx,maxy;
-	
+
+        void calc_evolvability(char*fn) {
+	    for(int i=0;i<nc;i++) {
+		cout << "evolvability niche " << i << endl;
+		for(int j=0;j<5;j++) {	
+			int ns=niches[order[i]].size();
+		    Organism *org = niches[order[i]][randint(0,ns-1)];
+	            evolvability(org,fn);
+		}
+	    }
+ 	}	
+
 	passive_niche() {
-	 density=10;
+	 density=30;
  	 niche_size=10;
-         evals=1000000;
+         evals=100001;
 	 for(int i=0;i<MAX_NICHES;i++) explored[i]=false;
+	 for(int i=0;i<MAX_NICHES;i++) order[i]=false;
+         nc=0;
+	 firstsolved=true;
        	}
 
 
@@ -304,7 +321,11 @@ class passive_niche {
 	 if(target_niche<0)
 		return; 
 	int sz=niches[target_niche].size();
-	 if(sz==0) explored[target_niche]=true;
+	 if(sz==0) {
+		explored[target_niche]=true;
+		order[nc]=target_niche;
+		nc++;
+	 }
 	 if(sz>=niche_size) {
 		//return;
 		remove_one_from_niche(target_niche);
@@ -335,7 +356,7 @@ class passive_niche {
 	cout << "evals " << e <<endl;
 	cout << "explored " << exploredcount() << endl;
 	vector<Organism*> children;
-	print_niches();
+	//print_niches();
 	int conn=0;
 	int nodes=0;
 	int count=0;
@@ -349,13 +370,21 @@ class passive_niche {
 		mutate_genome(new_gene,true);
 		Organism* new_org= new Organism(0.0,new_gene,0);
 		initpop->evaluate_organism(new_org);
-		if(new_org->datarec->ToRec[3] > 0)
-			cout << "solved." << endl;
+		if(new_org->datarec->ToRec[3] > 0 && firstsolved) {
+			cout << "solved " << e << endl;
+			firstsolved=false;
+		}
 		nodes+=new_org->net->nodecount();
 		conn+=new_org->net->linkcount();
 		count++;
 		children.push_back(new_org);
 		e++;
+		int upcnt=10000;
+		if(e%upcnt==0) {
+			char fn[100];
+        sprintf(fn,"%s_evolvability%d.dat",output_dir,e/upcnt);
+			calc_evolvability(fn);
+		}
         	//}
           }
 	   cout << "avgnodes" << ((float)nodes)/count << endl;
