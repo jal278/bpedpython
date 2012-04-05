@@ -35,7 +35,10 @@ int main(int argc, char **argv) {
 
   ValueArg<string> seed_genome("c","seed","Seed Genome",false,"","string");
   cmd.add(seed_genome);
- 
+
+  SwitchArg passive_switch("","passive","passive search",false);
+  cmd.add(passive_switch);
+
   SwitchArg local_switch("","lc","Local competition",false);
   cmd.add(local_switch);
 
@@ -147,6 +150,10 @@ if(biped_switch.getValue()) biped=true;
   if(!generationalSwitch.getValue())
 {
  if(!biped) {
+  if(passive_switch.getValue()) 
+      p = maze_passive(filename,mazename,param,startgenes,true);
+  else	
+
   if(!noveltySwitch.getValue())
       p = maze_novelty_realtime(filename,mazename,param,startgenes,false);
   else

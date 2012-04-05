@@ -6,7 +6,7 @@
 
 #include "histogram.h"
 #include "calc_evol.h"
-
+#include "genome.h"
 //#define DEBUG_OUTPUT 1
 #include <algorithm>
 #include <vector>
@@ -248,6 +248,199 @@ static void read_in_environments(const char* mazefile, vector<Environment*>& env
         envLst.push_back(new_env);
     }
 
+}
+
+#define MAX_NICHES 900
+class passive_niche {
+	public:
+        
+	//niches, whether niches have been explored
+	vector<Organism*> niches[MAX_NICHES];
+	bool explored[MAX_NICHES];
+	//params
+	int niche_size;
+        int evals;
+	int density;
+        float minx,miny,maxx,maxy;
+	
+	passive_niche() {
+	 density=10;
+ 	 niche_size=10;
+         evals=1000000;
+	 for(int i=0;i<MAX_NICHES;i++) explored[i]=false;
+       	}
+
+
+        void print_niches() {
+	for(int x=0;x<density;x++) 
+	 {
+	  for(int y=0;y<density;y++)
+	   {
+		cout << explored[x*density+y];
+           }
+		cout <<endl;
+	 }
+	}
+
+	int scale(int d,float val, float min,float max) {
+		return (int)(d*(val-min)/((max+0.01f)-min));
+	}
+
+	int map_into_niche(Organism* o) {
+ 	 float x= o->noveltypoint->data[0][0];
+	 float y= o->noveltypoint->data[0][1];
+	 return scale(density,x,minx,maxx)*density+scale(density,y,miny,maxy);
+        }
+
+	void insert_population(Population* pop) {
+	 vector<Organism*>::iterator curorg;
+         for (curorg = (pop->organisms).begin(); curorg != pop->organisms.end(); ++curorg) {
+	  insert_org((*curorg)); 
+	 }
+	}
+
+	void insert_org(Organism* org) {
+	 int target_niche = map_into_niche(org);
+	 if(target_niche<0)
+		return; 
+	int sz=niches[target_niche].size();
+	 if(sz==0) explored[target_niche]=true;
+	 if(sz>=niche_size) {
+		//return;
+		remove_one_from_niche(target_niche);
+	 }
+	 niches[target_niche].push_back(org);
+	}
+
+        void remove_one_from_niche(int n) {
+		//cout << "deleting from " << n << endl;
+
+                int to_rem = randint(0,niches[n].size()-1);
+		Organism* o = niches[n][to_rem];
+		niches[n].erase(niches[n].begin()+to_rem);
+		delete o;
+	}
+    int exploredcount() {
+	int c=0;
+	for(int i=0;i<MAX_NICHES;i++) if (explored[i]) c++;
+	return  c;
+	}
+    void run_niche(Population* initpop) {
+    //num evals
+    envList[0]->get_range(minx,miny,maxx,maxy);
+	 insert_population(initpop);
+    int e=0;
+    int num_niches=density*density;
+    while(e<evals) {
+	cout << "evals " << e <<endl;
+	cout << "explored " << exploredcount() << endl;
+	vector<Organism*> children;
+	print_niches();
+	int conn=0;
+	int nodes=0;
+	int count=0;
+	for(int i=0;i<num_niches;i++) {
+		if(niches[i].size()==0)
+			continue;
+		Genome *new_gene= new Genome(*niches[i][randint(0,niches[i].size()-1)]->gnome);
+		//for(vector<Organism*>::iterator it=niches[i].begin();it!=niches[i].end();it++)
+		//{
+                //Genome *new_gene= new Genome(*(*it)->gnome);
+		mutate_genome(new_gene,true);
+		Organism* new_org= new Organism(0.0,new_gene,0);
+		initpop->evaluate_organism(new_org);
+		if(new_org->datarec->ToRec[3] > 0)
+			cout << "solved." << endl;
+		nodes+=new_org->net->nodecount();
+		conn+=new_org->net->linkcount();
+		count++;
+		children.push_back(new_org);
+		e++;
+        	//}
+          }
+	   cout << "avgnodes" << ((float)nodes)/count << endl;
+	   cout << "avgconns" << ((float)conn)/count << endl;
+	
+		for(vector<Organism*>::iterator it=children.begin();it!=children.end();it++)
+		insert_org(*it);
+
+     }
+  }
+
+};
+
+//passive algorithm
+Population *maze_passive(char* outputdir,const char* mazefile,int par,const char* genes,bool novelty) {
+
+    Population *pop;
+    Genome *start_genome;
+    char curword[20];
+
+    int id;
+
+    read_in_environments(mazefile,envList);
+
+    if (strlen(mc_mazes)>0)
+        read_in_environments(mc_mazes,mcList);
+
+    push_back_size=par;
+    if (outputdir!=NULL) strcpy(output_dir,outputdir);
+
+    if (!seed_mode)
+        strcpy(seed_name,genes);
+    //starter genes file
+    ifstream iFile(seed_name,ios::in);
+
+    cout<<"START MAZE NAVIGATOR NOVELTY REAL-TIME EVOLUTION VALIDATION"<<endl;
+    if (!seed_mode)
+    {
+        cout<<"Reading in the start genome"<<endl;
+    }
+    else
+        cout<<"Reading in the seed genome" <<endl;
+
+    //Read in the start Genome
+    iFile>>curword;
+    iFile>>id;
+    cout<<"Reading in Genome id "<<id<<endl;
+    start_genome=new Genome(id,iFile);
+    iFile.close();
+
+    cout<<"Start Genome: "<<start_genome<<endl;
+
+    //Spawn the Population from starter gene
+    cout<<"Spawning Population off Genome"<<endl;
+    if (!seed_mode)
+        pop=new Population(start_genome,NEAT::pop_size);
+    else
+    {
+        pop=new Population(seed_name);//start_genome,NEAT::pop_size,0.0);
+        if (evaluate_switch) {
+            int dist=0;
+            double evol=0.0;
+            evolvability(pop->organisms[0],"dummyfile",&dist,&evol,true);
+            cout << endl << dist << " " << evol << endl;
+            return 0;
+        }
+
+    }
+    cout<<"Verifying Spawned Pop"<<endl;
+    pop->verify();
+    pop->set_evaluator(&maze_novelty_map);
+    pop->evaluate_all();
+ 
+    passive_niche pn;
+    pn.run_niche(pop);
+
+    //pop->set_compatibility(&behavioral_compatibility);
+    //Start the evolution loop using rtNEAT method calls
+
+
+
+
+    //clean up
+    delete env;
+    return pop;
 }
 
 //novelty maze navigation run
@@ -885,10 +1078,32 @@ bool contained(float x,float y)
     return false;
     */
 }
-void mutate_genome(Genome* new_genome)
+
+void mutate_genome(Genome* new_genome,bool traits)
 {
+    Network* net_analogue;
     double mut_power=NEAT::weight_mut_power;
+				double inno=0;
+				int id=0;
     new_genome->mutate_link_weights(mut_power,1.0,GAUSSIAN);
+    if(traits) {
+	vector<Innovation*> innos;
+    if (randfloat()<NEAT::mutate_add_node_prob) 
+				new_genome->mutate_add_node(innos,id,inno);
+    else if (randfloat()<NEAT::mutate_add_link_prob) {
+				//cout<<"mutate add link"<<endl;
+				net_analogue=new_genome->genesis(0);
+				new_genome->mutate_add_link(innos,inno,NEAT::newlink_tries);
+				delete net_analogue;
+    }
+
+
+	if(randfloat()<0.05)
+	new_genome->mutate_random_trait();
+	if(randfloat()<0.05)
+	new_genome->mutate_link_trait(1);
+    }
+
     return;
 }
 

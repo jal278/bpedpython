@@ -23,7 +23,7 @@
 using namespace std;
 
 using namespace NEAT;
-void mutate_genome(Genome* new_genome);
+void mutate_genome(Genome* new_genome,bool traits=false);
 
 void set_evaluate(bool val);
 void set_extinction(bool _ext);
@@ -40,6 +40,7 @@ void set_timesteps(int s);
 void set_seed(string s);
 void set_goal_attract(bool s);
 //generational maze experiments
+Population *maze_passive(char* outputdir,const char* mazefile,int par,const char* genes,bool novelty);
 Population *maze_generational(char* output_dir,const char* mazefile,int param, const char *genes, int gens, bool novelty); 
 int maze_generational_epoch(Population **pop,int generation,data_rec& Record,noveltyarchive& archive,bool novelty);
 
