@@ -7,6 +7,7 @@ using namespace std;
 #include <vector>
 #include <unistd.h>	
 #include "neat.h"
+#include "genome.h"
 #include "population.h"
 #include "experiments.h"
 #include "biped.h"
@@ -90,6 +91,9 @@ int main(int argc, char **argv) {
   ValueArg<int> rng_seed("r","random_seed","Random Seed",false,-1,"int");
   cmd.add(rng_seed);
 
+  ValueArg<long long> netindex("","ni","Net Index",false,0,"long int");
+  cmd.add(netindex);
+
   cmd.parse(argc,argv);
 
   char mazename[100]="hard_maze_list.txt";
@@ -123,7 +127,8 @@ int main(int argc, char **argv) {
   cout << "Maze: " << mazename << endl;
   cout << "Start genes: " << startgenes << endl;
   
-  set_evaluate(evaluateSwitch.getValue());
+  
+ set_evaluate(evaluateSwitch.getValue());
   set_extinction(extinction.getValue());
   set_mcmaze(mcmaze.getValue());
   set_fit_measure(fit_measure.getValue());
@@ -145,6 +150,13 @@ int main(int argc, char **argv) {
   set_minimal_criteria(mcSwitch.getValue());
 
 if(biped_switch.getValue()) biped=true;
+
+
+long long netindex_val=netindex.getValue(); 
+enumerate_behaviors(mazename,netindex_val,filename,param);
+
+return 0;
+
   
   set_constraint_switch(constraintSwitch.getValue());
   if(!generationalSwitch.getValue())

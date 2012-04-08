@@ -398,6 +398,31 @@ class passive_niche {
 
 };
 
+void enumerate_behaviors(const char* mazefile, long long par,const char* outfile,int count) {
+read_in_environments(mazefile,envList);
+
+ofstream ofile(outfile);
+ofile << par << endl;
+
+for(int x=0;x<count;x++) {
+Genome *g = new Genome(3,2,2,2);
+
+long long partemp=par;
+for(int i=15;i>=0;i--) {
+long long val = (partemp % 3) - 1;
+g->genes[i]->lnk->weight = (double)val;
+partemp /= 3; 
+}
+
+Organism* new_org= new Organism(0.0,g,0);
+noveltyitem* nov_item = maze_novelty_map(new_org);
+ofile << nov_item->data[0][0] << " " << nov_item->data[0][1] << endl;
+delete nov_item;
+delete new_org;
+par++;
+}
+}
+
 //passive algorithm
 Population *maze_passive(char* outputdir,const char* mazefile,int par,const char* genes,bool novelty) {
 

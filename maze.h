@@ -292,12 +292,19 @@ class Character
             rangefinder_range=100.0f;
  
 			//define the range finder sensors			
+	    #define SIMPLE_SENSORS
+	    #ifdef SIMPLE_SENSORS
+            rangeFinderAngles.push_back(-30.0f);
+            rangeFinderAngles.push_back(30.0f);
+            #else
+	 
             rangeFinderAngles.push_back(-90.0f);
             rangeFinderAngles.push_back(-45.0f);
             rangeFinderAngles.push_back(0.0f);
             rangeFinderAngles.push_back(45.0f);
             rangeFinderAngles.push_back(90.0f);
             rangeFinderAngles.push_back(-180.0f);
+	     #endif
             
 			//define the radar sensors
             radarAngles1.push_back(315.0);
