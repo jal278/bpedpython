@@ -436,7 +436,7 @@ Genome::Genome(int num_in,int num_out,int num_hidden,int type) {
 
 	//Build the input nodes
 	for(ncount=1;ncount<=num_in;ncount++) {
-		if (ncount<num_in)
+		if (ncount>1) //(ncount<num_in)
 			newnode=new NNode(SENSOR,ncount,INPUT);
 		else { 
 			newnode=new NNode(SENSOR,ncount,BIAS);
@@ -529,6 +529,7 @@ Genome::Genome(int num_in,int num_out,int num_hidden,int type) {
 		for(curnode1=hidden.begin();curnode1!=hidden.end();++curnode1) {
 			//Loop over the inputs
 			for(curnode2=inputs.begin();curnode2!=inputs.end();++curnode2) {
+				if((*curnode2)!=bias) {
 				//Connect each input to each hidden
 				newgene=new Gene(newtrait,0, (*curnode2), (*curnode1),false,count,0);
 
@@ -536,7 +537,7 @@ Genome::Genome(int num_in,int num_out,int num_hidden,int type) {
 				genes.push_back(newgene);	 
 
 				count++;
-
+                               }
 			}
 		}
 
@@ -555,14 +556,17 @@ Genome::Genome(int num_in,int num_out,int num_hidden,int type) {
 			}
 		}
 
-		//Connect the bias to all outputs
+		//Connect the inputs directly to the outputs
 		for(curnode1=outputs.begin();curnode1!=outputs.end();++curnode1) {
-			newgene=new Gene(newtrait,0, bias, (*curnode1),false,count,0);
+			for(curnode2=inputs.begin();curnode2!=inputs.end();++curnode2) {
+
+			newgene=new Gene(newtrait,0, (*curnode2), (*curnode1),false,count,0);
 
 			//Add the gene to the genome
 			genes.push_back(newgene);	 
 
 			count++;
+			}
 		}
 
 		//Recurrently connect the hidden nodes

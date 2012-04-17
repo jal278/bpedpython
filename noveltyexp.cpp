@@ -407,6 +407,7 @@ ofile << par << endl;
 for(int x=0;x<count;x++) {
 Genome *g = new Genome(3,2,2,2);
 
+
 long long partemp=par;
 for(int i=15;i>=0;i--) {
 long long val = (partemp % 3) - 1;
