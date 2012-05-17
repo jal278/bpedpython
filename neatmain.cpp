@@ -151,19 +151,18 @@ int main(int argc, char **argv) {
 
 if(biped_switch.getValue()) biped=true;
 
-
+/*
 long long netindex_val=netindex.getValue(); 
 enumerate_behaviors(mazename,netindex_val,filename,param);
-
 return 0;
-
+*/
   
   set_constraint_switch(constraintSwitch.getValue());
   if(!generationalSwitch.getValue())
 {
  if(!biped) {
   if(passive_switch.getValue()) 
-      p = maze_passive(filename,mazename,param,startgenes,true);
+      p = maze_passive(filename,mazename,param,startgenes,noveltySwitch.getValue());
   else	
 
   if(!noveltySwitch.getValue())

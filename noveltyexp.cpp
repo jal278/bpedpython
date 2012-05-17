@@ -250,7 +250,7 @@ static void read_in_environments(const char* mazefile, vector<Environment*>& env
 
 }
 
-#define MAX_NICHES 900
+#define MAX_NICHES 300000
 class passive_niche {
 	public:
         
@@ -264,6 +264,7 @@ class passive_niche {
 	int density;
 	int nc;
 	bool firstsolved;
+	bool random;
         float minx,miny,maxx,maxy;
 
         void calc_evolvability(char*fn) {
@@ -277,7 +278,8 @@ class passive_niche {
 	    }
  	}	
 
-	passive_niche() {
+	passive_niche(bool _r=false) {
+         random=_r;
 	 density=30;
  	 niche_size=10;
          evals=100001;
@@ -306,7 +308,11 @@ class passive_niche {
 	int map_into_niche(Organism* o) {
  	 float x= o->noveltypoint->data[0][0];
 	 float y= o->noveltypoint->data[0][1];
-	 return scale(density,x,minx,maxx)*density+scale(density,y,miny,maxy);
+         if (!random)
+          return ((int)x)/10*300+((int)y)/10; //to match other simulations
+         else
+          return rand()%400;
+	 //return scale(density,x,minx,maxx)*density+scale(density,y,miny,maxy);
         }
 
 	void insert_population(Population* pop) {
@@ -1195,8 +1201,11 @@ void evolvability(Organism* org,char* fn,int* di,double* ev,bool recall) {
           file << nov_item->data[0][k] << " ";
          file << endl;
         }
-        points[i*2]=(nov_item->data[0][0]-minx)/(maxx-minx);
-        points[i*2+1]=(nov_item->data[0][1]-miny)/(maxy-miny);
+        points[i*2]=nov_item->data[0][0];
+        points[i*2+1]=nov_item->data[0][1];
+        //HOW IT WAS:
+        //points[i*2]=(nov_item->data[0][0]-minx)/(maxx-minx);
+        //points[i*2+1]=(nov_item->data[0][1]-miny)/(maxy-miny);
         delete new_org;
         delete nov_item;
         //file << endl;
