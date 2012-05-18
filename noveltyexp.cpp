@@ -489,7 +489,7 @@ Population *maze_passive(char* outputdir,const char* mazefile,int par,const char
     pop->set_evaluator(&maze_novelty_map);
     pop->evaluate_all();
  
-    passive_niche pn;
+    passive_niche pn(novelty);
     pn.run_niche(pop);
 
     //pop->set_compatibility(&behavioral_compatibility);
