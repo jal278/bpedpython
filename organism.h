@@ -31,6 +31,7 @@ namespace NEAT {
 		noveltyitem *noveltypoint; //The Organism's Novelty Point
                 data_record *datarec; 
 		double expected_offspring; //Number of children this Organism may have
+		int age;
 		int generation;  //Tells which generation this Organism is from
 		bool eliminate;  //Marker for destruction of inferior Organisms
 		bool champion; //Marks the species champ

@@ -605,7 +605,8 @@ public:
           density=SNUM*100; // + (((float)rand()/RAND_MAX)*SNUM);
         }
         //genotypic diversity
-        if(pop!=NULL) {
+        if(pop!=NULL) 
+	{
          item->genodiv=diversity_avg_nn(item,pop);
         }
         //genotypic

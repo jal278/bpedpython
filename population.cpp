@@ -122,7 +122,9 @@ for(int y=0;y<genome->genes.size();y++)
 Population::Population(Genome *g,int size) {
 	winnergen=0;
 	highest_fitness=0.0;
-	highest_last_changed=0;
+	highest_last_changed=0;	
+	set_startgenome(g);
+	cout << "CONSTRUCTOR POP INIT: " << start_genome->nodes.size() << endl;
 	spawn(g,size);
         set_compatibility(&NEAT::genotypic_compatibility);
 }

@@ -26,7 +26,7 @@ static novelty_measure_type novelty_measure = novelty_sample;
 enum fitness_measure_type { fitness_goal, fitness_drift, fitness_std,fitness_rnd,fitness_spin,fitness_changegoal,fitness_collisions };
 static fitness_measure_type fitness_measure = fitness_goal;
 
-static bool mc_reach_onepoint=false;
+static bool mc_reach_onepoint=true;
 
 bool population_dirty=false;
 
@@ -641,7 +641,6 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
     //Rank all the organisms from best to worst in each species
     pop->rank_within_species();
 
-    //Assign each species an average fitness
     //This average must be kept up-to-date by rtNEAT in order to select species probabailistically for reproduction
     pop->estimate_all_averages();
 
@@ -918,7 +917,6 @@ double mazesimStep(Environment* newenv,Network *net,vector< vector<float> > &dc)
     newenv->generate_neural_inputs(inputs);
     net->load_sensors(inputs);
     net->activate();
-
     //use the net's outputs to change heading and velocity of navigator
     newenv->interpret_outputs(net->outputs[0]->activation,net->outputs[1]->activation,0.0); //net->outputs[2]->activation);
     //update the environment
@@ -1345,6 +1343,11 @@ noveltyitem* maze_novelty_map(Organism *org,data_record* record)
     return new_item;
 }
 
+
+
+
+
+
 static int maxgens;
 //Perform evolution on single pole balacing, for gens generations
 Population *maze_generational(char* outputdir,const char* mazefile,int param,const char *genes, int gens,bool novelty)
@@ -1372,7 +1375,11 @@ Population *maze_generational(char* outputdir,const char* mazefile,int param,con
     ostringstream *fnamebuf;
     int gen;
 
-    ifstream iFile(genes,ios::in);
+    if (!seed_mode)
+        strcpy(seed_name,genes);
+    if(seed_mode)
+	cout << "READING IN SEED" << endl;
+    ifstream iFile(seed_name,ios::in);
 
     read_in_environments(mazefile,envList);
 
@@ -1394,16 +1401,16 @@ Population *maze_generational(char* outputdir,const char* mazefile,int param,con
 
 //Spawn the Population
     cout<<"Spawning Population off Genome"<<endl;
-
+    cout << "Start genomes node: " << start_genome->nodes.size() << endl;
     pop=new Population(start_genome,NEAT::pop_size);
 
     cout<<"Verifying Spawned Pop"<<endl;
     pop->verify();
-
+   
 //set evaluator
     pop->set_evaluator(&maze_novelty_map);
-//pop->set_compatibility(&behavioral_compatibility);
-    for (gen=0; gen<=maxgens; gen++)  { //WAS 1000
+//pop->set_compatibility(&behavioral_compatibility);    
+for (gen=0; gen<=maxgens; gen++)  { //WAS 1000
         cout<<"Generation "<<gen<<endl;
         if (gen%change_extinction_length==0)
             change_extinction_point();
@@ -1447,11 +1454,12 @@ int maze_generational_epoch(Population **pop2,int generation,data_rec& Record, n
 
     static bool win=false;
     static bool firstflag=false;
+    static bool weakfirst=false;
     int winnernum;
     int indiv_counter=0;
 
     int evolveupdate=100;
-    if (generation==0) pop->evaluate_all();
+   if (generation==0) pop->evaluate_all();
 
     if (NEAT::multiobjective) {  //merge and filter population
         for (curorg=(pop->organisms).begin(); curorg!=(pop->organisms).end(); ++curorg) {
@@ -1474,9 +1482,10 @@ int maze_generational_epoch(Population **pop2,int generation,data_rec& Record, n
             measure_pop.erase(measure_pop.begin()+(measure_pop.size()/2),measure_pop.end());
         }
 //delete old pop, create new pop
-        delete pop;
+        Genome* sg=pop->start_genome;
+	delete pop;
         pop=new Population(measure_pop);
-
+        pop->start_genome=sg;
         pop->set_evaluator(&maze_novelty_map);
         *pop2= pop;
     }
@@ -1501,6 +1510,20 @@ int maze_generational_epoch(Population **pop2,int generation,data_rec& Record, n
 //(*curorg)->noveltypoint->indiv_number = indiv_counter;
 //(*curorg)->datarec = newrec;
         data_record* newrec = (*curorg)->datarec;
+        if (!weakfirst && (newrec->ToRec[3]>=envList.size())) {
+            weakfirst=true;
+            char filename[100];
+            cout << "Maze weakly solved by indiv# " << indiv_counter << endl;
+//disable quit for now
+        }
+        //write out the first individual to solve maze
+        if (!firstflag && (newrec->ToRec[3]>=envList.size() && newrec->ToRec[4]>=envList.size())) {
+            firstflag=true;
+            char filename[100];
+            cout << "Maze solved by indiv# " << indiv_counter << endl;
+            //break;
+        }
+
         if ((newrec->ToRec[3]>=envList.size())) { // && newrec->ToRec[4]>0.0)) {
             if ((newrec->ToRec[4]>=envList.size())) {
                 (*curorg)->winner=true;
@@ -1546,7 +1569,6 @@ int maze_generational_epoch(Population **pop2,int generation,data_rec& Record, n
 
 //update fittest list
         archive.update_fittest(*curorg);
-
         if (!novelty)
             (*curorg)->fitness = (*curorg)->noveltypoint->fitness;
     }

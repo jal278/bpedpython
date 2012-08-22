@@ -13,6 +13,9 @@ namespace NEAT {
     extern bool elitism;
     extern bool speciation;
     extern bool dominates_local;
+    //fresh genetic material additions
+    extern double fresh_genetic_prob;
+
     //leaky integrator additions
     extern double time_const_mut_power;
     extern double bias_mut_power;

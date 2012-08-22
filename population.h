@@ -43,12 +43,19 @@ namespace NEAT {
 
 	public:
 	//added for statistics
-        
+        Genome* start_genome; 
         noveltyitem* (*evaluator)(Organism*,data_record*);
         double (*compatibility)(Organism*,Organism*);
         void set_compatibility(double (*comp)(Organism*,Organism*)) {
          compatibility=comp;
         }
+	void sgcheck() {
+	 cout << "SGOUT:" << start_genome->nodes.size() << endl;
+	}
+	void set_startgenome(Genome* sg) {
+	cout << "STARTGENOMESET" << endl;
+	 start_genome=sg->duplicate(0);
+ 	}
         void set_evaluator(noveltyitem* (*eval)(Organism*,data_record*)) {
          evaluator=eval;
         }

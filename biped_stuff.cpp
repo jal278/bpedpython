@@ -208,7 +208,7 @@ void destroy_world()
 
 void update_behavior(vector<float> &k, Creature* c,bool good=true,float time=0.0)
 {
-
+   
     if (novelty_function==NF_COGSAMPSQ)
     {
         dVector3& o_com= ((Biped*)c)->orig_com;
@@ -451,7 +451,7 @@ int biped_novelty_realtime_loop(Population *pop,bool novelty) {
     (offspring_count=0; offspring_count<NEAT::pop_size*2001; offspring_count++)
     {
 //fix compat_threshold, so no speciation...
-      NEAT::compat_threshold = 1000000.0;
+      //NEAT::compat_threshold = 1000000.0;
         //only continue past generation 1000 if not yet solved
         //if(offspring_count>=pop_size*1000 && firstflag)
         // if(firstflag)

@@ -291,8 +291,8 @@ class Character
             radius=8.0f;
             rangefinder_range=100.0f;
  
-			//define the range finder sensors			
-	    #define SIMPLE_SENSORS
+	   //define the range finder sensors			
+	    //#define SIMPLE_SENSORS //for use with evolvability-inevitability
 	    #ifdef SIMPLE_SENSORS
             rangeFinderAngles.push_back(-30.0f);
             rangeFinderAngles.push_back(30.0f);

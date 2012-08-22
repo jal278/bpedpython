@@ -17,7 +17,6 @@ Species::Species(int i) {
 	max_fitness=0;
 	max_fitness_ever=0;
 	obliterate=false;
-
 	average_est=0;
 }
 
@@ -81,7 +80,6 @@ double Species::estimate_average() {
 
 	
 	Organism *Species::reproduce_one(int generation, Population *pop,std::vector<Species*> &sorted_species) {
-	//bool Species::reproduce(int generation, Population *pop,std::vector<Species*> &sorted_species) {
 	int count=generation; //This will assign genome id's according to the generation
 	std::vector<Organism*>::iterator curorg;
 
@@ -1016,6 +1014,14 @@ bool Species::reproduce(int generation, Population *pop,std::vector<Species*> &s
 					champ_done=true;
 
 				}
+			else if ((randfloat()<NEAT::fresh_genetic_prob)) {
+				new_genome=(pop->start_genome)->duplicate(count);
+				new_genome->mutate_link_weights(2.0,1.0,COLDGAUSSIAN);
+				new_genome->mutate_node_parameters(0.01,1.0,3.0,1.0,true);
+				new_genome->randomize_traits();
+				baby=new Organism(0.0,new_genome, generation);	
+				mom=baby;
+			}
 				//First, decide whether to mate or mutate
 				//If there is only one organism in the pool, then always mutate
 			else if ((randfloat()<NEAT::mutate_only_prob)||
@@ -1102,7 +1108,7 @@ new_genome->mutate_node_parameters(NEAT::time_const_mut_power,NEAT::time_const_m
 					}
 
 					baby=new Organism(0.0,new_genome,generation);
-
+					
 				}
 
 				//Otherwise we should mate 
@@ -1211,7 +1217,7 @@ new_genome->mutate_node_parameters(NEAT::time_const_mut_power,NEAT::time_const_m
 				}
 
 				mate_baby=true;
-
+				
 				//Determine whether to mutate the baby's Genome
 				//This is done randomly or if the mom and dad are the same organism
 				if ((randfloat()>NEAT::mate_only_prob)||
@@ -1269,7 +1275,7 @@ new_genome->mutate_node_parameters(NEAT::time_const_mut_power,NEAT::time_const_m
 
 					//Create the baby
 					baby=new Organism(0.0,new_genome,generation);
-
+					
 				}
 				else {
 					//Create the baby without mutating first
@@ -1283,6 +1289,16 @@ new_genome->mutate_node_parameters(NEAT::time_const_mut_power,NEAT::time_const_m
 
 			baby->mut_struct_baby=mut_struct_baby;
 			baby->mate_baby=mate_baby;
+
+			//set age
+			if(mate_baby) {
+				if(dad->age>mom->age)
+				 baby->age = dad->age+1;
+				else
+				 baby->age = mom->age+1;
+			} else {
+			  baby->age = mom->age+1;
+			}
 
 			//TODO EVALUATE BABY
                         pop->evaluate_organism(baby);
