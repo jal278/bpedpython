@@ -12,6 +12,14 @@ using namespace NEAT;
 //ACTIVITY STATISTICS CALCULATIONS
 #define MAX_COMPONENTS 10000000
 static int activity_level[MAX_COMPONENTS];
+void Population::gather_objectives(vector<float>* nov,vector<float> *sec,vector<float>* div) {
+	vector<Organism*>::iterator curorg;
+        for (curorg=organisms.begin(); curorg!=organisms.end(); ++curorg)  {
+	 sec->push_back((*curorg)->noveltypoint->secondary);
+	 nov->push_back((*curorg)->noveltypoint->novelty);
+         div->push_back((*curorg)->noveltypoint->genodiv);
+	}
+}
 
 void reset_activity()
 {
@@ -75,6 +83,20 @@ void Population::print_distribution(const char* filename,vector<Organism*> orgs)
                  print_distribution(filename,organisms);
                 }
 
+void Population::print_divtotal() {
+
+    float divtotal=0.0;
+	 vector<Organism*>::iterator curorg;
+        for (curorg=organisms.begin(); curorg!=organisms.end(); ++curorg) 
+		divtotal+=(*curorg)->noveltypoint->genodiv;
+	cout <<"DIVTOTAL!:" << divtotal << endl;
+}
+
+	void Population::print_avg_age() {
+	double age=0.0;
+	 for (std::vector<Organism*>::iterator iter = organisms.begin(); iter != organisms.end(); ++iter) age+=(*iter)->age;
+	cout << "AvgAGE:" << age << endl;
+}
         void Population::evaluate_organism(Organism* org) {
                    data_record* newrec=new data_record();
 	           //evaluate individual, get novelty point    
@@ -134,6 +156,7 @@ Population::Population(Genome *g,int size, float power) {
 	highest_fitness=0.0;
 	highest_last_changed=0;
 	clone(g, size, power);
+	set_startgenome(g);
         set_compatibility(&NEAT::genotypic_compatibility);
 }
 

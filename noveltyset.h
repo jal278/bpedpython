@@ -158,20 +158,25 @@ public:
      return dominates_global(k);
     }
  
+    #define GDTHRESH 1.0
     bool dominates_global(noveltyitem* k) {
  
-     if (secondary < k->secondary || novelty < k->novelty)
+     if (secondary < k->secondary || novelty < k->novelty
+	 || genodiv+GDTHRESH < k->genodiv)
         return false;
-     if (secondary > k->secondary || novelty > k->novelty)
+     if (secondary > k->secondary || novelty > k->novelty
+     	|| genodiv > k->genodiv+GDTHRESH)
         return true;
 
       return false;
      }
  
     bool dominates_local(noveltyitem* k) {
-    if (competition < k->competition || novelty < k->novelty || genodiv < k->genodiv)
+    if (competition < k->competition || novelty < k->novelty
+	|| genodiv+GDTHRESH < k->genodiv)
         return false;
-     if (competition > k->competition || novelty > k->novelty)
+     if (competition > k->competition || novelty > k->novelty
+	|| genodiv > k->genodiv+GDTHRESH)
         return true;
 
       return false;
@@ -215,7 +220,8 @@ public:
         genotype=NULL;
         phenotype=NULL;
         age=0.0;
-        secondary=0.0;
+        secondary=-1000000.0;
+	genodiv=0.0;
         generation=0.0;
         indiv_number=(-1);
     }
@@ -528,6 +534,7 @@ public:
             data[x]=scale(0,200,item->data[0][x]);
         return hist->query_point(data);
     }
+
     float diversity_avg_nn(noveltyitem* item,vector<Organism*> *pop) {
      vector<sort_pair> diversities;
      for(int i=0;i<pop->size();i++)
@@ -539,6 +546,7 @@ public:
      }
      return sum/neighbors;
     }
+
     //nearest neighbor novelty score calculation
     float novelty_avg_nn(noveltyitem* item,int neigh=-1,bool ageSmooth=false,vector<Organism*> *pop=NULL)
     {
@@ -610,7 +618,7 @@ public:
          item->genodiv=diversity_avg_nn(item,pop);
         }
         //genotypic
-
+	if(neigh!=1)
         item->novelty=density;
         item->generation=generation;
         return density;

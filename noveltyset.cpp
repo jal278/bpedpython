@@ -208,15 +208,15 @@ void noveltyarchive::evaluate_individual(Organism* ind,vector<Organism*> pop,boo
                 {
                    result = 0.000000001;
                    ind->fitness = result;
+		   ind->noveltypoint->novelty=result; 
 		}
                 else
                 {
 		if(!histogram)
 			result = novelty_avg_nn(ind->noveltypoint,-1,false,&pop);
-		else
-		{		
+		else		
 			result = novelty_histogram(ind->noveltypoint);
-		}
+		
                 }
                 //NEW WAY: production of novelty important
                 if(production_score) {
@@ -239,7 +239,7 @@ void noveltyarchive::evaluate_individual(Organism* ind,vector<Organism*> pop,boo
 		if(!histogram)
 		{
 		result = novelty_avg_nn(ind->noveltypoint,1,false);
-		ind->noveltypoint->novelty=result;
+		//ind->noveltypoint->novelty=result;
 
                 if(!minimal_criteria)
                    ind->noveltypoint->viable=true;

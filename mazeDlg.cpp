@@ -96,8 +96,9 @@ void mazeDlg::OnTimer(wxTimerEvent& event)
 		fit=mazesimStep(env,net,dc);
 	else
 		env->Update();
+	env->hero.collide=false;
 	
-        cout << env->hero.collide << endl;
+        //cout << env->hero.collide << endl;
 	if(timestep<400) fitness+=fit;	
 	timestep++;
 	}
@@ -106,7 +107,7 @@ void mazeDlg::OnTimer(wxTimerEvent& event)
 }
 void mazeDlg::OnPaint(wxPaintEvent& event)
 {
-  float scale=3.0;
+  float scale=1.0;
   wxPaintDC dc(this);
   float rad = env->hero.heading/180.0*3.1415926;
   dc.SetPen(*wxBLACK_PEN);
@@ -213,7 +214,7 @@ if(false)
  //draw Fitness
  wxString outstring;
  
-if(false)
+if(true)
  outstring.Printf(_T("Timestep: %d, Fitness: %f"), timestep, fitness);
  dc.DrawText(outstring,50,500);
  

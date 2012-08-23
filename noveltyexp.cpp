@@ -3,6 +3,7 @@
 
 #include "datarec.h"
 #include "maze.h"
+#include "graph.h"
 
 #include "histogram.h"
 #include "calc_evol.h"
@@ -18,6 +19,11 @@ static Environment* env;
 static vector<Environment*> envList;
 static vector<Environment*> mcList;
 static ofstream *logfile;
+
+static vector<float> best_fits;
+plot front_plot;
+plot fitness_plot;
+
 void evolvability(Organism* org,char* fn,int *a=NULL,double* b=NULL,bool recall=false);
 using namespace std;
 enum novelty_measure_type { novelty_sample, novelty_accum, novelty_sample_free };
@@ -488,7 +494,7 @@ Population *maze_passive(char* outputdir,const char* mazefile,int par,const char
     pop->verify();
     pop->set_evaluator(&maze_novelty_map);
     pop->evaluate_all();
- 
+	
     passive_niche pn(novelty);
     pn.run_niche(pop);
 
@@ -1276,7 +1282,9 @@ noveltyitem* maze_novelty_map(Organism *org,data_record* record)
                 constraint_vector.push_back(record->ToRec[3]-c1old);
                 constraint_vector.push_back(record->ToRec[4]-c2old);
                 c1old=record->ToRec[3];
-                new_item->secondary=record->ToRec[5];
+                //new_item->secondary=record->ToRec[5];
+		if(new_item->viable)
+			new_item->secondary=0; //-org->age;
                 //if(record->ToRec[5]==1)
                 //  new_item->viable=false;
             }
@@ -1349,7 +1357,6 @@ noveltyitem* maze_novelty_map(Organism *org,data_record* record)
 
 
 static int maxgens;
-//Perform evolution on single pole balacing, for gens generations
 Population *maze_generational(char* outputdir,const char* mazefile,int param,const char *genes, int gens,bool novelty)
 {
 
@@ -1402,8 +1409,10 @@ Population *maze_generational(char* outputdir,const char* mazefile,int param,con
 //Spawn the Population
     cout<<"Spawning Population off Genome"<<endl;
     cout << "Start genomes node: " << start_genome->nodes.size() << endl;
-    pop=new Population(start_genome,NEAT::pop_size);
-
+   if(!seed_mode) 
+   pop=new Population(start_genome,NEAT::pop_size);
+else
+     pop=new Population(start_genome,NEAT::pop_size,0.0);
     cout<<"Verifying Spawned Pop"<<endl;
     pop->verify();
    
@@ -1417,7 +1426,8 @@ for (gen=0; gen<=maxgens; gen++)  { //WAS 1000
         if (gen%change_goal_length==0)
             change_goal_location();
         bool win = maze_generational_epoch(&pop,gen,Record,archive,novelty);
-
+	
+	
 
         if (win)
         {
@@ -1500,15 +1510,8 @@ int maze_generational_epoch(Population **pop2,int generation,data_rec& Record, n
     }
 
 //Evaluate each organism on a test
-    float divtotal=0.0;
     for (curorg=(pop->organisms).begin(); curorg!=(pop->organisms).end(); ++curorg) {
 
-//newrec->indiv_number=indiv_counter;
-//data_record* newrec=new data_record();
-//evaluate individual, get novelty point
-//(*curorg)->noveltypoint = maze_novelty_map((*curorg),newrec);
-//(*curorg)->noveltypoint->indiv_number = indiv_counter;
-//(*curorg)->datarec = newrec;
         data_record* newrec = (*curorg)->datarec;
         if (!weakfirst && (newrec->ToRec[3]>=envList.size())) {
             weakfirst=true;
@@ -1518,7 +1521,6 @@ int maze_generational_epoch(Population **pop2,int generation,data_rec& Record, n
         }
         //write out the first individual to solve maze
         if (!firstflag && (newrec->ToRec[3]>=envList.size() && newrec->ToRec[4]>=envList.size())) {
-            firstflag=true;
             char filename[100];
             cout << "Maze solved by indiv# " << indiv_counter << endl;
             //break;
@@ -1539,7 +1541,6 @@ int maze_generational_epoch(Population **pop2,int generation,data_rec& Record, n
                 }
             }
         }
-        divtotal+=(*curorg)->noveltypoint->genodiv;
         if ((*curorg)->noveltypoint->fitness > best_fitness)
         {
             best_fitness = (*curorg)->noveltypoint->fitness;
@@ -1572,18 +1573,27 @@ int maze_generational_epoch(Population **pop2,int generation,data_rec& Record, n
         if (!novelty)
             (*curorg)->fitness = (*curorg)->noveltypoint->fitness;
     }
-    cout << "DIVTOTAL:" << divtotal << endl;
 
     (*logfile) << generation << " " << best_fitness << " " << best_secondary << endl;
     
     if (novelty)
     {
-
 //NEED TO CHANGE THESE TO GENERATIONAL EQUIVALENTS...
 //assign fitness scores based on novelty
         archive.evaluate_population(pop,true);
 ///now add to the archive (maybe remove & only add randomly?)
         archive.evaluate_population(pop,false);
+
+	pop->print_divtotal();
+	
+	#define PLOT_ON
+	#ifdef PLOT_ON
+	vector<float> x,y,z;
+	pop->gather_objectives(&x,&y,&z);
+	front_plot.plot_data(x,y,"p","Pareto front");
+	best_fits.push_back(best_fitness);
+	fitness_plot.plot_data(best_fits,"lines","Fitness");
+	#endif
 
         if (NEAT::multiobjective)
             archive.rank(pop->organisms);
@@ -1647,7 +1657,7 @@ int maze_generational_epoch(Population **pop2,int generation,data_rec& Record, n
                 (*curorg)->print_to_file(filename);
             }
         }
-        firstflag = true;
+	firstflag=true;
     }
 
 //writing out stuff
@@ -1674,7 +1684,7 @@ int maze_generational_epoch(Population **pop2,int generation,data_rec& Record, n
     }
 //Create the next generation
     pop->epoch(generation);
-
+    pop->print_avg_age();
 
     return win;
 }

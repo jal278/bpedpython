@@ -42,6 +42,9 @@ int main(int argc, char **argv) {
 
   SwitchArg local_switch("","lc","Local competition",false);
   cmd.add(local_switch);
+  
+  SwitchArg multiobj_switch("","mo","Multiobjective",false);
+  cmd.add(multiobj_switch);
 
   SwitchArg biped_switch("","biped","Biped domain",false);
   cmd.add(biped_switch);
@@ -120,7 +123,9 @@ int main(int argc, char **argv) {
   
   if(local_switch.getValue()) 
    NEAT::local_competition=true;
-
+ 
+  if(multiobj_switch.getValue())
+   NEAT::multiobjective=true;
   param = extra_param.getValue();
   cout<<"loaded"<<endl;
 

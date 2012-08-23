@@ -59,6 +59,9 @@ namespace NEAT {
         void set_evaluator(noveltyitem* (*eval)(Organism*,data_record*)) {
          evaluator=eval;
         }
+	void print_avg_age();
+	void print_divtotal();
+	void gather_objectives(vector<float>* x,vector<float> *y,vector<float>* z);
         void evaluate_all() { 
 	 for (std::vector<Organism*>::iterator iter = organisms.begin(); iter != organisms.end(); ++iter) evaluate_organism(*iter);
         }

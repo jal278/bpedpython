@@ -18,7 +18,7 @@ double NEAT::time_const_mut_power=0.4;
 double NEAT::time_const_mut_prob=0.3;
 double NEAT::bias_mut_power=0.8;
 double NEAT::bias_mut_prob=0.4;
-double NEAT::fresh_genetic_prob=0.5;
+double NEAT::fresh_genetic_prob=0.05;
 
 int NEAT::time_alive_minimum = 0;
 double NEAT::trait_param_mut_prob = 0;
