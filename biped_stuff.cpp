@@ -14,6 +14,11 @@
 #include "biped.h"
 #include "experiments.h"
 #include "calc_evol.h"
+#include "graph.h"
+
+static vector<float> best_fits;
+static plot front_plot;
+static plot fitness_plot;
 
 extern bool evaluate_switch;
 extern bool seed_mode;
@@ -311,6 +316,7 @@ noveltyitem* biped_evaluate(NEAT::Organism *org,data_record* data)
     CTRNNController* cont = new CTRNNController(org->net,org->gnome);
     new_item->fitness=evaluate_controller(cont,new_item,data);
     org->fitness=new_item->fitness;
+    new_item->secondary = -org->age;
     if (new_item->fitness < 2.5) new_item->viable=false;
     else new_item->viable=true;
     delete cont;
@@ -354,7 +360,7 @@ Population *biped_novelty_realtime(char* outputdir,const char* mazefile,int par,
 
     //Spawn the Population from starter gene
     cout<<"Spawning Population off Genome"<<endl;
-    if (!seed_mode)
+    if (!seed_mode) 
         pop=new Population(start_genome,NEAT::pop_size);
     else
     {
@@ -835,9 +841,10 @@ if(!speciation)
             measure_pop.erase(measure_pop.begin()+(measure_pop.size()/2),measure_pop.end());
         }
 //delete old pop, create new pop
+        Genome* sg=pop->start_genome;
         delete pop;
         pop=new Population(measure_pop);
-
+	pop->set_startgenome(sg);
         pop->set_evaluator(&biped_evaluate);
         *pop2= pop;
     }
@@ -914,12 +921,20 @@ if(!speciation)
 ///now add to the archive (maybe remove & only add randomly?)
         archive.evaluate_population(pop,false);
 
+	
+	#ifdef PLOT_ON
+	vector<float> x,y,z;
+	pop->gather_objectives(&x,&y,&z);
+	front_plot.plot_data(x,y,"p","Pareto front");
+	best_fits.push_back(best_fitness);
+	fitness_plot.plot_data(best_fits,"lines","Fitness");
+	#endif
+
         if (NEAT::multiobjective)
             archive.rank(pop->organisms);
 
-    float divtotal=0.0;
+	pop->print_divtotal();
         for (curorg=(pop->organisms).begin(); curorg!=(pop->organisms).end(); ++curorg) {
-        divtotal+=(*curorg)->noveltypoint->genodiv;
             if ( !(*curorg)->noveltypoint->viable && minimal_criteria)
             {
                 (*curorg)->fitness = SNUM/1000.0;
@@ -929,7 +944,6 @@ if(!speciation)
                 // cout << " :( " << endl;
             }
         }
-       cout << "DIVTOTAL: " << divtotal << endl;
         cout << "ARCHIVE SIZE:" << archive.get_set_size() << endl;
         cout << "THRESHOLD:" << archive.get_threshold() << endl;
         archive.end_of_gen_steady(pop);

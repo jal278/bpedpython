@@ -1586,7 +1586,6 @@ int maze_generational_epoch(Population **pop2,int generation,data_rec& Record, n
 
 	pop->print_divtotal();
 	
-	#define PLOT_ON
 	#ifdef PLOT_ON
 	vector<float> x,y,z;
 	pop->gather_objectives(&x,&y,&z);
