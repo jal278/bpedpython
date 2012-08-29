@@ -33,10 +33,12 @@ enum fitness_measure_type { fitness_goal, fitness_drift, fitness_std,fitness_rnd
 static fitness_measure_type fitness_measure = fitness_goal;
 
 static bool mc_reach_onepoint=true;
-
+bool age_objective=false;
 bool population_dirty=false;
 
 static bool extinction=true;
+
+void set_age_objective(bool ao) { age_objective=ao; }
 void set_extinction(bool _ext) {
     extinction=_ext;
 }
@@ -1283,8 +1285,12 @@ noveltyitem* maze_novelty_map(Organism *org,data_record* record)
                 constraint_vector.push_back(record->ToRec[4]-c2old);
                 c1old=record->ToRec[3];
                 //new_item->secondary=record->ToRec[5];
-		if(new_item->viable)
-			new_item->secondary=0; //-org->age;
+		if(new_item->viable) {
+			if(age_objective) 
+			 new_item->secondary= -org->age;
+			else
+			 new_item->secondary=0; //-org->age;
+		}
                 //if(record->ToRec[5]==1)
                 //  new_item->viable=false;
             }
@@ -1431,14 +1437,14 @@ for (gen=0; gen<=maxgens; gen++)  { //WAS 1000
 
         if (win)
         {
-            char fname[100];
-            sprintf(fname,"%s_wingen",output_dir);
-            ofstream winfile(fname);
-            winfile << gen << endl;
-            sprintf(fname,"%s_archive.dat",output_dir);
-            archive.Serialize(fname);
-            sprintf(fname,"%s_record.dat",output_dir);
-            Record.serialize(fname);
+            //char fname[100];
+            //sprintf(fname,"%s_wingen",output_dir);
+            //ofstream winfile(fname);
+            //winfile << gen << endl;
+            //sprintf(fname,"%s_archive.dat",output_dir);
+            //archive.Serialize(fname);
+            //sprintf(fname,"%s_record.dat",output_dir);
+            //Record.serialize(fname);
 //break;
         }
 
@@ -1478,12 +1484,8 @@ int maze_generational_epoch(Population **pop2,int generation,data_rec& Record, n
 
 //evaluate this 'super-population'
         archive.rank(measure_pop);
-        /*
-        for(int i=0;i<measure_pop.size();i++) {
-        cout << measure_pop[i]->noveltypoint->competition << " " << measure_pop[i]->noveltypoint->novelty << " " <<  measure_pop[i]->noveltypoint->rank << endl;
-        }
-        */
-        if (generation!=0) {
+        
+	if (generation!=0) {
 //chop population down by half (maybe delete orgs that aren't used)
             int start=measure_pop.size()/2;
             vector<Organism*>::iterator it;
@@ -1601,25 +1603,12 @@ int maze_generational_epoch(Population **pop2,int generation,data_rec& Record, n
             if ( !(*curorg)->noveltypoint->viable && minimal_criteria)
             {
                 (*curorg)->fitness = SNUM/1000.0;
-                //new_org->novelty = 0.00000001;
-                //reset behavioral characterization
-                //cout << "fail" << endl;
-                // cout << " :( " << endl;
             }
         }
         cout << "ARCHIVE SIZE:" << archive.get_set_size() << endl;
         cout << "THRESHOLD:" << archive.get_threshold() << endl;
         archive.end_of_gen_steady(pop);
-//adjust novelty of infeasible individuals
-        /*
-        if(!newrec->ToRec[3] && novelty_measure != novelty_sample_free)
-        {
-        	(*curorg)->fitness = 0.00001;
-        }
-        */
     }
-
-
 
     char fn[100];
     sprintf(fn,"%sdist%d",output_dir,generation);
@@ -1660,7 +1649,7 @@ int maze_generational_epoch(Population **pop2,int generation,data_rec& Record, n
     }
 
 //writing out stuff
-    if (generation%NEAT::print_every == 0 )
+    if ((generation+1)%NEAT::print_every == 0 )
     {
         char filename[100];
         sprintf(filename,"%s_record.dat",output_dir);

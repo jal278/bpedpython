@@ -1,6 +1,5 @@
 #ifndef EXPERIMENTS_H
 #define EXPERIMENTS_H
-
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -20,12 +19,14 @@
 #include "datarec.h"
 #include "maze.h"
 
-using namespace std;
 
+using namespace std;
 using namespace NEAT;
+
 void enumerate_behaviors(const char* name,long long parm,const char* outname,int count);
 void mutate_genome(Genome* new_genome,bool traits=false);
 
+void set_age_objective(bool ao); 
 void set_evaluate(bool val);
 void set_extinction(bool _ext);
 void set_random_replace(bool val);

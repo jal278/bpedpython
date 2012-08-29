@@ -14,10 +14,9 @@ using namespace std;
 
 using namespace TCLAP;
 static bool biped=false;
+CmdLine cmd("Maze evolution", ' ', "0.1");
 
 int main(int argc, char **argv) {
-
-  CmdLine cmd("Maze evolution", ' ', "0.1");
    
   ValueArg<string> maze("m","maze","Maze file",false,"medium_maze_list.txt","string");
   cmd.add(maze);
@@ -36,6 +35,9 @@ int main(int argc, char **argv) {
 
   ValueArg<string> seed_genome("c","seed","Seed Genome",false,"","string");
   cmd.add(seed_genome);
+
+  SwitchArg age_objective("","ageobj","age objective",false);
+  cmd.add(age_objective);
 
   SwitchArg passive_switch("","passive","passive search",false);
   cmd.add(passive_switch);
@@ -132,8 +134,8 @@ int main(int argc, char **argv) {
   cout << "Maze: " << mazename << endl;
   cout << "Start genes: " << startgenes << endl;
   
-  
- set_evaluate(evaluateSwitch.getValue());
+  set_age_objective(age_objective.getValue()); 
+  set_evaluate(evaluateSwitch.getValue());
   set_extinction(extinction.getValue());
   set_mcmaze(mcmaze.getValue());
   set_fit_measure(fit_measure.getValue());

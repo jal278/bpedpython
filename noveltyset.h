@@ -1,7 +1,7 @@
 #ifndef NVSET_H
 #define NVSET_H
 
-#define PLOT_ON
+//#define PLOT_ON
 
 #include <math.h>
 #include <vector>
