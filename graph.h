@@ -22,6 +22,31 @@ public:
   }
  }
 
+ void plot_data(vector< vector<float> > rows, const char* style="points",const char*title="Data") { 
+  if(!enabled)
+	return;
+  fprintf(gp,"set title '%s' \n",title);
+  fprintf(gp,"plot");
+  for (int x=0;x<rows.size();x++) {
+   fprintf(gp,"'-' w %s",style);
+   if(x<(rows.size()-1))
+	fprintf(gp,",");
+   else
+    fprintf(gp,"\n");
+  } 
+  for(int x=0;x<rows.size();x++) {
+	vector<float>& k=rows[x];
+  for(int y=0;y<k.size();y++) {
+   fprintf(gp,"%f\n",k[y]);
+  }
+  fprintf(gp,"e\n");
+  }
+  fflush(gp);
+
+  
+ }
+ 
+
  void plot_data(vector<float> x,const char* style="points",const char* title="Data") {
  if(!enabled)
 	return;

@@ -296,9 +296,15 @@ private:
     //current generation
     int generation;
 public:
+    noveltyarchive(noveltyarchive* mimic) {
+	
+	constructor(mimic->novelty_threshold,mimic->novelty_metric,mimic->record,-1,mimic->minimal_criteria,mimic->generational); 
+    }
 
-    //constructor
-    noveltyarchive(float threshold,float (*nm)(noveltyitem*,noveltyitem*),bool rec=true,int pbs=-1,bool mc=false,bool _generational=false)
+    noveltyarchive(float threshold,float (*nm)(noveltyitem*,noveltyitem*),bool rec=true,int pbs=-1,bool mc=false,bool _generational=false) {
+      constructor(threshold,nm,rec,pbs,mc,generational);
+    }
+    void constructor(float threshold,float (*nm)(noveltyitem*,noveltyitem*),bool rec=true,int pbs=-1,bool mc=false,bool _generational=false)
     {
         production_score=NEAT::production;
         //how many nearest neighbors to consider for calculating novelty score?

@@ -6,6 +6,8 @@
 #include <fstream>
 #include "noveltyset.h"
 #include "histogram.h"
+#include "population_state.h"
+
 using namespace std;
 using namespace NEAT;
 
@@ -94,8 +96,10 @@ void Population::print_divtotal() {
 
 	void Population::print_avg_age() {
 	double age=0.0;
-	 for (std::vector<Organism*>::iterator iter = organisms.begin(); iter != organisms.end(); ++iter) age+=(*iter)->age;
-	cout << "AvgAGE:" << age << endl;
+ 	int cnt=0;
+	 for (std::vector<Organism*>::iterator iter = organisms.begin(); iter != organisms.end(); ++iter) { cnt++; age+=(*iter)->age; }
+	avgage=age/cnt;
+	cout << "AvgAGE:" << age/cnt << endl;
 }
         void Population::evaluate_organism(Organism* org) {
                    data_record* newrec=new data_record();
@@ -146,7 +150,6 @@ Population::Population(Genome *g,int size) {
 	highest_fitness=0.0;
 	highest_last_changed=0;	
 	set_startgenome(g);
-	cout << "CONSTRUCTOR POP INIT: " << start_genome->nodes.size() << endl;
 	spawn(g,size);
         set_compatibility(&NEAT::genotypic_compatibility);
 }
@@ -540,6 +543,86 @@ bool Population::print_to_file_by_species(std::ostream& outFile) {
 	}
 
 	return true;
+
+}
+void Population::rebuild() {
+
+	std::vector<Organism*>::iterator deadorg;
+	std::vector<Species*>::iterator deadspecies;  //For removing empty Species
+
+	std::vector<Organism*>::iterator curorg;
+	std::vector<Species*>::iterator curspecies=species.begin();
+	//Destroy and remove the old generation from the organisms and species  
+	curorg=organisms.begin();
+	while(curorg!=organisms.end()) {
+
+	  //Remove the organism from its Species
+	  ((*curorg)->species)->remove_org(*curorg);
+
+	  //std::cout<<"deleting org # "<<(*curorg)->gnome->genome_id<<std::endl;
+
+	  //Delete the organism from memory
+	  delete (*curorg);
+	  
+	  //Remember where we are
+	  deadorg=curorg;
+	  ++curorg;
+	  
+	  //std::cout<<"next org #  "<<(*curorg)->gnome->genome_id<<std::endl;
+
+	  //Remove the organism from the master list
+	  curorg=organisms.erase(deadorg);
+
+	  //std::cout<<"nnext org # "<<(*curorg)->gnome->genome_id<<std::endl;
+
+	}
+
+	//Remove all empty Species and age ones that survive
+	//As this happens, create master organism list for the new generation
+	curspecies=species.begin();
+	int orgcount=0;
+	while(curspecies!=species.end()) {
+		if (((*curspecies)->organisms.size())==0) {
+			delete (*curspecies);
+
+			deadspecies=curspecies;
+			++curspecies;
+
+			curspecies=species.erase(deadspecies);
+		}
+		//Age surviving Species and 
+		//Rebuild master Organism list: NUMBER THEM as they are added to the list
+		else {
+			//Age any Species that is not newly created in this generation
+			if ((*curspecies)->novel) {
+				(*curspecies)->novel=false;
+			}
+			else ++((*curspecies)->age);
+
+			//Go through the organisms of the curspecies and add them to 
+			//the master list
+			for(curorg=((*curspecies)->organisms).begin();curorg!=((*curspecies)->organisms).end();++curorg) {
+				((*curorg)->gnome)->genome_id=orgcount++;
+				organisms.push_back(*curorg);
+			}
+			++curspecies;
+
+		}
+	}      
+	std::vector<Innovation*>::iterator curinnov;  
+	std::vector<Innovation*>::iterator deadinnov;  //For removing old Innovs
+
+	//Remove the innovations of the current generation
+	curinnov=innovations.begin();
+	while(curinnov!=innovations.end()) {
+		delete (*curinnov);
+
+		deadinnov=curinnov;
+		++curinnov;
+
+		curinnov=innovations.erase(deadinnov);
+	}
+
 
 }
 

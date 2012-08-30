@@ -11,7 +11,7 @@ using namespace std;
 #include "population.h"
 #include "experiments.h"
 #include "biped.h"
-
+#include "alps.h"
 using namespace TCLAP;
 static bool biped=false;
 CmdLine cmd("Maze evolution", ' ', "0.1");
@@ -167,6 +167,7 @@ return 0;
   set_constraint_switch(constraintSwitch.getValue());
   if(!generationalSwitch.getValue())
 {
+
  if(!biped) {
   if(passive_switch.getValue()) 
       p = maze_passive(filename,mazename,param,startgenes,noveltySwitch.getValue());
@@ -185,6 +186,8 @@ return 0;
 }
 else
 {
+ maze_alps(filename,mazename,param,startgenes,1000,noveltySwitch.getValue());
+ 
  if(!biped) 
  p = maze_generational(filename,mazename,param,startgenes,1000,noveltySwitch.getValue());
  else

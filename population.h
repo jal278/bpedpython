@@ -12,7 +12,7 @@
 
 class noveltyitem;
 class data_record;
-
+class population_state;
 using namespace std;
 
 void reset_activity();
@@ -27,6 +27,7 @@ namespace NEAT {
 
         double genotypic_compatibility(Organism* x,Organism* y);
         double behavioral_compatibility(Organism* x,Organism* y);
+ 	typedef noveltyitem* (*evaluatorfunc)(Organism*,data_record*);
 	// ---------------------------------------------  
 	// POPULATION CLASS:
 	//   A Population is a group of Organisms   
@@ -42,7 +43,9 @@ namespace NEAT {
 		bool spawn(Genome *g,int size);
 
 	public:
+	float avgage;
 	//added for statistics
+ 	void rebuild();
         Genome* start_genome; 
         noveltyitem* (*evaluator)(Organism*,data_record*);
         double (*compatibility)(Organism*,Organism*);
@@ -53,10 +56,9 @@ namespace NEAT {
 	 cout << "SGOUT:" << start_genome->nodes.size() << endl;
 	}
 	void set_startgenome(Genome* sg) {
-	cout << "STARTGENOMESET" << endl;
 	 start_genome=sg->duplicate(0);
  	}
-        void set_evaluator(noveltyitem* (*eval)(Organism*,data_record*)) {
+        void set_evaluator(evaluatorfunc eval) { //noveltyitem* (*eval)(Organism*,data_record*)) {
          evaluator=eval;
         }
 	void print_avg_age();
@@ -117,6 +119,7 @@ namespace NEAT {
 		// Turnover the population to a new generation using fitness 
 		// The generation argument is the next generation
 		bool epoch(int generation);
+		bool epoch_mod(population_state *b,population_state* a);
 
 		// *** Real-time methods *** 
 
