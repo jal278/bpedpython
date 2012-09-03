@@ -20,6 +20,7 @@ noveltyitem::noveltyitem(const noveltyitem& item)
 	added=false;
         //TODO: this might cause memory leak in
         //merge_population?
+	age=item.age;
 	viable=item.viable;
         genotype=new Genome(*(item.genotype));
 	phenotype=new Network(*(item.phenotype));
@@ -204,11 +205,12 @@ void noveltyarchive::evaluate_individual(Organism* ind,vector<Organism*> pop,boo
 	float result;
 	if(fitness)  //assign fitness according to average novelty
 	{
-                if(minimal_criteria && !ind->noveltypoint->viable)
+                if(ind->destroy)
                 {
                    result = 0.000000001;
                    ind->fitness = result;
 		   ind->noveltypoint->novelty=result; 
+		   ind->noveltypoint->genodiv=0;
 		}
                 else
                 {

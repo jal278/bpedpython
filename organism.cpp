@@ -6,6 +6,7 @@ using namespace NEAT;
 
 Organism::Organism(double fit, Genome *g,int gen, const char* md) {
 	age=0;
+	destroy=false;
 	noveltypoint=NULL;
         datarec=NULL;
 	fitness=fit;
@@ -42,11 +43,12 @@ Organism::Organism(double fit, Genome *g,int gen, const char* md) {
 
 Organism::Organism(const Organism& org,bool copy_data)
 {
-        datarec=NULL;
+	destroy=false; 
+       datarec=NULL;
 	noveltypoint=NULL;
 	fitness = org.fitness;
 	orig_fitness = org.orig_fitness;
-	age=org.age+1;
+	age=org.age;
 	if(org.noveltypoint)
 	{
 		noveltypoint=new noveltyitem(*(org.noveltypoint));

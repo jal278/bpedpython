@@ -21,9 +21,11 @@ namespace NEAT {
 	class Organism {
 
 	public:
+		bool clean;
 		double fitness;  //A measure of fitness for the Organism
 		double orig_fitness;  //A fitness measure that won't change during adjustments
 		double error;  //Used just for reporting purposes
+		bool destroy;
 		bool winner;  //Win marker (if needed for a particular task)
 		Network *net;  //The Organism's phenotype
 		Genome *gnome; //The Organism's genotype 

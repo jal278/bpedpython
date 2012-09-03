@@ -14,6 +14,246 @@ using namespace NEAT;
 //ACTIVITY STATISTICS CALCULATIONS
 #define MAX_COMPONENTS 10000000
 static int activity_level[MAX_COMPONENTS];
+Organism *Population::reproduce_simple(vector<Organism*> organisms,int generation, Population *pop) {
+ 	 int count=generation; //This will assign genome id's according to the generation
+    	 std::vector<Organism*>::iterator curorg;
+
+	int poolsize;  //The number of Organisms in the old generation
+
+	int orgnum;  //Random variable
+	int orgcount;
+	Organism *mom = 0; //Parent Organisms
+	Organism *dad = 0;
+	Organism *baby;  //The new Organism
+
+	Genome *new_genome=0;  //For holding baby's genes
+
+	double randmult;
+	//int spcount;  
+	std::vector<Species*>::iterator cursp;
+
+	Network *net_analogue;  //For adding link to test for recurrency
+	int pause;
+	bool outside;
+
+	bool mut_struct_baby;
+	bool mate_baby;
+
+	double mut_power=NEAT::weight_mut_power;
+
+	//Roulette wheel variables
+	double total_fitness=0.0;
+	double marble;  //The marble will have a number between 0 and total_fitness
+	double spin;  //Fitness total while the wheel is spinning
+
+    std::sort(organisms.begin(), organisms.end(), order_orgs);
+
+
+	//Only choose from among the top ranked orgs
+	poolsize=(organisms.size() - 1) * NEAT::survival_thresh;
+
+	//Create one offspring for the Species
+	mut_struct_baby=false;
+	mate_baby=false;
+
+	outside=false;
+
+	//First, decide whether to mate or mutate
+	//If there is only one organism in the pool, then always mutate
+	if ((randfloat()<NEAT::fresh_genetic_prob)) {
+				new_genome=(pop->start_genome)->duplicate(count);
+				new_genome->mutate_link_weights(2.0,1.0,COLDGAUSSIAN);
+				new_genome->mutate_node_parameters(0.01,1.0,3.0,1.0,true);
+				new_genome->randomize_traits();
+				baby=new Organism(0.0,new_genome, generation);	
+				mom=baby;
+			}
+	else if ((randfloat()<NEAT::mutate_only_prob)||
+		poolsize == 0) {
+
+			//RANDOM PARENT CHOOSER
+			orgnum=randint(0,poolsize);
+			curorg=organisms.begin();
+			for(orgcount=0;orgcount<orgnum;orgcount++)
+				++curorg;                       
+
+			mom=(*curorg);
+			
+			new_genome=(mom->gnome)->duplicate(count);
+			if(new_genome)
+				new_genome->struct_change=0;
+
+			#define FREEZEPROB 0.0
+			#define DISABLE_PROB 0.0
+                      
+			if (randfloat()<FREEZEPROB) new_genome->mutate_gene_freeze();
+			if (randfloat()<NEAT::mutate_add_node_prob) {
+				//cout<<"mutate add node"<<endl;
+				new_genome->mutate_add_node(pop->innovations,pop->cur_node_id,pop->cur_innov_num);
+				mut_struct_baby=true;
+				new_genome->struct_change=1; //JLADD
+			}
+			else if (randfloat()<NEAT::mutate_add_link_prob) {
+				//cout<<"mutate add link"<<endl;
+				net_analogue=new_genome->genesis(generation);
+				new_genome->mutate_add_link(pop->innovations,pop->cur_innov_num,NEAT::newlink_tries);
+				delete net_analogue;
+				mut_struct_baby=true;
+				
+				new_genome->struct_change=2; //JLADD
+			}
+			//NOTE:  A link CANNOT be added directly after a node was added because the phenotype
+			//       will not be appropriately altered to reflect the change
+			else {
+				//If we didn't do a structural mutation, we do the other kinds
+
+				if (randfloat()<NEAT::mutate_random_trait_prob) {
+					//cout<<"mutate random trait"<<endl;
+					new_genome->mutate_random_trait();
+				}
+				if (randfloat()<NEAT::mutate_link_trait_prob) {
+					//cout<<"mutate_link_trait"<<endl;
+					new_genome->mutate_link_trait(1);
+				}
+				if (randfloat()<NEAT::mutate_node_trait_prob) {
+					//cout<<"mutate_node_trait"<<endl;
+					new_genome->mutate_node_trait(1);
+					new_genome->mutate_node_parameters(NEAT::time_const_mut_power,NEAT::time_const_mut_prob,
+					                                   NEAT::bias_mut_power,NEAT::bias_mut_prob);
+				}
+				if (randfloat()<NEAT::mutate_link_weights_prob) {
+					new_genome->mutate_link_weights(mut_power,1.0,GAUSSIAN);
+				}
+				if (randfloat()<NEAT::mutate_toggle_enable_prob) {
+					new_genome->mutate_toggle_enable(1);
+					new_genome->struct_change=3; //JLADD
+
+				}
+                                if (randfloat()<DISABLE_PROB)
+                                   new_genome->mutate_gene_disable();
+				if (randfloat()<NEAT::mutate_gene_reenable_prob) {
+					new_genome->mutate_gene_reenable();
+					new_genome->struct_change=3; //JLADD
+				}
+			}
+
+			baby=new Organism(0.0,new_genome,generation);
+
+		}
+
+	else {
+		orgnum=randint(0,poolsize);
+		curorg=organisms.begin();
+		for(orgcount=0;orgcount<orgnum;orgcount++)
+			++curorg;
+
+		mom=(*curorg);         
+
+			orgnum=randint(0,poolsize);
+			curorg=organisms.begin();
+			for(orgcount=0;orgcount<orgnum;orgcount++)
+				++curorg;
+
+			dad=(*curorg);
+
+		//Perform mating based on probabilities of differrent mating types
+		if (randfloat()<NEAT::mate_multipoint_prob) { 
+			new_genome=(mom->gnome)->mate_multipoint(dad->gnome,count,mom->orig_fitness,dad->orig_fitness,outside);
+		}
+		else if (randfloat()<(NEAT::mate_multipoint_avg_prob/(NEAT::mate_multipoint_avg_prob+NEAT::mate_singlepoint_prob))) {
+			new_genome=(mom->gnome)->mate_multipoint_avg(dad->gnome,count,mom->orig_fitness,dad->orig_fitness,outside);
+		}
+		else {
+			new_genome=(mom->gnome)->mate_singlepoint(dad->gnome,count);
+		}
+
+		mate_baby=true;
+	
+		if(new_genome)
+			new_genome->struct_change=0;
+		
+		//Determine whether to mutate the baby's Genome
+		//This is done randomly or if the mom and dad are the same organism
+		if ((randfloat()>NEAT::mate_only_prob)||
+			((dad->gnome)->genome_id==(mom->gnome)->genome_id)||
+			(pop->compatibility(dad,mom)==0.0))
+		{
+
+			//Do the mutation depending on probabilities of 
+                        if (randfloat()<FREEZEPROB) new_genome->mutate_gene_freeze();
+			//various mutations
+			if (randfloat()<NEAT::mutate_add_node_prob) {
+				new_genome->mutate_add_node(pop->innovations,pop->cur_node_id,pop->cur_innov_num);
+				//  cout<<"mutate_add_node: "<<new_genome<<endl;
+				mut_struct_baby=true;
+				new_genome->struct_change=1; //JLADD
+			}
+			else if (randfloat()<NEAT::mutate_add_link_prob) {
+				net_analogue=new_genome->genesis(generation);
+				new_genome->mutate_add_link(pop->innovations,pop->cur_innov_num,NEAT::newlink_tries);
+				delete net_analogue;
+				//cout<<"mutate_add_link: "<<new_genome<<endl;
+				mut_struct_baby=true;
+				new_genome->struct_change=2; //JLADD
+			}
+			else {
+				//Only do other mutations when not doing strurctural mutations
+
+				if (randfloat()<NEAT::mutate_random_trait_prob) {
+					new_genome->mutate_random_trait();
+					//cout<<"..mutate random trait: "<<new_genome<<endl;
+				}
+				if (randfloat()<NEAT::mutate_link_trait_prob) {
+					new_genome->mutate_link_trait(1);
+					//cout<<"..mutate link trait: "<<new_genome<<endl;
+				}
+				if (randfloat()<NEAT::mutate_node_trait_prob) {
+                    new_genome->mutate_node_parameters(NEAT::time_const_mut_power,NEAT::time_const_mut_prob,
+					                                   NEAT::bias_mut_power,NEAT::bias_mut_prob);
+					new_genome->mutate_node_trait(1);
+					//cout<<"mutate_node_trait: "<<new_genome<<endl;
+				}
+				if (randfloat()<NEAT::mutate_link_weights_prob) {
+					new_genome->mutate_link_weights(mut_power,1.0,GAUSSIAN);
+					//cout<<"mutate_link_weights: "<<new_genome<<endl;
+				}
+				if (randfloat()<NEAT::mutate_toggle_enable_prob) {
+					new_genome->mutate_toggle_enable(1);
+					new_genome->struct_change=3; 
+					//cout<<"mutate_toggle_enable: "<<new_genome<<endl;
+				}
+                                if (randfloat()<DISABLE_PROB)
+                                   new_genome->mutate_gene_disable();
+				if (randfloat()<NEAT::mutate_gene_reenable_prob) {
+					new_genome->mutate_gene_reenable(); 
+					//cout<<"mutate_gene_reenable: "<<new_genome<<endl;
+					new_genome->struct_change=3;
+				}
+			}
+
+			//Create the baby
+			baby=new Organism(0.0,new_genome,generation);
+
+		}
+		else {
+			//Create the baby without mutating first
+			baby=new Organism(0.0,new_genome,generation);
+		}
+
+	}
+       
+	
+  	baby->age=mom->age;
+        if(mate_baby)
+		if(dad->age>mom->age)
+			baby->age=dad->age;
+       
+         pop->evaluate_organism(baby);
+
+	return baby; //Return a pointer to the baby
+}
+
+
 void Population::gather_objectives(vector<float>* nov,vector<float> *sec,vector<float>* div) {
 	vector<Organism*>::iterator curorg;
         for (curorg=organisms.begin(); curorg!=organisms.end(); ++curorg)  {
@@ -96,10 +336,11 @@ void Population::print_divtotal() {
 
 	void Population::print_avg_age() {
 	double age=0.0;
+	double mx=0.0;
  	int cnt=0;
-	 for (std::vector<Organism*>::iterator iter = organisms.begin(); iter != organisms.end(); ++iter) { cnt++; age+=(*iter)->age; }
+	 for (std::vector<Organism*>::iterator iter = organisms.begin(); iter != organisms.end(); ++iter) { cnt++; age+=(*iter)->age; if((*iter)->age>mx) mx=(*iter)->age;}
 	avgage=age/cnt;
-	cout << "AvgAGE:" << age/cnt << endl;
+	cout << "AvgAGE:" << mx << " " << age/cnt << endl;
 }
         void Population::evaluate_organism(Organism* org) {
                    data_record* newrec=new data_record();
@@ -439,6 +680,12 @@ bool Population::spawn(Genome *g,int size) {
 	return true;
 }
 
+void Population::setclean(bool clean) {
+for(vector<Organism*>::iterator curorg=organisms.begin();curorg!=organisms.end();++curorg) {
+				(*curorg)->clean=clean;
+			}
+}
+
 bool Population::speciate() {
 	std::vector<Organism*>::iterator curorg;  //For stepping through Population
 	std::vector<Species*>::iterator curspecies; //Steps through species
@@ -606,7 +853,7 @@ void Population::rebuild() {
 				organisms.push_back(*curorg);
 			}
 			++curspecies;
-
+			setclean(true);
 		}
 	}      
 	std::vector<Innovation*>::iterator curinnov;  

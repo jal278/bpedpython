@@ -127,7 +127,7 @@ public:
     vector< vector<float> > data;
 
 //future use
-    float age;
+    int age;
 //used for analysis purposes
     float novelty_scale;
     float novelty;
@@ -185,6 +185,7 @@ public:
     }
 
 //this will write a novelty item to file
+
     void reset_behavior() 
     {
      for(int x=0;x<data.size();x++)
@@ -221,7 +222,7 @@ public:
         added=false;
         genotype=NULL;
         phenotype=NULL;
-        age=0.0;
+        age=0;
         secondary=-1000000.0;
 	genodiv=0.0;
         generation=0.0;
@@ -251,7 +252,7 @@ bool cmp_fit(const noveltyitem *a, const noveltyitem *b);
 class noveltyarchive
 {
 
-private:
+public:
     histogram_multiple* hist;
     bool histogram;
     bool production_score; 
@@ -260,7 +261,7 @@ private:
 
     //are we doing mc ns?
     bool minimal_criteria;
-
+    bool minimal_criteria_met;
     ofstream *datafile;
     ofstream *novelfile;
     typedef pair<float, noveltyitem*> sort_pair;
@@ -306,6 +307,7 @@ public:
     }
     void constructor(float threshold,float (*nm)(noveltyitem*,noveltyitem*),bool rec=true,int pbs=-1,bool mc=false,bool _generational=false)
     {
+	minimal_criteria_met=false;
         production_score=NEAT::production;
         //how many nearest neighbors to consider for calculating novelty score?
         //histogram adds
@@ -360,7 +362,24 @@ public:
          delete (*it);
         //probably want to delete all the noveltyitems at this point
     }
+    void increment_age(int maxage) {
+	vector<noveltyitem*>::iterator it,deadit;
+	for(it=novel_items.begin();it!=novel_items.end();it++) {
+		(*it)->age++;
+		if( (*it)->age>maxage) {
+			delete (*it);
+			it=novel_items.erase(it);
+			it--;
+	  	}
 
+	}
+    }
+void reset() {
+        vector<noveltyitem*>::iterator it;
+	for(it=novel_items.begin();it!=novel_items.end();it++)
+         delete (*it);
+	novel_items.clear();
+}
 public:
 
     
@@ -526,13 +545,12 @@ public:
     }
 
     //steady-state end of generation call (every so many indivudals)
-    void end_of_gen_steady(Population* pop)
+    void end_of_gen_steady(Population* pop,int maxage=-1)
     {
 
         generation++;
 
         add_pending();
-
     }
 
     float novelty_histogram(noveltyitem* item)
@@ -578,7 +596,6 @@ public:
         }
         if (len<ARCHIVE_SEED_AMOUNT && NEAT::archive)
         {
-            item->age=1.0;
             add_novel_item(item);
         }
         else
@@ -592,13 +609,7 @@ public:
             {
                 float term = novelties[i].first;
                 float w = 1.0;
-
-                if (ageSmooth)
-                {
-                    float age=(novelties[i].second)->age;
-                    w=1.0-pow((float)0.95,age);
-                }
-                
+		
 		sum+=term*w;
                 weight+=w;
                 

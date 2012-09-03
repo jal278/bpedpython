@@ -57,6 +57,9 @@ int main(int argc, char **argv) {
   SwitchArg extinction("","extinct","Turn on random extinctions",false);
   cmd.add(extinction);
 
+  SwitchArg alpsmode("","alps","ALPs-type dealie",false);
+  cmd.add(alpsmode);
+
   SwitchArg goal_attract("","goalnotsticky","Goal is not attractor",false);
   cmd.add(goal_attract);
 
@@ -184,10 +187,13 @@ return 0;
       p = biped_novelty_realtime(filename,mazename,param,startgenes,true);
  }
 }
-else
-{
+else if(alpsmode.getValue()) {
+
  maze_alps(filename,mazename,param,startgenes,1000,noveltySwitch.getValue());
  
+}
+else
+{
  if(!biped) 
  p = maze_generational(filename,mazename,param,startgenes,1000,noveltySwitch.getValue());
  else

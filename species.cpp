@@ -83,8 +83,6 @@ double Species::estimate_average() {
     	 std::vector<Organism*>::iterator curorg;
 
 
-	std::vector<Organism*> elig_orgs; //This list contains the eligible organisms (KEN)
-
 	int poolsize;  //The number of Organisms in the old generation
 
 	int orgnum;  //Random variable
@@ -109,13 +107,7 @@ double Species::estimate_average() {
 
 	double mut_power=NEAT::weight_mut_power;
 
-	//Roulette wheel variables
-	double total_fitness=0.0;
-	double marble;  //The marble will have a number between 0 and total_fitness
-	double spin;  //Fitness total while the wheel is spinning
-
 	rank(); //Make sure organisms are ordered by rank
-
 
 	//Only choose from among the top ranked orgs
 	poolsize=(organisms.size() - 1) * NEAT::survival_thresh;
@@ -307,7 +299,7 @@ double Species::estimate_average() {
 
 	}
        
-
+	
   	baby->age=mom->age+1;
         if(mate_baby)
 		if(dad->age>mom->age)
@@ -696,7 +688,6 @@ double Species::estimate_average() {
 
 	baby->mut_struct_baby=mut_struct_baby;
 	baby->mate_baby=mate_baby;
-	
         baby->age=mom->age+1;
         if(mate_baby)
 		if(dad->age>mom->age)

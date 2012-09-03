@@ -24,7 +24,6 @@ namespace NEAT {
 
 	class Species;
 	class Organism;
-
         double genotypic_compatibility(Organism* x,Organism* y);
         double behavioral_compatibility(Organism* x,Organism* y);
  	typedef noveltyitem* (*evaluatorfunc)(Organism*,data_record*);
@@ -44,8 +43,10 @@ namespace NEAT {
 
 	public:
 	float avgage;
+	void setclean(bool clean);
 	//added for statistics
  	void rebuild();
+        static Organism *reproduce_simple(vector<Organism*> organisms,int generation, Population *pop);
         Genome* start_genome; 
         noveltyitem* (*evaluator)(Organism*,data_record*);
         double (*compatibility)(Organism*,Organism*);

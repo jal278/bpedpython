@@ -4,23 +4,31 @@ class population_state {
  public:
 
   population_state(Population* _pop,bool _n,noveltyarchive* _arc) {
+   promote=NULL;
    pop=_pop;
    novelty=_n;
    archive=_arc;
    best_fitness=0;
+   max_age=-1;
    best_secondary = -100000.0;
+   mc_met=false;
   }
  
- 
+  bool mc_met; 
   double best_fitness; 
   double best_secondary; 
   int max_age; 
   noveltyarchive* archive;
   Population* pop;
+  population_state* promote;
   data_rec Record;
   vector<Organism*> measure_pop;
   bool novelty;
-
+  void reset() {
+	mc_met=false;
+	clear_measure_pop();
+	archive->reset();
+  }
   void clear_measure_pop() {
   vector<Organism*>::iterator curorg;
  for (curorg=measure_pop.begin(); curorg!=measure_pop.end(); curorg++) delete (*curorg);

@@ -18,13 +18,16 @@ class alps {
   bool novelty;
   int popsize;
   plot ageplot;
+  plot fitnessplot;
+  plot behaviorplot;
+  plot paretoplot;
   noveltyarchive *protoarc;
   Genome* start_genome;
   population_state* layers[ALPS_MAX_LAYERS];
   evaluatorfunc evalf;
 
   vector< vector< float > > age_record;
-
+  vector< vector< float > > fitness_record;
   alps(int _layers, int _scale,Genome* sg,population_state* initial,long maxevals=1000000) {
    start_genome =sg->duplicate(0);
    scale=_scale;
@@ -33,6 +36,8 @@ class alps {
    generation=0;
    novelty=initial->novelty;
    protoarc=new noveltyarchive(initial->archive);
+   protoarc->neighbors=40;
+   protoarc->localneighbors=40;
    evalf=initial->pop->evaluator;
    layers[0]=initial;
    layers[0]->max_age=scale;
@@ -41,33 +46,55 @@ class alps {
    popsize=initial->pop->organisms.size();
    vector<float> k;
    age_record.push_back(k);
-
+   fitness_record.push_back(k);
   }
 
  void update_layer_cnt() {
    layer_ceiling = clayers*clayers*scale;
   }
 
+ Organism* reproduce(population_state* from,population_state* to) {
+  Organism* baby;
+  Population::reproduce_simple(from->measure_pop,0,to->pop);
+  return baby;
+ }
+
  void reproduce_alps(population_state* r,population_state* bef,population_state* aft,int psize,bool onlybefore=false) {
   int added=0;
+  r->pop->setclean(false);
+  vector<Organism*> to_add;
 
   while(added<psize) {  
    Organism* baby;
 
-   if(!onlybefore &&(bef==NULL || randfloat()<0.5))
+   if(!onlybefore &&(bef==NULL || randfloat()<0.5)) 
+	//baby=reproduce(r->pop->species[0],r);
 	baby=r->pop->species[0]->reproduce_simple(0,r->pop);
    else {
+	//baby=reproduce(bef,r);
         baby=bef->pop->species[0]->reproduce_simple(0,r->pop);    
    }
+
+   baby->clean=false;
    evals++;
+
    if(baby->age < r->max_age) {
     added++;
-    r->pop->species[0]->add_Organism(baby);
-    baby->species=r->pop->species[0];  //Point baby to its species
+    to_add.push_back(baby); 
    }
    else
-    continue;
+   {
+    if(r->promote!=NULL)
+	r->promote->measure_pop.push_back(baby);
+    else {
+    	delete(baby);
+      }
+   }
 
+  }
+  for(vector<Organism*>::iterator it=to_add.begin();it!=to_add.end();it++) {
+    r->pop->species[0]->add_Organism((*it));
+    (*it)->species=r->pop->species[0];  //Point baby to its species
   }
   r->pop->rebuild();
  }
@@ -91,7 +118,7 @@ population_state* create_new_layer(int from_layer) {
  new_pop->set_evaluator(evalf);
 
  population_state* np = new population_state(new_pop,novelty,new_arc);
- np->max_age=layer_ceiling*2;
+ np->max_age=layer_ceiling;
  reproduce_alps(np,layers[clayers-1],NULL,psize,true);
  np->pop->evaluate_all();
  cout << "POPSIZE: " << np->pop->organisms.size();
@@ -107,7 +134,7 @@ void repopulate(population_state* r) {
 
   int psize = r->pop->organisms.size();
   int added=0;
-
+ 
   while(added<psize) {  
    		Organism* baby;
 
@@ -125,6 +152,7 @@ void repopulate(population_state* r) {
   r->pop->rebuild();
   r->pop->evaluate_all();
   evals+=r->pop->organisms.size();
+  r->reset();
 } 
 
 
@@ -135,19 +163,52 @@ void do_alps() {
   cout << "layers " << clayers << " ceiling" << layer_ceiling << endl; 
  //reproduce layers
   for(int i=0;i<clayers;i++) {
+   layers[i]->best_fitness = 0;
+
    maze_generational_epoch(layers[i],generation);
    age_record[i].push_back(layers[i]->pop->avgage);
+   fitness_record[i].push_back(layers[i]->best_fitness);
+  
    reproduce_layer(i);
+   //layers[i]->archive->increment_age(layers[i]->max_age);
+   cout << "Layer " << i << ":" << layers[i]->mc_met << endl;
+   cout << "evals: " << evals << endl;
   }
-  ageplot.plot_data(age_record);
+
+  vector< vector< float > > pareto;
+  vector< vector< float > > behaviors;
+  for(int i=0;i<clayers;i++) {
+   vector<Organism*>::iterator org;
+	vector<float> collect;
+	vector<float> pcollect;
+    for(org=layers[i]->measure_pop.begin();org!=layers[i]->measure_pop.end();org++)
+      {
+	int sz=(*org)->noveltypoint->data[0].size();
+	collect.push_back((*org)->noveltypoint->data[0][sz-2]);
+	collect.push_back((*org)->noveltypoint->data[0][sz-1]);
+	pcollect.push_back((*org)->noveltypoint->novelty);
+	pcollect.push_back((*org)->noveltypoint->genodiv);
+      }
+    pareto.push_back(pcollect);
+    behaviors.push_back(collect);
+  }
+  paretoplot.plot_data_2d(pareto);
+  behaviorplot.plot_data_2d(behaviors);
+  //ageplot.plot_data(age_record,"lines");
+  //fitnessplot.plot_data(fitness_record,"lines");
+
   //if time to add new layer, create if from previous layer
   if(clayers<max_layers && ((generation+1)==layer_ceiling)) {
     cout << "Adding layer " << clayers << endl;
     //create new layer, set age limit, etc
     layers[clayers]=create_new_layer(clayers);
+    layers[clayers-1]->promote=layers[clayers];
+    if(clayers==(max_layers-1))
+	layers[clayers]->max_age=10000000;
     clayers++;
     vector<float> k;
     age_record.push_back(k);
+    fitness_record.push_back(k);
     update_layer_cnt();
    
   } 
@@ -156,7 +217,6 @@ void do_alps() {
   if((generation+1)%scale==0) {
 	cout << "regenerating first layer" << endl;
 	repopulate(layers[0]);
-        layers[0]->clear_measure_pop();	
   }
 
   generation++;
