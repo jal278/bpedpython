@@ -43,7 +43,7 @@ bool age_objective=false;
 bool population_dirty=false;
 
 static bool extinction=true;
-
+bool get_age_objective() { return age_objective; }
 void set_age_objective(bool ao) { age_objective=ao; }
 void set_extinction(bool _ext) {
     extinction=_ext;
@@ -1427,7 +1427,7 @@ else
 Population *maze_alps(char* output_dir,const char* mazefile,int param, const char *genes, int gens, bool novelty) {
     population_state* p_state = create_maze_popstate(output_dir,mazefile,param,genes,gens,novelty);
     
-    alps k(5,20,p_state->pop->start_genome,p_state,maze_success_processing);
+    alps k(5,20,p_state->pop->start_genome,p_state,maze_success_processing,output_dir);
     k.do_alps();
 }
 
@@ -1526,7 +1526,7 @@ int maze_success_processing(population_state* pstate) {
     }
 
     if(logfile!=NULL)
-     (*logfile) << best_fitness << " " << best_secondary << endl;
+     (*logfile) << pstate->generation*NEAT::pop_size<< " " << best_fitness << " " << best_secondary << endl;
 
     if (win && !firstflag)
     {
@@ -1548,6 +1548,8 @@ int maze_generational_epoch(population_state* pstate,int generation) {
 }
 
 int generalized_generational_epoch(population_state* pstate,int generation,successfunc success_processing) {
+    pstate->generation++;
+
     bool novelty = pstate->novelty;
     noveltyarchive& archive = *pstate->archive;
     data_rec& Record = pstate->Record;
@@ -1610,7 +1612,6 @@ int generalized_generational_epoch(population_state* pstate,int generation,succe
 
 	pop->print_divtotal();
 
-	#define PLOT_ON
 	#ifdef PLOT_ON
 	if(false) {
 	vector<float> x,y,z;

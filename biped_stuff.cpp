@@ -289,7 +289,6 @@ dReal evaluate_controller(Controller* controller,noveltyitem* ni,data_record* re
         //ni->time=time;
         ni->novelty_scale = 1.0;
         ni->data.push_back(k);
-        ni->secondary=0; //time; //fitness;
     }
 
     if (record!=NULL)
@@ -320,6 +319,10 @@ noveltyitem* biped_evaluate(NEAT::Organism *org,data_record* data)
     //if (new_item->fitness < 2.5) new_item->viable=false;
     //else new_item->viable=true;
     new_item->viable=true;
+        if(get_age_objective())	
+        new_item->secondary=-org->age; //time; //fitness;
+	else
+        new_item->secondary=0; //time; //fitness;
 
     delete cont;
 
@@ -733,7 +736,7 @@ file << endl;
 Population *biped_alps(char* output_dir, const char *genes, int gens, bool novelty) {
     population_state* p_state = create_biped_popstate(output_dir,genes,gens,novelty);
     
-    alps k(5,20,p_state->pop->start_genome,p_state,biped_success_processing);
+    alps k(5,20,p_state->pop->start_genome,p_state,biped_success_processing,output_dir);
     k.do_alps();
 }
 
@@ -818,11 +821,11 @@ int biped_success_processing(population_state* pstate) {
     for (curorg=(pop->organisms).begin(); curorg!=(pop->organisms).end(); ++curorg) {
         if ((*curorg)->noveltypoint->fitness > best_fitness)
         {
-            best_fitness = (*curorg)->noveltypoint->fitness;
+                best_fitness = (*curorg)->noveltypoint->fitness;
 		cout << "NEWBEST: " << best_fitness << endl;
                 char filename[100];
                 sprintf(filename,"%s_winner", output_dir);
-                (*curorg)->print_to_file(filename);
+                //(*curorg)->print_to_file(filename);
         }
 
         indiv_counter++;
@@ -838,7 +841,8 @@ int biped_success_processing(population_state* pstate) {
     }
 
     if(logfile!=NULL)
-     (*logfile) << best_fitness << " " << best_secondary << endl;
+     (*logfile) << pstate->generation*NEAT::pop_size<< " " << best_fitness << " " << best_secondary << endl;
+     //(*logfile) << best_fitness << " " << best_secondary << endl;
 
 }
 

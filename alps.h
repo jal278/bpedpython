@@ -5,6 +5,8 @@
 #include "population.h"
 #include "population_state.h"
 #include "graph.h"
+#include <iostream>
+#include <fstream>
 #define ALPS_MAX_LAYERS 10
 class alps {
 
@@ -16,6 +18,8 @@ class alps {
   int clayers;
   int layer_ceiling;
   bool novelty;
+  long maxevals;
+  float best_fitness;
   int popsize;
   plot ageplot;
   plot fitnessplot;
@@ -25,13 +29,21 @@ class alps {
   Genome* start_genome;
   population_state* layers[ALPS_MAX_LAYERS];
   evaluatorfunc evalf;
-
+  const char* outname;
+  ofstream* logfile;
   vector< vector< float > > age_record;
   vector< vector< float > > fitness_record;
   epochfunc generation_func;
   successfunc success_func;
-  alps(int _layers, int _scale,Genome* sg,population_state* initial,successfunc sf, long maxevals=1000000) {
+  alps(int _layers, int _scale,Genome* sg,population_state* initial,successfunc sf, const char* outputdir,long _maxevals=1000000) {
+   outname=outputdir;
+   char logname[100]; 
+   maxevals=_maxevals;
+   sprintf(logname,"%s_log.txt",outputdir);
+    logfile=new ofstream(logname);
+
    success_func = sf;
+   best_fitness=0;
    start_genome =sg->duplicate(0);
    scale=_scale;
    max_layers=_layers;
@@ -161,7 +173,7 @@ void repopulate(population_state* r) {
 
 void do_alps() {
   
- while(true) {
+ while(evals<maxevals) {
   cout << "alps generation " << generation << endl;
   cout << "layers " << clayers << " ceiling" << layer_ceiling << endl; 
  //reproduce layers
@@ -171,12 +183,14 @@ void do_alps() {
    generalized_generational_epoch(layers[i],generation,success_func);
    age_record[i].push_back(layers[i]->pop->avgage);
    fitness_record[i].push_back(layers[i]->best_fitness);
-  
+   if(layers[i]->best_fitness > best_fitness)
+    best_fitness=layers[i]->best_fitness;
    reproduce_layer(i);
    //layers[i]->archive->increment_age(layers[i]->max_age);
    cout << "Layer " << i << ":" << layers[i]->mc_met << endl;
    cout << "evals: " << evals << endl;
   }
+   (*logfile) << evals << " " << best_fitness << endl;
 
   vector< vector< float > > pareto;
   vector< vector< float > > behaviors;
@@ -195,10 +209,12 @@ void do_alps() {
     pareto.push_back(pcollect);
     behaviors.push_back(collect);
   }
+  #ifdef PLOT_ON
   paretoplot.plot_data_2d(pareto);
   behaviorplot.plot_data_2d(behaviors);
   //ageplot.plot_data(age_record,"lines");
   //fitnessplot.plot_data(fitness_record,"lines");
+  #endif
 
   //if time to add new layer, create if from previous layer
   if(clayers<max_layers && ((generation+1)==layer_ceiling)) {

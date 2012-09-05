@@ -18,7 +18,7 @@
 #define SNUM 0.0000001
 
 #define ARCHIVE_SEED_AMOUNT 1
-
+bool get_age_objective();
 inline float scale(float lo, float hi, float x)
 {
     if (x<lo)

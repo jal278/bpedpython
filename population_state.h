@@ -12,12 +12,14 @@ class population_state {
    max_age=-1;
    best_secondary = -100000.0;
    mc_met=false;
+   generation=0;
   }
  
   bool mc_met; 
   double best_fitness; 
   double best_secondary; 
-  int max_age; 
+  int max_age;
+  int generation; 
   noveltyarchive* archive;
   Population* pop;
   population_state* promote;

@@ -189,14 +189,14 @@ return 0;
 }
 else if(alpsmode.getValue()) {
 if(!biped)
- maze_alps(filename,mazename,param,startgenes,1000,noveltySwitch.getValue());
+ maze_alps(filename,mazename,param,startgenes,2000,noveltySwitch.getValue());
 else
  biped_alps(filename,startgenes,2000,noveltySwitch.getValue());
 }
 else
 {
  if(!biped) 
- p = maze_generational(filename,mazename,param,startgenes,1000,noveltySwitch.getValue());
+ p = maze_generational(filename,mazename,param,startgenes,2000,noveltySwitch.getValue());
  else
  p = biped_generational(filename,startgenes,2000,noveltySwitch.getValue());
 }
