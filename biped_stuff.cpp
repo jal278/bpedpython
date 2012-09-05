@@ -289,7 +289,7 @@ dReal evaluate_controller(Controller* controller,noveltyitem* ni,data_record* re
         //ni->time=time;
         ni->novelty_scale = 1.0;
         ni->data.push_back(k);
-        ni->secondary=time; //fitness;
+        ni->secondary=0; //time; //fitness;
     }
 
     if (record!=NULL)
@@ -316,9 +316,11 @@ noveltyitem* biped_evaluate(NEAT::Organism *org,data_record* data)
     CTRNNController* cont = new CTRNNController(org->net,org->gnome);
     new_item->fitness=evaluate_controller(cont,new_item,data);
     org->fitness=new_item->fitness;
-    new_item->secondary = -org->age;
-    if (new_item->fitness < 2.5) new_item->viable=false;
-    else new_item->viable=true;
+    new_item->secondary = 0;
+    //if (new_item->fitness < 2.5) new_item->viable=false;
+    //else new_item->viable=true;
+    new_item->viable=true;
+
     delete cont;
 
     return new_item;
@@ -728,19 +730,38 @@ file << endl;
     }
 }
 
+Population *biped_alps(char* output_dir, const char *genes, int gens, bool novelty) {
+    population_state* p_state = create_biped_popstate(output_dir,genes,gens,novelty);
+    
+    alps k(5,20,p_state->pop->start_genome,p_state,biped_success_processing);
+    k.do_alps();
+}
+
 static int maxgens;
 static int push_back_size = 20;
-//Perform evolution on single pole balacing, for gens generations
+
 Population *biped_generational(char* outputdir,const char *genes, int gens,bool novelty)
 {
-    float archive_thresh=3.0;
-
     char logname[100];
     sprintf(logname,"%s_log.txt",outputdir);
     logfile=new ofstream(logname);
 
+    population_state* p_state = create_biped_popstate(outputdir,genes,gens,novelty);
+    for (int gen=0; gen<=maxgens; gen++)  { //WAS 1000
+        cout<<"Generation "<<gen<<endl;
+        bool win = biped_generational_epoch(p_state,gen);
+        p_state->pop->epoch(gen);
+    }
+    delete logfile;
+    return p_state->pop;
+
+}
+
+population_state* create_biped_popstate(char* outputdir,const char *genes, int gens,bool novelty) {
+    float archive_thresh=3.0;
+
     maxgens=gens;
-    noveltyarchive archive(archive_thresh,*walker_novelty_metric,true,push_back_size,minimal_criteria,true);
+    noveltyarchive *archive= new noveltyarchive(archive_thresh,*walker_novelty_metric,true,push_back_size,minimal_criteria,true);
 
 //if doing multiobjective, turn off speciation, TODO:maybe turn off elitism
     
@@ -781,33 +802,51 @@ Population *biped_generational(char* outputdir,const char *genes, int gens,bool 
 
 //set evaluator
     pop->set_evaluator(&biped_evaluate);
+    pop->evaluate_all();
+  return new population_state(pop,novelty,archive);
 //pop->set_compatibility(&behavioral_compatibility);
-    for (gen=0; gen<=maxgens; gen++)  { //WAS 1000
-        cout<<"Generation "<<gen<<endl;
-        bool win = biped_generational_epoch(&pop,gen,Record,archive,novelty);
+}
 
+int biped_success_processing(population_state* pstate) {
+    double& best_fitness = pstate->best_fitness;
+    double& best_secondary = pstate->best_secondary;
 
-        if (win)
+    vector<Organism*>::iterator curorg;
+    Population* pop = pstate->pop;
+    //Evaluate each organism on a test
+    int indiv_counter=0;
+    for (curorg=(pop->organisms).begin(); curorg!=(pop->organisms).end(); ++curorg) {
+        if ((*curorg)->noveltypoint->fitness > best_fitness)
         {
-            char fname[100];
-            sprintf(fname,"%s_wingen",output_dir);
-            ofstream winfile(fname);
-            winfile << gen << endl;
-            sprintf(fname,"%s_archive.dat",output_dir);
-            archive.Serialize(fname);
-            sprintf(fname,"%s_record.dat",output_dir);
-            Record.serialize(fname);
-//break;
+            best_fitness = (*curorg)->noveltypoint->fitness;
+		cout << "NEWBEST: " << best_fitness << endl;
+                char filename[100];
+                sprintf(filename,"%s_winner", output_dir);
+                (*curorg)->print_to_file(filename);
         }
 
+        indiv_counter++;
+        if ((*curorg)->noveltypoint->viable && !pstate->mc_met)
+		pstate->mc_met=true;
+	else if (pstate->novelty && !(*curorg)->noveltypoint->viable && minimal_criteria && pstate->mc_met)
+        {
+	    destroy_organism((*curorg));
+        }
+
+        if (!pstate->novelty)
+            (*curorg)->fitness = (*curorg)->noveltypoint->fitness;
     }
-    delete logfile;
-    delete pop;
-    return pop;
+
+    if(logfile!=NULL)
+     (*logfile) << best_fitness << " " << best_secondary << endl;
 
 }
 
-int biped_generational_epoch(Population **pop2,int generation,data_rec& Record, noveltyarchive& archive, bool novelty) {
+//int biped_generational_epoch(Population **pop2,int generation,data_rec& Record, noveltyarchive& archive, bool novelty) {
+int biped_generational_epoch(population_state* p, int gen) {
+ generalized_generational_epoch(p,gen,&biped_success_processing); 
+}
+/*
     Population* pop= *pop2;
     vector<Organism*>::iterator curorg;
     vector<Species*>::iterator curspecies;
@@ -885,12 +924,6 @@ if(!speciation)
 //TODO: PUT BACK IN (to fix record.dat...)
 //Record.add_new(newrec);
         indiv_counter++;
-        /*
-        if((*curorg)->noveltypoint->viable)
-             cout << "viable..." << endl;
-        else
-             cout << "not viable..." << endl;
-        */
         if ( !(*curorg)->noveltypoint->viable && minimal_criteria)
         {
             (*curorg)->fitness = SNUM/1000.0;
@@ -948,12 +981,6 @@ if(!speciation)
         cout << "THRESHOLD:" << archive.get_threshold() << endl;
         archive.end_of_gen_steady(pop);
 //adjust novelty of infeasible individuals
-        /*
-        if(!newrec->ToRec[3] && novelty_measure != novelty_sample_free)
-        {
-        	(*curorg)->fitness = 0.00001;
-        }
-        */
     }
 
 
@@ -1025,3 +1052,4 @@ if(!speciation)
 
     return win;
 }
+*/

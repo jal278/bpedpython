@@ -1427,7 +1427,7 @@ else
 Population *maze_alps(char* output_dir,const char* mazefile,int param, const char *genes, int gens, bool novelty) {
     population_state* p_state = create_maze_popstate(output_dir,mazefile,param,genes,gens,novelty);
     
-    alps k(5,20,p_state->pop->start_genome,p_state);
+    alps k(5,20,p_state->pop->start_genome,p_state,maze_success_processing);
     k.do_alps();
 }
 
@@ -1544,7 +1544,10 @@ int maze_success_processing(population_state* pstate) {
 }
 
 int maze_generational_epoch(population_state* pstate,int generation) {
+ generalized_generational_epoch(pstate,generation,&maze_success_processing);
+}
 
+int generalized_generational_epoch(population_state* pstate,int generation,successfunc success_processing) {
     bool novelty = pstate->novelty;
     noveltyarchive& archive = *pstate->archive;
     data_rec& Record = pstate->Record;
@@ -1597,7 +1600,7 @@ int maze_generational_epoch(population_state* pstate,int generation) {
         }
     }
 
-    maze_success_processing(pstate);
+    success_processing(pstate);
 
     if (novelty)
     {
@@ -1607,20 +1610,23 @@ int maze_generational_epoch(population_state* pstate,int generation) {
 
 	pop->print_divtotal();
 
+	#define PLOT_ON
 	#ifdef PLOT_ON
 	if(false) {
 	vector<float> x,y,z;
 	pop->gather_objectives(&x,&y,&z);
-	//front_plot.plot_data(x,y,"p","Pareto front");
-	best_fits.push_back(pstate->best_fitness);
-	fitness_plot.plot_data(best_fits,"lines","Fitness");
+	front_plot.plot_data(x,z,"p","Pareto front");
+	//best_fits.push_back(pstate->best_fitness);
+	//fitness_plot.plot_data(best_fits,"lines","Fitness");
 
 	vector<float> xc;
 	vector<float> yc;
         for (curorg = (pop->organisms).begin(); curorg != pop->organisms.end(); ++curorg) {
-		if(NEAT::minim
-        	xc.push_back((*curorg)->noveltypoint->data[0][0]);
-		yc.push_back((*curorg)->noveltypoint->data[0][1]);
+		int sz=(*curorg)->noveltypoint->data[0].size();
+        	//xc.push_back((*curorg)->noveltypoint->data[0][sz-2]);
+		//yc.push_back((*curorg)->noveltypoint->data[0][sz-1]);
+        	xc.push_back((*curorg)->noveltypoint->data[0][sz-3]);
+		yc.push_back((*curorg)->noveltypoint->data[0][sz-2]);
 	}
 	behavior_plot.plot_data(xc,yc);
 

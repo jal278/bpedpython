@@ -28,7 +28,10 @@ class alps {
 
   vector< vector< float > > age_record;
   vector< vector< float > > fitness_record;
-  alps(int _layers, int _scale,Genome* sg,population_state* initial,long maxevals=1000000) {
+  epochfunc generation_func;
+  successfunc success_func;
+  alps(int _layers, int _scale,Genome* sg,population_state* initial,successfunc sf, long maxevals=1000000) {
+   success_func = sf;
    start_genome =sg->duplicate(0);
    scale=_scale;
    max_layers=_layers;
@@ -165,7 +168,7 @@ void do_alps() {
   for(int i=0;i<clayers;i++) {
    layers[i]->best_fitness = 0;
 
-   maze_generational_epoch(layers[i],generation);
+   generalized_generational_epoch(layers[i],generation,success_func);
    age_record[i].push_back(layers[i]->pop->avgage);
    fitness_record[i].push_back(layers[i]->best_fitness);
   

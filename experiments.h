@@ -45,7 +45,14 @@ void set_goal_attract(bool s);
 Population *maze_passive(char* outputdir,const char* mazefile,int par,const char* genes,bool novelty);
 Population *maze_alps(char* output_dir,const char* mazefile,int param, const char *genes, int gens, bool novelty); 
 Population *maze_generational(char* output_dir,const char* mazefile,int param, const char *genes, int gens, bool novelty); 
+typedef int (*successfunc)(population_state* ps);
+typedef int (*epochfunc)(population_state* ps,int generation,successfunc sf);
+
 int maze_generational_epoch(population_state *ps,int generation);
+int maze_success_processing(population_state* pstate);
+int generalized_generational_epoch(population_state* pstate,int generation,successfunc success_processing);
+void destroy_organism(Organism* curorg);
+
 //int maze_generational_epoch(Population **pop,int generation,data_rec& Record,noveltyarchive& archive,bool novelty);
 
 //Walker novelty steady-state 

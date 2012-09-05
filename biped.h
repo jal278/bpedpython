@@ -11,6 +11,7 @@
 #include "noveltyset.h"
 #include "datarec.h"
 #include <ode/ode.h>
+#include "alps.h"
 #define NF_COGSAMPSQ 1
 #define NF_RANDOM 2
 #define NF_TRAIT 4
@@ -24,7 +25,8 @@ void destroy_world();
 float walker_novelty_metric(noveltyitem* x,noveltyitem* y);
 
 Population *biped_generational(char* outputdir,const char *genes, int gens,bool novelty);
-int biped_generational_epoch(Population **pop2,int generation,data_rec& Record, noveltyarchive& archive, bool novelty);
+//int biped_generational_epoch(Population **pop2,int generation,data_rec& Record, noveltyarchive& archive, bool novelty);
+int biped_generational_epoch(population_state* p, int gen);
 
 int biped_novelty_realtime_loop(Population *pop,bool novelty);
 int biped_epoch(NEAT::Population *pop,bool novelty=false);
@@ -34,6 +36,10 @@ void evolvability_biped(Organism* org,char* fn,int* d=NULL,double *e=NULL,bool r
 	
 void biped_neat_initeval(NEAT::Population *pop,bool novelty=false);
 NEAT::Population *biped_neat_init(bool novelty=false);
+population_state* create_biped_popstate(char* outputdir,const char *genes, int gens,bool novelty);
+Population *biped_alps(char* output_dir, const char *genes, int gens, bool novelty);
+int biped_success_processing(population_state* pstate);
+
 
 noveltyitem* biped_evaluate(NEAT::Organism* org,data_record* data=NULL);
 dReal evaluate_controller(Controller* controller,noveltyitem* ni=NULL,data_record* record=NULL,bool log=false);

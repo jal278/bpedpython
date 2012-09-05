@@ -188,9 +188,10 @@ return 0;
  }
 }
 else if(alpsmode.getValue()) {
-
+if(!biped)
  maze_alps(filename,mazename,param,startgenes,1000,noveltySwitch.getValue());
- 
+else
+ biped_alps(filename,startgenes,2000,noveltySwitch.getValue());
 }
 else
 {
