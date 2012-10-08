@@ -1566,7 +1566,7 @@ int generalized_generational_epoch(population_state* pstate,int generation,succe
 	//if using alps-style aging
 	if(pstate->max_age!=-1) 
 	for (curorg=(measure_pop.begin());curorg!=measure_pop.end();++curorg) {
-    //       (*curorg)->age++;	
+           (*curorg)->age++;	
 	  //if too old, delete
 	  if((*curorg)->age > pstate->max_age) {
 			deadorg=curorg;
