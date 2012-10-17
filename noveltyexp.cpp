@@ -35,14 +35,16 @@ using namespace std;
 enum novelty_measure_type { novelty_sample, novelty_accum, novelty_sample_free };
 static novelty_measure_type novelty_measure = novelty_sample;
 
-enum fitness_measure_type { fitness_goal, fitness_drift, fitness_std,fitness_rnd,fitness_spin,fitness_changegoal,fitness_collisions };
+enum fitness_measure_type { fitness_goal, fitness_drift, fitness_std,fitness_rnd,fitness_spin,fitness_changegoal,fitness_collisions,fitness_reachone };
 static fitness_measure_type fitness_measure = fitness_goal;
-
-static bool mc_reach_onepoint=true;
+static bool mc_no_collision=false;
+static bool mc_reach_onepoint=false;
 bool age_objective=false;
 bool population_dirty=false;
 
 static bool extinction=true;
+bool set_no_collision(bool no) { mc_no_collision=no; }
+bool set_reach_onepoint(bool ro) { mc_reach_onepoint=ro; }
 bool get_age_objective() { return age_objective; }
 void set_age_objective(bool ao) { age_objective=ao; }
 void set_extinction(bool _ext) {
@@ -181,6 +183,8 @@ void set_seed(string s)
 
 void set_fit_measure(string m)
 {
+    if (m=="reachone")
+	fitness_measure=fitness_reachone;
     if (m=="rnd")
         fitness_measure=fitness_rnd;
     if (m=="std")
@@ -1054,7 +1058,14 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record,En
             fitness=SNUM/1000.0;
         }
     }
-
+    if (fitness_measure == fitness_reachone) {
+       fitness=SNUM;
+       float mod=500.00-newenv->closest_to_target;
+       if(mod<0)
+        mod=0;
+       fitness+=mod;
+    }
+ 
     if (fitness_measure == fitness_std)
     {
         fitness=SNUM;
@@ -1295,7 +1306,7 @@ noveltyitem* maze_novelty_map(Organism *org,data_record* record)
 			if(age_objective) 
 			 new_item->secondary= -org->age;
 			else
-			 new_item->secondary=0; //new_item->fitness; //-org->age;
+			 new_item->secondary=new_item->fitness; //-org->age;
 		}
                 //if(record->ToRec[5]==1)
                 //  new_item->viable=false;
@@ -1314,7 +1325,12 @@ noveltyitem* maze_novelty_map(Organism *org,data_record* record)
 
     if (record!=NULL)
     {
-        if (area_of_interest)
+	if (mc_no_collision) 
+	{
+          if(record->ToRec[5] < 0)
+		new_item->viable=false;
+	}
+        else if (area_of_interest)
         {
             if (!contained(record->ToRec[1],record->ToRec[2]))
             {

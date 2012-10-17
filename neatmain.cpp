@@ -62,6 +62,12 @@ int main(int argc, char **argv) {
 
   SwitchArg goal_attract("","goalnotsticky","Goal is not attractor",false);
   cmd.add(goal_attract);
+  
+  SwitchArg nocollide("","nocollide","Enforce collision MC",false);
+  cmd.add(nocollide);
+
+  SwitchArg reachone("","reachone","Enforce reaching one goal",false);
+  cmd.add(reachone);
 
   SwitchArg area_of_interest("","aoi","Enforce pruning of behavior space",false);
   cmd.add(area_of_interest);
@@ -144,7 +150,9 @@ int main(int argc, char **argv) {
   set_fit_measure(fit_measure.getValue());
   set_nov_measure(nov_measure.getValue());
   set_aoi(area_of_interest.getValue());
-   set_random_replace(remove_random.getValue());
+  set_no_collision(nocollide.getValue());
+  set_reach_onepoint(reachone.getValue());
+  set_random_replace(remove_random.getValue());
   cout << "Timesteps: " << time_steps.getValue() << endl;
   set_timesteps(time_steps.getValue());
 
@@ -167,10 +175,11 @@ enumerate_behaviors(mazename,netindex_val,filename,param);
 return 0;
 */
   
-  set_constraint_switch(constraintSwitch.getValue());
-  if(!generationalSwitch.getValue())
-{
+ set_constraint_switch(constraintSwitch.getValue());
 
+if(!generationalSwitch.getValue())
+{
+cout << "NONGENERATIONAL" << endl;
  if(!biped) {
   if(passive_switch.getValue()) 
       p = maze_passive(filename,mazename,param,startgenes,noveltySwitch.getValue());
