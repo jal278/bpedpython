@@ -860,8 +860,8 @@ mx=(*curorg)->noveltypoint->fitness; b=(*curorg); }
             weakfirst=true;
             //NEAT::evolvabilitytest=true; //TODO REMOVE LATER
             char filename[100];
-            sprintf(filename,"%srtgen_weakfirst",output_dir);
-            pop->print_to_file_by_species(filename);
+            sprintf(filename,"%s_%d_first",output_dir,indiv_counter);
+            new_org->print_to_file(filename);
             cout << "Maze weakly solved by indiv# " << indiv_counter << endl;
 //disable quit for now
             if (fitness_measure == fitness_goal && false)
