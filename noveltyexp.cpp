@@ -667,7 +667,7 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
     //Now create offspring one at a time, testing each offspring,
     // and replacing the worst with the new offspring if its better
     for
-    (offspring_count=0; offspring_count<NEAT::pop_size*2001; offspring_count++)
+    (offspring_count=0; offspring_count<NEAT::pop_size*1001; offspring_count++)
     {
 //fix compat_threshold, so no speciation...
 //      NEAT::compat_threshold = 1000000.0;
@@ -871,10 +871,11 @@ mx=(*curorg)->noveltypoint->fitness; b=(*curorg); }
         if (!firstflag && (newrec->ToRec[3]>=envList.size() && newrec->ToRec[4]>=envList.size())) {
             firstflag=true;
             char filename[100];
-            sprintf(filename,"%srtgen_first",output_dir);
-            pop->print_to_file_by_species(filename);
+            sprintf(filename,"%s_%d_first",output_dir,indiv_counter);
+             new_org->print_to_file(filename);
+            //pop->print_to_file_by_species(filename);
             cout << "Maze solved by indiv# " << indiv_counter << endl;
-            //break;
+            break;
         }
 
         //Remove the worst organism
