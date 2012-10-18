@@ -35,7 +35,7 @@ using namespace std;
 enum novelty_measure_type { novelty_sample, novelty_accum, novelty_sample_free };
 static novelty_measure_type novelty_measure = novelty_sample;
 
-enum fitness_measure_type { fitness_goal, fitness_drift, fitness_std,fitness_rnd,fitness_spin,fitness_changegoal,fitness_collisions,fitness_reachone };
+enum fitness_measure_type { fitness_goal, fitness_drift, fitness_std,fitness_rnd,fitness_spin,fitness_changegoal,fitness_collisions,fitness_reachone ,fitness_aoi};
 static fitness_measure_type fitness_measure = fitness_goal;
 static bool mc_no_collision=false;
 static bool mc_reach_onepoint=false;
@@ -199,6 +199,8 @@ void set_fit_measure(string m)
         fitness_measure=fitness_changegoal;
     if (m=="collisions")
         fitness_measure=fitness_collisions;
+    if (m=="aoi")
+	fitness_measure=fitness_aoi;
     cout << "Fitness measure " << fitness_measure << endl;
 }
 
@@ -860,7 +862,7 @@ mx=(*curorg)->noveltypoint->fitness; b=(*curorg); }
             weakfirst=true;
             //NEAT::evolvabilitytest=true; //TODO REMOVE LATER
             char filename[100];
-            sprintf(filename,"%s_%d_first",output_dir,indiv_counter);
+            sprintf(filename,"%s_%d_weakfirst",output_dir,indiv_counter);
             new_org->print_to_file(filename);
             cout << "Maze weakly solved by indiv# " << indiv_counter << endl;
 //disable quit for now
@@ -869,8 +871,9 @@ mx=(*curorg)->noveltypoint->fitness; b=(*curorg); }
         }
         //write out the first individual to solve maze
         if (!firstflag && (newrec->ToRec[3]>=envList.size() && newrec->ToRec[4]>=envList.size())) {
-         
-           if(!minimal_criteria || new_org->noveltypoint->viable) {
+        
+	//solution only when viable? 
+           if(new_org->noveltypoint->viable) {
             firstflag=true;
             char filename[100];
             sprintf(filename,"%s_%d_first",output_dir,indiv_counter);
@@ -1016,6 +1019,10 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record,En
         }
     }
     //calculate fitness of individual as closeness to target
+    if (fitness_measure == fitness_aoi) {
+       fitness = -contained_dist(newenv->hero.location.x,newenv->hero.location.y);
+    }
+
     if (fitness_measure == fitness_goal)
     {
         fitness=300.0 - newenv->distance_to_target(); //was 500 for MCNS
@@ -1140,6 +1147,21 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record,En
 
     delete newenv;
     return fitness;
+}
+
+float contained_dist(float x,float y) {
+ if(contained(x,y)) return 0.0;
+ float xd=0;
+ float yd=0;
+ if(x>200)
+  xd=(x-200);
+ else if(x<0)
+  xd= -x;
+ if(y>200)
+  yd=(y-200);
+ else if(y<0)
+  yd = -y;
+ return (xd*xd+yd*yd);
 }
 
 bool contained(float x,float y)
@@ -1470,6 +1492,7 @@ Population *maze_generational(char* outputdir,const char* mazefile,int param,con
 
         if (win)
         {
+	break;
         }
 
     }
@@ -1506,17 +1529,13 @@ int maze_success_processing(population_state* pstate) {
 //disable quit for now
         }
         //write out the first individual to solve maze
-        if (!firstflag && (newrec->ToRec[3]>=envList.size() && newrec->ToRec[4]>=envList.size())) {
-            char filename[100];
+        if (!firstflag && (newrec->ToRec[3]>=envList.size() && newrec->ToRec[4]>=envList.size()) && (*curorg)->noveltypoint->viable) {
+		
             cout << "Maze solved by indiv# " << indiv_counter << endl;
             //break;
-        }
-
-        if ((newrec->ToRec[3]>=envList.size())) { // && newrec->ToRec[4]>0.0)) {
-            if ((newrec->ToRec[4]>=envList.size())) {
                 (*curorg)->winner=true;
                 win=true;
-            }
+
             if (fitness_measure==fitness_goal) {
                 (*curorg)->winner=true;
                 win=true;
@@ -1554,13 +1573,13 @@ int maze_success_processing(population_state* pstate) {
             if ((*curorg)->winner) {
                 cout<<"WINNER IS #"<<((*curorg)->gnome)->genome_id<<endl;
                 char filename[100];
-                sprintf(filename,"%s_winner", output_dir);
+                sprintf(filename,"%s_%d_winner", output_dir,pstate->generation);
                 (*curorg)->print_to_file(filename);
             }
         }
 	firstflag=true;
     }
-    
+return win;    
 }
 
 int maze_generational_epoch(population_state* pstate,int generation) {

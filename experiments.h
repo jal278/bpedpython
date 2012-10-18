@@ -26,6 +26,9 @@ using namespace NEAT;
 void enumerate_behaviors(const char* name,long long parm,const char* outname,int count);
 void mutate_genome(Genome* new_genome,bool traits=false);
 
+float contained_dist(float x,float y);
+bool contained(float x,float y);
+
 void set_age_objective(bool ao); 
 void set_evaluate(bool val);
 void set_extinction(bool _ext);
