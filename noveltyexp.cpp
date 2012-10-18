@@ -869,6 +869,8 @@ mx=(*curorg)->noveltypoint->fitness; b=(*curorg); }
         }
         //write out the first individual to solve maze
         if (!firstflag && (newrec->ToRec[3]>=envList.size() && newrec->ToRec[4]>=envList.size())) {
+         
+           if(!minimal_criteria || new_org->noveltypoint->viable) {
             firstflag=true;
             char filename[100];
             sprintf(filename,"%s_%d_first",output_dir,indiv_counter);
@@ -876,6 +878,7 @@ mx=(*curorg)->noveltypoint->fitness; b=(*curorg); }
             //pop->print_to_file_by_species(filename);
             cout << "Maze solved by indiv# " << indiv_counter << endl;
             break;
+           }
         }
 
         //Remove the worst organism
