@@ -1,0 +1,1 @@
+open_hard_maze.txt
