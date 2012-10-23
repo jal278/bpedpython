@@ -1288,18 +1288,6 @@ noveltyitem* maze_novelty_map(Organism *org,data_record* record)
 
     new_item->viable=true;
 
-    if (record!=NULL && minimal_criteria)
-        for (int x=0; x<mcList.size(); x++)
-        {
-            record->ToRec[3]=0;
-            mazesim(org->net,gather,record,mcList[x]);
-            if (!record->ToRec[3]) {
-                new_item->viable=false;
-                // cout << "not viable..." << endl;
-                break;
-            }
-            //cout << "viable..." << endl;
-        }
 
     gather.clear();
     if (record!=NULL) {
@@ -1327,15 +1315,12 @@ noveltyitem* maze_novelty_map(Organism *org,data_record* record)
                 constraint_vector.push_back(record->ToRec[3]-c1old);
                 constraint_vector.push_back(record->ToRec[4]-c2old);
                 c1old=record->ToRec[3];
-                //new_item->secondary=record->ToRec[5];
-		if(new_item->viable) {
+		//if(new_item->viable) {
 			if(age_objective) 
 			 new_item->secondary= -org->age;
 			else
 			 new_item->secondary=new_item->fitness; //-org->age;
-		}
-                //if(record->ToRec[5]==1)
-                //  new_item->viable=false;
+		//}
             }
             else {
                 constraint_vector.push_back(0);
@@ -1382,6 +1367,7 @@ noveltyitem* maze_novelty_map(Organism *org,data_record* record)
     //keep track of highest fitness so far in record
     if (record!=NULL)
     {
+	/*
         record->ToRec[5]=new_item->viable;
         if (record->ToRec[3]>best)
         {
@@ -1389,6 +1375,7 @@ noveltyitem* maze_novelty_map(Organism *org,data_record* record)
             cout << "best: " << best << endl;
         }
         record->ToRec[RECSIZE-1]=highest_fitness;
+	*/
     }
 
     //push back novelty characterization
@@ -1530,8 +1517,10 @@ int maze_success_processing(population_state* pstate) {
         }
         //write out the first individual to solve maze
         if (!firstflag && (newrec->ToRec[3]>=envList.size() && newrec->ToRec[4]>=envList.size()) && (*curorg)->noveltypoint->viable) {
+	//cout << (*curorg)->noveltypoint->viable << endl;
 		
             cout << "Maze solved by indiv# " << indiv_counter << endl;
+	    cout << newrec->ToRec[5] << endl;
             //break;
                 (*curorg)->winner=true;
                 win=true;
