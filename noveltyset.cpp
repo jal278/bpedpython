@@ -245,7 +245,6 @@ void noveltyarchive::evaluate_individual(Organism* ind,vector<Organism*> pop,boo
 
                 //if(!minimal_criteria)
                 //   ind->noveltypoint->viable=true;
-
 		if((!minimal_criteria || ind->noveltypoint->viable) && add_to_novelty_archive(result))
 				add_novel_item(ind->noveltypoint);
 		}

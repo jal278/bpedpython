@@ -160,7 +160,7 @@ public:
      return dominates_global(k);
     }
  
-    #define GDTHRESH 1.0
+    #define GDTHRESH 100.0
     bool dominates_global(noveltyitem* k) {
  
      if (secondary < k->secondary || novelty < k->novelty

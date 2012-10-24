@@ -1319,7 +1319,7 @@ noveltyitem* maze_novelty_map(Organism *org,data_record* record)
 			if(age_objective) 
 			 new_item->secondary= -org->age;
 			else
-			 new_item->secondary=new_item->fitness; //-org->age;
+			 new_item->secondary=fitness; //-org->age;
 		//}
             }
             else {
@@ -1640,28 +1640,6 @@ int generalized_generational_epoch(population_state* pstate,int generation,succe
 
 	pop->print_divtotal();
 
-	#ifdef PLOT_ON
-	if(false) {
-	vector<float> x,y,z;
-	pop->gather_objectives(&x,&y,&z);
-	front_plot.plot_data(x,z,"p","Pareto front");
-	//best_fits.push_back(pstate->best_fitness);
-	//fitness_plot.plot_data(best_fits,"lines","Fitness");
-
-	vector<float> xc;
-	vector<float> yc;
-        for (curorg = (pop->organisms).begin(); curorg != pop->organisms.end(); ++curorg) {
-		int sz=(*curorg)->noveltypoint->data[0].size();
-        	//xc.push_back((*curorg)->noveltypoint->data[0][sz-2]);
-		//yc.push_back((*curorg)->noveltypoint->data[0][sz-1]);
-        	xc.push_back((*curorg)->noveltypoint->data[0][sz-3]);
-		yc.push_back((*curorg)->noveltypoint->data[0][sz-2]);
-	}
-	behavior_plot.plot_data(xc,yc);
-
-        }
-	#endif
-
 
         for (curorg=(pop->organisms).begin(); curorg!=(pop->organisms).end(); ++curorg) {
             if ( !(*curorg)->noveltypoint->viable && minimal_criteria)
@@ -1684,13 +1662,66 @@ int generalized_generational_epoch(population_state* pstate,int generation,succe
             int start=NEAT::pop_size; //measure_pop.size()/2;
             vector<Organism*>::iterator it;
             for (it=pop->organisms.begin()+start; it!=pop->organisms.end(); it++) {
+		cout << (*it)->noveltypoint->rank << endl;
 		(*it)->species->remove_org(*it);
                 delete (*it);
               }
 	      pop->organisms.erase(pop->organisms.begin()+start,pop->organisms.end());
           }
 	}
-     
+    
+
+	
+	#ifdef PLOT_ON
+	if(true) {
+	vector<float> x,y,z;
+	pop->gather_objectives(&x,&y,&z);
+	front_plot.plot_data(x,y,"p","Pareto front");
+	//best_fits.push_back(pstate->best_fitness);
+	//fitness_plot.plot_data(best_fits,"lines","Fitness");
+
+	/*
+	vector<float> xc;
+	vector<float> yc;
+        for (curorg = (pop->organisms).begin(); curorg != pop->organisms.end(); ++curorg) {
+		int sz=(*curorg)->noveltypoint->data[0].size();
+        	//xc.push_back((*curorg)->noveltypoint->data[0][sz-2]);
+		//yc.push_back((*curorg)->noveltypoint->data[0][sz-1]);
+		if((*curorg)->noveltypoint->viable) {
+        	xc.push_back((*curorg)->noveltypoint->data[0][sz-3]);
+		yc.push_back((*curorg)->noveltypoint->data[0][sz-2]);
+		}
+	}
+	behavior_plot.plot_data(xc,yc);
+
+        }
+	*/
+	vector<float> xc;
+	vector<float> yc;
+	float coltot=0.0;
+        for (curorg = (pop->organisms).begin(); curorg != pop->organisms.end(); ++curorg) {
+
+		coltot+=(*curorg)->datarec->ToRec[5];
+		int sz=(*curorg)->noveltypoint->data[0].size();
+		if((*curorg)->datarec->ToRec[5]>-5) {
+        	xc.push_back((*curorg)->noveltypoint->data[0][sz-2]);
+		xc.push_back((*curorg)->noveltypoint->data[0][sz-1]);
+		}
+		else {
+        	  yc.push_back((*curorg)->noveltypoint->data[0][sz-2]);
+		  yc.push_back((*curorg)->noveltypoint->data[0][sz-1]);
+ 		}
+	}
+	cout << "COLTOT: " << coltot << endl;
+	vector<vector <float> > blah;
+	blah.push_back(xc);
+	blah.push_back(yc);
+	behavior_plot.plot_data_2d(blah);
+
+        }
+	#endif
+
+ 
     char fn[100];
     sprintf(fn,"%sdist%d",output_dir,generation);
     if (NEAT::printdist)
