@@ -1662,7 +1662,6 @@ int generalized_generational_epoch(population_state* pstate,int generation,succe
             int start=NEAT::pop_size; //measure_pop.size()/2;
             vector<Organism*>::iterator it;
             for (it=pop->organisms.begin()+start; it!=pop->organisms.end(); it++) {
-		cout << (*it)->noveltypoint->rank << endl;
 		(*it)->species->remove_org(*it);
                 delete (*it);
               }
