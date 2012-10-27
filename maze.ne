@@ -10,7 +10,7 @@ mutdiff_coeff 3.0
 compat_thresh 4.0
 age_significance 1.0
 survival_thresh 0.4
-mutate_only_prob 0.3
+mutate_only_prob 1.0
 mutate_random_trait_prob 0.1
 mutate_link_trait_prob 0.1
 mutate_node_trait_prob 0.1

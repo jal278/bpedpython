@@ -337,10 +337,23 @@ void Population::print_divtotal() {
 	void Population::print_avg_age() {
 	double age=0.0;
 	double mx=0.0;
+	double gsize=0.0;
+	double mgsize=0.0;
  	int cnt=0;
-	 for (std::vector<Organism*>::iterator iter = organisms.begin(); iter != organisms.end(); ++iter) { cnt++; age+=(*iter)->age; if((*iter)->age>mx) mx=(*iter)->age;}
+	 for (std::vector<Organism*>::iterator iter = organisms.begin(); iter != organisms.end(); ++iter) { 
+int sz=(*iter)->gnome->genes.size();
+if(sz>mgsize) mgsize=sz;
+gsize+=sz;
+cnt++; 
+age+=(*iter)->age; 
+if((*iter)->age>mx) 
+mx=(*iter)->age;
+
+}
 	avgage=age/cnt;
+	double avgsize=gsize/cnt;
 	cout << "AvgAGE:" << mx << " " << age/cnt << endl;
+	cout << "AvgSIZE:" << mgsize << " "<< avgsize << endl;
 }
         void Population::evaluate_organism(Organism* org) {
                    data_record* newrec=new data_record();

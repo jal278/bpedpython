@@ -1,3 +1,5 @@
+//#include <mcheck.h>
+//#include <google/heap-profiler.h>
 #include <iostream>
 #include <fstream>
 using namespace std;
@@ -17,7 +19,8 @@ static bool biped=false;
 CmdLine cmd("Maze evolution", ' ', "0.1");
 
 int main(int argc, char **argv) {
-   
+//HeapProfilerStart("profout");
+ // mtrace(); 
   ValueArg<string> maze("m","maze","Maze file",false,"medium_maze_list.txt","string");
   cmd.add(maze);
   
@@ -200,7 +203,7 @@ else if(alpsmode.getValue()) {
 if(!biped)
  maze_alps(filename,mazename,param,startgenes,2000,noveltySwitch.getValue());
 else
- biped_alps(filename,startgenes,2000,noveltySwitch.getValue());
+ biped_alps(filename,startgenes,50,noveltySwitch.getValue());
 }
 else
 {
@@ -209,6 +212,7 @@ else
  else
  p = biped_generational(filename,startgenes,2000,noveltySwitch.getValue());
 }
+//HeapProfilerStop();
 
   return(0);
  

@@ -17,6 +17,7 @@ double static roundfix(double unrounded)
 
 
 Genome::Genome(int id, std::vector<Trait*> t, std::vector<NNode*> n, std::vector<Gene*> g) {
+	Genome::increment_count(1);
 	genome_id=id;
 	traits=t;
 	nodes=n; 
@@ -32,6 +33,7 @@ Genome::Genome(int id, std::vector<Trait*> t, std::vector<NNode*> n, std::vector
 
 
 Genome::Genome(int id, std::vector<Trait*> t, std::vector<NNode*> n, std::vector<Link*> links) {
+	Genome::increment_count(1);
 	std::vector<Link*>::iterator curlink;
 	Gene *tempgene;
 	traits=t;
@@ -55,6 +57,7 @@ Genome::Genome(int id, std::vector<Trait*> t, std::vector<NNode*> n, std::vector
 
 Genome::Genome(const Genome& genome)
 {
+	Genome::increment_count(1);
 	genome_id = genome.genome_id;
 
 	std::vector<Trait*>::const_iterator curtrait;
@@ -118,6 +121,7 @@ Genome::Genome(const Genome& genome)
 }
 
 Genome::Genome(int id, std::ifstream &iFile) {
+	Genome::increment_count(1);
 
 	char curword[128]="";  //max word size of 128 characters
 	char curline[1024]=""; //max line size of 1024 characters
@@ -240,6 +244,7 @@ production=0; production_count=0.0;
 
 
 Genome::Genome(int new_id,int i, int o, int n,int nmax, bool r, double linkprob) {
+	Genome::increment_count(1);
 	int totalnodes;
 	bool *cm; //The connection matrix which will be randomized
 	bool *cmp; //Connection matrix pointer
@@ -399,6 +404,7 @@ Genome::Genome(int new_id,int i, int o, int n,int nmax, bool r, double linkprob)
 
 
 Genome::Genome(int num_in,int num_out,int num_hidden,int type) {
+	Genome::increment_count(1);
 
 	//Temporary lists of nodes
 	std::vector<NNode*> inputs;
@@ -640,7 +646,7 @@ Genome::~Genome() {
 	std::vector<Trait*>::iterator curtrait;
 	std::vector<NNode*>::iterator curnode;
 	std::vector<Gene*>::iterator curgene;
-
+	Genome::increment_count(-1);
 	for(curtrait=traits.begin();curtrait!=traits.end();++curtrait) {
 		delete (*curtrait);
 	}

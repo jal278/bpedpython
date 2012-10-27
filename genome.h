@@ -27,9 +27,13 @@ namespace NEAT {
 	//    link-building.
 
 	class Genome {
-
 	public:
-		int genome_id;
+	static int increment_count(int cnt) {
+		static int _cnt=0;
+		_cnt+=cnt;
+		return _cnt;
+	}	
+        	int genome_id;
 		int parent1,parent2,struct_change; //added by JAL
                 double production;
                 int production_count;             

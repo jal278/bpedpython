@@ -160,14 +160,14 @@ public:
      return dominates_global(k);
     }
  
-    #define GDTHRESH 100.0
+    #define GDTHRESH 20.0
     bool dominates_global(noveltyitem* k) {
  
      if (secondary < k->secondary || novelty < k->novelty
 	 || genodiv+GDTHRESH < k->genodiv)
         return false;
-     if (secondary > k->secondary || novelty > k->novelty
-     	|| genodiv > k->genodiv+GDTHRESH)
+     if (secondary > k->secondary || novelty > k->novelty)
+     //	|| genodiv > k->genodiv+GDTHRESH)
         return true;
 
       return false;
@@ -177,8 +177,8 @@ public:
     if (competition < k->competition || novelty < k->novelty
 	|| genodiv+GDTHRESH < k->genodiv)
         return false;
-     if (competition > k->competition || novelty > k->novelty
-	|| genodiv > k->genodiv+GDTHRESH)
+     if (competition > k->competition || novelty > k->novelty)
+	//|| genodiv > k->genodiv+GDTHRESH)
         return true;
 
       return false;
@@ -532,7 +532,7 @@ public:
     bool add_to_novelty_archive(float novelty)
     {
        
-        if (NEAT::archive && ((float)rand()/RAND_MAX)<(0.005))
+        if (NEAT::archive && ((float)rand()/RAND_MAX)<(0.001))
          return true;
         return false;
        
@@ -634,7 +634,7 @@ public:
         //genotypic diversity
         if(pop!=NULL) 
 	{
-         item->genodiv=diversity_avg_nn(item,pop);
+         item->genodiv=0; //diversity_avg_nn(item,pop);
         }
         //genotypic
 	if(neigh!=1)

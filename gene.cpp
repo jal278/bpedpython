@@ -6,6 +6,7 @@ using namespace std;
 using namespace NEAT;
 
 Gene::Gene(double w, NNode *inode, NNode *onode, bool recur, double innov, double mnum) {
+	increment_count(1);
 	lnk = new Link(w, inode, onode, recur);
 	innovation_num = innov;
 	mutation_num = mnum;
@@ -17,6 +18,7 @@ Gene::Gene(double w, NNode *inode, NNode *onode, bool recur, double innov, doubl
 
 
 Gene::Gene(Trait *tp,double w,NNode *inode,NNode *onode,bool recur,double innov,double mnum) {
+	increment_count(1);
 	lnk=new Link(tp,w,inode,onode,recur);
 	innovation_num=innov;
 	mutation_num=mnum;
@@ -27,6 +29,7 @@ Gene::Gene(Trait *tp,double w,NNode *inode,NNode *onode,bool recur,double innov,
 }
 
 Gene::Gene(Gene *g,Trait *tp,NNode *inode,NNode *onode) {
+	increment_count(1);
 	//cout<<"Trying to attach nodes: "<<inode<<" "<<onode<<endl;
 	lnk=new Link(tp,(g->lnk)->weight,inode,onode,(g->lnk)->is_recurrent);
 	innovation_num=g->innovation_num;
@@ -37,6 +40,7 @@ Gene::Gene(Gene *g,Trait *tp,NNode *inode,NNode *onode) {
 }
 
 Gene::Gene(const char *argline, std::vector<Trait*> &traits, std::vector<NNode*> &nodes) {
+	increment_count(1);
 	//Gene parameter holders
 	int traitnum;
 	int inodenum;
@@ -109,6 +113,7 @@ Gene::Gene(const char *argline, std::vector<Trait*> &traits, std::vector<NNode*>
 
 Gene::Gene(const Gene& gene)
 {
+	increment_count(1);
 	innovation_num = gene.innovation_num;
 	mutation_num = gene.mutation_num;
 	enable = gene.enable;
@@ -118,6 +123,7 @@ Gene::Gene(const Gene& gene)
 }
 
 Gene::~Gene() {
+	increment_count(-1);
 	delete lnk;
 }
 

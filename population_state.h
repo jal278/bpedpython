@@ -2,6 +2,13 @@
 #define POPSTATE_H
 class population_state {
  public:
+  ~population_state() {
+  clear_measure_pop();
+  if(pop)
+   delete pop;
+  if(archive)
+   delete archive;
+ }
 
   population_state(Population* _pop,bool _n,noveltyarchive* _arc) {
    promote=NULL;

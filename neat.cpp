@@ -1,5 +1,5 @@
 #include "neat.h"
-
+#include "genome.h"
 #include <fstream>
 #include <cmath>
 #include <cstring>
@@ -133,7 +133,6 @@ int NEAT::getUnitCount(const char *string, const char *set)
 }   
 
 bool NEAT::load_neat_params(const char *filename, bool output) {
-
     std::ifstream paramFile(filename);
 
 	if(!paramFile) {

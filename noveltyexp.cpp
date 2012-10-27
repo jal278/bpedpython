@@ -1449,7 +1449,7 @@ else
 //set evaluator
     pop->set_evaluator(&maze_novelty_map);
     pop->evaluate_all();
-
+    delete start_genome;
    return new population_state(pop,novelty,archive);
 }
 
@@ -1485,7 +1485,8 @@ Population *maze_generational(char* outputdir,const char* mazefile,int param,con
     }
 
     delete logfile;
-    return p_state->pop;
+    delete p_state;
+    return NULL;
 }
 
 void destroy_organism(Organism* curorg) {
@@ -1515,8 +1516,18 @@ int maze_success_processing(population_state* pstate) {
             cout << "Maze weakly solved by indiv# " << indiv_counter << endl;
 //disable quit for now
         }
+
+	
         //write out the first individual to solve maze
-        if (!firstflag && (newrec->ToRec[3]>=envList.size() && newrec->ToRec[4]>=envList.size()) && (*curorg)->noveltypoint->viable) {
+        if (!firstflag && (newrec->ToRec[3]>=envList.size() && newrec->ToRec[4]>=envList.size())) {
+          if ((*curorg)->noveltypoint->secondary >best_secondary) {
+                    best_secondary=(*curorg)->noveltypoint->secondary;
+                    cout << "NEW BEST SEC " << best_secondary << endl;
+
+                }
+      
+
+    if( (*curorg)->noveltypoint->viable) {
 	//cout << (*curorg)->noveltypoint->viable << endl;
 		
             cout << "Maze solved by indiv# " << indiv_counter << endl;
@@ -1535,6 +1546,7 @@ int maze_success_processing(population_state* pstate) {
                 }
             }
         }
+	}
         if ((*curorg)->noveltypoint->fitness > best_fitness)
         {
             best_fitness = (*curorg)->noveltypoint->fitness;
@@ -1576,7 +1588,7 @@ int maze_generational_epoch(population_state* pstate,int generation) {
 }
 
 int generalized_generational_epoch(population_state* pstate,int generation,successfunc success_processing) {
-    pstate->generation++;
+	pstate->generation++;
 
     bool novelty = pstate->novelty;
     noveltyarchive& archive = *pstate->archive;
@@ -1586,6 +1598,10 @@ int generalized_generational_epoch(population_state* pstate,int generation,succe
     vector<Organism*>::iterator curorg,deadorg;
     vector<Species*>::iterator curspecies;
     vector<Organism*>& measure_pop=pstate->measure_pop;
+    
+    cout << "#GENOMES:" << Genome::increment_count(0) << endl;
+    cout << "#GENES:" << Gene::increment_count(0) << endl;
+    cout << "ARCHIVESIZE: " << archive.get_set_size() << endl;
 
     int evolveupdate=100;
 
