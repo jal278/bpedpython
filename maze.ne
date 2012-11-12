@@ -7,7 +7,7 @@ recur_prob 0.15
 disjoint_coeff 1.0
 excess_coeff 1.0
 mutdiff_coeff 3.0
-compat_thresh 4.0
+compat_thresh 8.0
 age_significance 1.0
 survival_thresh 0.4
 mutate_only_prob 1.0
@@ -18,7 +18,7 @@ mutate_link_weights_prob 0.6
 mutate_toggle_enable_prob 0.1
 mutate_gene_reenable_prob 0.05
 mutate_add_node_prob 0.005
-mutate_add_link_prob 0.1
+mutate_add_link_prob 0.05
 interspecies_mate_rate 0.001
 mate_multipoint_prob 0.6
 mate_multipoint_avg_prob 0.4

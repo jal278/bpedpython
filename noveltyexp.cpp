@@ -35,7 +35,7 @@ using namespace std;
 enum novelty_measure_type { novelty_sample, novelty_accum, novelty_sample_free };
 static novelty_measure_type novelty_measure = novelty_sample;
 
-enum fitness_measure_type { fitness_goal, fitness_drift, fitness_std,fitness_rnd,fitness_spin,fitness_changegoal,fitness_collisions,fitness_reachone ,fitness_aoi};
+enum fitness_measure_type { fitness_goal, fitness_drift, fitness_std,fitness_rnd,fitness_spin,fitness_changegoal,fitness_collisions,fitness_reachone ,fitness_aoi,fitness_collgoal};
 static fitness_measure_type fitness_measure = fitness_goal;
 static bool mc_no_collision=false;
 static bool mc_reach_onepoint=false;
@@ -201,6 +201,8 @@ void set_fit_measure(string m)
         fitness_measure=fitness_collisions;
     if (m=="aoi")
 	fitness_measure=fitness_aoi;
+    if (m=="nocollide_goal")
+        fitness_measure=fitness_collgoal;
     cout << "Fitness measure " << fitness_measure << endl;
 }
 
@@ -1021,6 +1023,12 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record,En
     //calculate fitness of individual as closeness to target
     if (fitness_measure == fitness_aoi) {
        fitness = -contained_dist(newenv->hero.location.x,newenv->hero.location.y);
+    }
+
+    if (fitness_measure == fitness_collgoal) {
+      fitness=300 - newenv->distance_to_target();
+      fitness-=newenv->hero.collisions/4.0;
+      if (fitness<0.1) fitness=0.1;
     }
 
     if (fitness_measure == fitness_goal)
