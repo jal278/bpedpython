@@ -2,6 +2,8 @@
 
 #include <iostream>
 #include <sstream>
+#include <limits>
+#include <iomanip>
 using namespace std;
 using namespace NEAT;
 
@@ -130,6 +132,8 @@ Gene::~Gene() {
 
 void Gene::print_to_file(std::ofstream &outFile) {
   outFile<<"gene ";
+ outFile << std::scientific;
+ outFile << std::setprecision(std::numeric_limits<double>::digits10 + 1);
   //Start off with the trait number for this gene
   if ((lnk->linktrait)==0) outFile<<"0 ";
   else outFile<<((lnk->linktrait)->trait_id)<<" ";

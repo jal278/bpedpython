@@ -515,8 +515,8 @@ class Environment
 				cout << "OUTPUT ISNAN" << endl;	
 			
 			//why apply accelerations?
-			hero.ang_vel+=(o1-0.5)*1.0;
-			hero.speed+=(o2-0.5)*1.0;
+			//hero.ang_vel+=(o1-0.5)*1.0;
+			//hero.speed+=(o2-0.5)*1.0;
                         
                         //if(o1<0.2)
                         //  hero.ang_vel= -0.5;
@@ -525,8 +525,17 @@ class Environment
 			//if(o3>0.5)
 			//  hero.collide=true;
             //IF YOU WANT velocity instead of accel
-                        hero.ang_vel=(o1-0.5)*6.0;
-			hero.speed=(o2-0.5)*6.0;
+                        float new_ang_vel=(o1-0.5)*6.0;
+                        float new_speed=(o2-0.5)*6.0;
+			float d_ang = new_ang_vel-hero.ang_vel;
+			float d_speed= new_speed-hero.speed;
+		        
+			if(d_ang>=0.2) d_ang=0.2;
+			if(d_ang<=-0.2) d_ang=-0.2;
+			if(d_speed>=0.2) d_speed=0.2;
+			if(d_speed<=-0.2) d_speed=-0.2;	
+			hero.ang_vel+=d_ang; //(o1-0.5)*6.0;
+			hero.speed+=d_speed; //(o2-0.5)*6.0;
 			
 		        hero.total_spin+=fabs(hero.ang_vel);	
 			//constraints of speed & angular velocity

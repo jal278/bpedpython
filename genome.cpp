@@ -6,6 +6,7 @@
 #include <cstring>
 #include <sstream>
 
+#include <limits>
 using namespace NEAT;
 using namespace std;
 
@@ -915,7 +916,10 @@ void Genome::print_to_file(std::ostream &outFile) {
 	//char tempbuf[128];
 	//sprintf(tempbuf, "genomestart %d\n", genome_id);
 	//outFile.write(strlen(tempbuf), tempbuf);
-	outFile<< setprecision(10);
+outFile << std::scientific
+          << std::fixed
+          << std::setprecision(std::numeric_limits<double>::digits10 + 1);
+//	outFile<< setprecision(15);
     outFile<<"genomestart "<<genome_id<<std::endl;
 
 	//Output the traits
@@ -937,7 +941,8 @@ void Genome::print_to_file(std::ostream &outFile) {
 	//char tempbuf2[128];
 	//sprintf(tempbuf2, sizeof(tempbuf2), "genomeend %d\n", genome_id);
 	//outFile.write(strlen(tempbuf2), tempbuf2);
-    outFile << "genomeend " << genome_id << std::endl << std::endl << std::endl;
+    //outFile << "genomeend " << genome_id << std::endl << std::endl << std::endl;
+    outFile << "genomeend " << genome_id << std::endl;
 	//char tempbuf4[1024];
 	//sprintf(tempbuf4, sizeof(tempbuf4), "\n\n");
 	//outFile.write(strlen(tempbuf4), tempbuf4);
