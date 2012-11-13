@@ -105,6 +105,9 @@ int main(int argc, char **argv) {
   ValueArg<int> time_steps("","timesteps","Num Timesteps",false,400,"int");
   cmd.add(time_steps);
 
+  ValueArg<int> generation_arg("","gens","Num generations",false,2000,"int");
+  cmd.add(generation_arg);
+
   ValueArg<int> rng_seed("r","random_seed","Random Seed",false,-1,"int");
   cmd.add(rng_seed);
 
@@ -118,6 +121,7 @@ int main(int argc, char **argv) {
   char settingsname[100]="maze.ne";
   char startgenes[100]="mazestartgenes";
   int param;
+  int generations=generation_arg.getValue();
   NEAT::Population *p;
 
   //***********RANDOM SETUP***************//
@@ -145,8 +149,11 @@ int main(int argc, char **argv) {
 
   cout << "Maze: " << mazename << endl;
   cout << "Start genes: " << startgenes << endl;
-  
+  cout << "Generations: " << generations << endl; 
   set_age_objective(age_objective.getValue()); 
+  if(age_objective.getValue()) {
+   NEAT::fresh_genetic_prob=0.05;
+  }
   set_evaluate(evaluateSwitch.getValue());
   set_extinction(extinction.getValue());
   set_mcmaze(mcmaze.getValue());
@@ -208,9 +215,9 @@ else
 else
 {
  if(!biped) 
- p = maze_generational(filename,mazename,param,startgenes,2000,noveltySwitch.getValue());
+ p = maze_generational(filename,mazename,param,startgenes,generations,noveltySwitch.getValue());
  else
- p = biped_generational(filename,startgenes,2000,noveltySwitch.getValue());
+ p = biped_generational(filename,startgenes,generations,noveltySwitch.getValue());
 }
 //HeapProfilerStop();
 

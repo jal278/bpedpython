@@ -1588,11 +1588,14 @@ int maze_success_processing(population_state* pstate) {
         }
 	firstflag=true;
     }
-return win;    
+if(win)
+ return 1;
+return 0;
 }
 
 int maze_generational_epoch(population_state* pstate,int generation) {
- generalized_generational_epoch(pstate,generation,&maze_success_processing);
+ return 
+  generalized_generational_epoch(pstate,generation,&maze_success_processing);
 }
 
 int generalized_generational_epoch(population_state* pstate,int generation,successfunc success_processing) {
@@ -1654,7 +1657,9 @@ int generalized_generational_epoch(population_state* pstate,int generation,succe
         }
     }
 
-    success_processing(pstate);
+    int ret = success_processing(pstate);
+    if(ret!=0)
+     return 1;
 
     if (novelty)
     {
@@ -1780,6 +1785,6 @@ int generalized_generational_epoch(population_state* pstate,int generation,succe
     //Create the next generation
     pop->print_avg_age();
 
-    return false;
+    return 0;
 }
 
