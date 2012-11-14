@@ -1464,7 +1464,7 @@ else
 Population *maze_alps(char* output_dir,const char* mazefile,int param, const char *genes, int gens, bool novelty) {
     population_state* p_state = create_maze_popstate(output_dir,mazefile,param,genes,gens,novelty);
     
-    alps k(5,20,p_state->pop->start_genome,p_state,maze_success_processing,output_dir);
+    alps k(4,20,p_state->pop->start_genome,p_state,maze_success_processing,output_dir,gens*NEAT::pop_size);
     k.do_alps();
 }
 
@@ -1582,7 +1582,7 @@ int maze_success_processing(population_state* pstate) {
             if ((*curorg)->winner) {
                 cout<<"WINNER IS #"<<((*curorg)->gnome)->genome_id<<endl;
                 char filename[100];
-                sprintf(filename,"%s_%d_winner", output_dir,pstate->generation);
+                sprintf(filename,"%s_%d_first", output_dir,pstate->evals);
                 (*curorg)->print_to_file(filename);
             }
         }

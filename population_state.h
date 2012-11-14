@@ -12,6 +12,7 @@ class population_state {
 
   population_state(Population* _pop,bool _n,noveltyarchive* _arc) {
    promote=NULL;
+   evals=0;
    pop=_pop;
    novelty=_n;
    archive=_arc;
@@ -26,7 +27,8 @@ class population_state {
   double best_fitness; 
   double best_secondary; 
   int max_age;
-  int generation; 
+  int generation;
+  long evals; 
   noveltyarchive* archive;
   Population* pop;
   population_state* promote;

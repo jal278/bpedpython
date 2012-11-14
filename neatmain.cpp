@@ -151,7 +151,7 @@ int main(int argc, char **argv) {
   cout << "Start genes: " << startgenes << endl;
   cout << "Generations: " << generations << endl; 
   set_age_objective(age_objective.getValue()); 
-  if(age_objective.getValue()) {
+  if(age_objective.getValue() || alpsmode.getValue()) {
    NEAT::fresh_genetic_prob=0.05;
   }
   set_evaluate(evaluateSwitch.getValue());
@@ -208,7 +208,7 @@ cout << "NONGENERATIONAL" << endl;
 }
 else if(alpsmode.getValue()) {
 if(!biped)
- maze_alps(filename,mazename,param,startgenes,2000,noveltySwitch.getValue());
+ maze_alps(filename,mazename,param,startgenes,generations,noveltySwitch.getValue());
 else
  biped_alps(filename,startgenes,50,noveltySwitch.getValue());
 }

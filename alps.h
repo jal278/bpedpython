@@ -172,15 +172,19 @@ void repopulate(population_state* r) {
 
 
 void do_alps() {
-  
- while(evals<maxevals) {
+  bool success=false;
+ while(!success && evals<maxevals) {
   cout << "alps generation " << generation << endl;
   cout << "layers " << clayers << " ceiling" << layer_ceiling << endl; 
  //reproduce layers
   for(int i=0;i<clayers;i++) {
    layers[i]->best_fitness = 0;
-
-   generalized_generational_epoch(layers[i],generation,success_func);
+   layers[i]->evals=evals;
+   success=generalized_generational_epoch(layers[i],generation,success_func);
+   if (success) {
+ 	cout <<"SUCCESS" << endl;
+	break;
+   }
    age_record[i].push_back(layers[i]->pop->avgage);
    fitness_record[i].push_back(layers[i]->best_fitness);
    if(layers[i]->best_fitness > best_fitness)
