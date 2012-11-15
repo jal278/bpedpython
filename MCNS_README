@@ -1,0 +1,15 @@
+The program is built using SCons (http://www.scons.org/)
+
+Building the program should (ideally) be as simple as executing scons in the working directory
+
+However, one of the experiments (the biped experiment, which is a part of the package even though it doesn't pertain directly to MCNS) depends on open dynamics engine (http://www.ode.org/). So you can either install ode or remove the biped code (which is mainly in biped.h and biped_stuff.cpp). You will need to update the SConstruct file with where you installed ode for it to work.
+
+To run the unenclosed hard maze (i.e. the maze navigation experiment from the MCNS paper):
+
+./mazesim -m o_hard_maze_list.txt --aoi -f aoi --mcns -n -o [output directory]
+
+To run the two point maze:
+
+./mazesim -m twopoint_list.txt -m twopoint_list.txt --reachone --samples 3 -f reachone --mcns -n -o [output directory]
+
+I apologize in advance for the poor quality of research code that was designed only for my own consumption. The maze navigation code itself is more clean (maze.h) and it and the maze files (like open_hard_maze.txt and twopoint.txt) might be integrated into your own neuroevolution package.
