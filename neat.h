@@ -3,6 +3,7 @@
 
 #include <cstdlib>
 namespace NEAT {
+    extern double gravity;
     extern bool production;
     extern bool mut_control;
     extern bool multiobjective;

@@ -25,10 +25,10 @@ mate_multipoint_avg_prob 0.4
 mate_singlepoint_prob 0.0
 mate_only_prob 0.2
 recur_only_prob 0.5
-pop_size 100
+pop_size 500
 dropoff_age 1500
 newlink_tries 20
-print_every 100
+print_every 999
 babies_stolen 0
 num_runs 1
 time_const_mut_power 0.2

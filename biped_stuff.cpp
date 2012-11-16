@@ -174,7 +174,7 @@ void create_world(Controller* controller,bool log,bool bMoviePlay)
    float gravitysetting = -9.8 * (discrete/5.0);
    float discrete2 =  ((1.0-cc->genes->traits[0]->params[5]) * 4.0)+1.0; 
    //cout << "gravity: " << gravitysetting << endl;
-   gravitysetting= -9.8;
+   gravitysetting= -9.8 * NEAT::gravity;
    P_CONSTANT = 9.0;// * (discrete/3);
     dWorldSetGravity (world,0,0,gravitysetting);
     
@@ -459,7 +459,7 @@ int biped_novelty_realtime_loop(Population *pop,bool novelty) {
     //Now create offspring one at a time, testing each offspring,
     // and replacing the worst with the new offspring if its better
     for
-    (offspring_count=0; offspring_count<NEAT::pop_size*2001; offspring_count++)
+    (offspring_count=0; offspring_count<NEAT::pop_size*1001; offspring_count++)
     {
 //fix compat_threshold, so no speciation...
       //NEAT::compat_threshold = 1000000.0;

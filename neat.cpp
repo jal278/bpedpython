@@ -3,7 +3,7 @@
 #include <fstream>
 #include <cmath>
 #include <cstring>
-
+double NEAT::gravity=1.0;
 bool NEAT::production=false;
 bool NEAT::mut_control=false;
 bool NEAT::multiobjective=false;

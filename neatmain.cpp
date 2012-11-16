@@ -21,6 +21,9 @@ CmdLine cmd("Maze evolution", ' ', "0.1");
 int main(int argc, char **argv) {
 //HeapProfilerStart("profout");
  // mtrace(); 
+  ValueArg<float> grav("","gravity","Gravity setting",false,1.0,"float");
+  cmd.add(grav);
+
   ValueArg<string> maze("m","maze","Maze file",false,"medium_maze_list.txt","string");
   cmd.add(maze);
   
@@ -115,7 +118,6 @@ int main(int argc, char **argv) {
   cmd.add(netindex);
 
   cmd.parse(argc,argv);
-
   char mazename[100]="hard_maze_list.txt";
   char filename[100]="./runoutput_";
   char settingsname[100]="maze.ne";
@@ -139,6 +141,8 @@ int main(int argc, char **argv) {
 
   NEAT::load_neat_params(settingsname,true);
   
+  NEAT::gravity=grav.getValue();
+
   if(local_switch.getValue()) 
    NEAT::local_competition=true;
  
