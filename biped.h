@@ -416,9 +416,9 @@ static dReal ORIG_HEIGHT= (TORSO_RAD/2.0+ULEG_LEN+LLEG_LEN+FOOTZ_SZ);
 static dReal DENSITY=0.5;
 static dReal TORSO_DENSITY=1.0;
 static dReal FOOT_DENSITY=0.1;
-static dReal MAXTORQUE_KNEE= 5.0;
-static dReal MAXTORQUE_HIPMINOR= 5.0;
-static dReal MAXTORQUE_HIPMAJOR= 5.0;
+extern dReal MAXTORQUE_KNEE;//= 5.0;
+extern dReal MAXTORQUE_HIPMINOR;//= 5.0;
+extern dReal MAXTORQUE_HIPMAJOR;//= 5.0;
 extern dReal P_CONSTANT; //= 9.0;
 extern dReal D_CONSTANT; //= 0.0;
 
@@ -641,9 +641,40 @@ public:
         }
 
     }
-
+ void crossproduct(double* a,double *b,double *r) {
+     r[0]=a[1]*b[2]-a[2]*b[1];
+     r[1]=a[2]*b[0]-a[0]*b[2];
+     r[2]=a[0]*b[1]-a[1]*b[0];
+    }
+   
     virtual void Update(double timestep)
     {
+	int torso=6;
+	const dReal* res=dBodyGetAngularVel(bodies[torso]);
+	dVector3 p1;
+	dVector3 p2;
+	dVector3 cp;
+	 dBodyGetRelPointPos(bodies[torso],0,0,0,p1);
+	 dBodyGetRelPointPos(bodies[torso],0,1,0,p2);
+	for(int k=0;k<3;k++)
+	 p2[k]=p2[k]-p1[k];
+	
+	//cout << p2[0] << " " << p2[1] << " " << p2[2] << endl;
+	//dReal upVector[3]={.707,0,.707};	
+	//dReal upVector[3]={0.587,0,0.866};	
+	dReal upVector[3]={0.0,0,1.0};	
+	crossproduct(p2,upVector,cp);
+  	double u_factor=2.0 * (1.0-NEAT::gravity);
+	dReal utorque[3]={u_factor*cp[0],u_factor*cp[1],u_factor*cp[2]};
+	//cout << res[0] << " " << res[1] << " " << res[2] << endl;
+	dBodyAddTorque(bodies[torso],utorque[0],utorque[1],utorque[2]);
+  	double k_factor=-0.3 * (1.0-NEAT::gravity);
+	dReal damptorque[3]={k_factor*res[0],k_factor*res[1],k_factor*res[2]};
+
+        dBodyAddTorque(bodies[torso],damptorque[0],damptorque[1],damptorque[2]);
+        dBodyAddForce(bodies[torso],0,0,20.0*(1.0-NEAT::gravity));	
+
+
         Creature::Update(timestep);
         if (movie_play)
             return;

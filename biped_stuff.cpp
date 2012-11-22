@@ -27,6 +27,9 @@ extern bool population_dirty;
 extern char output_dir[30];
 extern char seed_name[40];
 
+dReal MAXTORQUE_KNEE= 5.0;
+dReal MAXTORQUE_HIPMINOR= 5.0;
+dReal MAXTORQUE_HIPMAJOR= 5.0;
 dReal P_CONSTANT=9.0;
 dReal D_CONSTANT=0.0;
 
@@ -174,8 +177,17 @@ void create_world(Controller* controller,bool log,bool bMoviePlay)
    float gravitysetting = -9.8 * (discrete/5.0);
    float discrete2 =  ((1.0-cc->genes->traits[0]->params[5]) * 4.0)+1.0; 
    //cout << "gravity: " << gravitysetting << endl;
+   gravitysetting=-9.8;
+   P_CONSTANT=9;
+
+/*
    gravitysetting= -9.8 * NEAT::gravity;
-   P_CONSTANT = 9.0;// * (discrete/3);
+   //P_CONSTANT = 9 ; //4.5 + 4.5 * NEAT::gravity;// * (discrete/3);
+   P_CONSTANT = 4.5 + 4.5 * NEAT::gravity;// * (discrete/3);
+   MAXTORQUE_KNEE= 2.5+2.5* NEAT::gravity; //5.0;
+   MAXTORQUE_HIPMINOR= 2.5+2.5*NEAT::gravity; //5.0;
+   MAXTORQUE_HIPMAJOR= 2.5+2.5*NEAT::gravity; //5.0;
+  */ 
     dWorldSetGravity (world,0,0,gravitysetting);
     
     floorplane = dCreatePlane (space,0,0,1, 0.0);
@@ -459,7 +471,7 @@ int biped_novelty_realtime_loop(Population *pop,bool novelty) {
     //Now create offspring one at a time, testing each offspring,
     // and replacing the worst with the new offspring if its better
     for
-    (offspring_count=0; offspring_count<NEAT::pop_size*1001; offspring_count++)
+    (offspring_count=0; offspring_count<NEAT::pop_size*2001; offspring_count++)
     {
 //fix compat_threshold, so no speciation...
       //NEAT::compat_threshold = 1000000.0;
