@@ -163,7 +163,7 @@ public:
     #define GDTHRESH 20.0
     bool dominates_global(noveltyitem* k) {
  
-     if (secondary < k->secondary || novelty < k->novelty
+     if (NEAT::mo_speciation && secondary < k->secondary || novelty < k->novelty
 	 || genodiv+GDTHRESH < k->genodiv)
         return false;
      if (secondary > k->secondary || novelty > k->novelty)
@@ -174,7 +174,7 @@ public:
      }
  
     bool dominates_local(noveltyitem* k) {
-    if (competition < k->competition || novelty < k->novelty
+    if (NEAT::mo_speciation && competition < k->competition || novelty < k->novelty
 	|| genodiv+GDTHRESH < k->genodiv)
         return false;
      if (competition > k->competition || novelty > k->novelty)

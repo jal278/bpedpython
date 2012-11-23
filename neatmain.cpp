@@ -77,6 +77,9 @@ int main(int argc, char **argv) {
 
   SwitchArg area_of_interest("","aoi","Enforce pruning of behavior space",false);
   cmd.add(area_of_interest);
+  
+  SwitchArg mo_speciation("","mos","Multiobjective speciation",true);
+  cmd.add(mo_speciation);
 
   SwitchArg noveltySwitch("n","novelty","Enable novelty search",false);
   cmd.add(noveltySwitch);
@@ -108,7 +111,7 @@ int main(int argc, char **argv) {
   ValueArg<int> time_steps("","timesteps","Num Timesteps",false,400,"int");
   cmd.add(time_steps);
 
-  ValueArg<int> generation_arg("","gens","Num generations",false,2000,"int");
+  ValueArg<int> generation_arg("","gens","Num generations",false,1000,"int");
   cmd.add(generation_arg);
 
   ValueArg<int> rng_seed("r","random_seed","Random Seed",false,-1,"int");
@@ -142,6 +145,7 @@ int main(int argc, char **argv) {
   NEAT::load_neat_params(settingsname,true);
   
   NEAT::gravity=grav.getValue();
+  NEAT::mo_speciation=mo_speciation.getValue();
 
   if(local_switch.getValue()) 
    NEAT::local_competition=true;
