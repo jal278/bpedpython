@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstring>
 double NEAT::gravity=1.0;
+bool NEAT::fitness_multiobjective=false;
 bool NEAT::mo_speciation=true;
 bool NEAT::production=false;
 bool NEAT::mut_control=false;

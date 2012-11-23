@@ -1586,7 +1586,7 @@ int maze_success_processing(population_state* pstate) {
             if ((*curorg)->winner) {
                 cout<<"WINNER IS #"<<((*curorg)->gnome)->genome_id<<endl;
                 char filename[100];
-                sprintf(filename,"%s_%d_first", output_dir,pstate->evals);
+                sprintf(filename,"%s_%d_winner", output_dir,pstate->generation);
                 (*curorg)->print_to_file(filename);
             }
         }
@@ -1620,8 +1620,8 @@ int generalized_generational_epoch(population_state* pstate,int generation,succe
 
     int evolveupdate=100;
 
-    if (NEAT::multiobjective) {  //merge and filter population
-
+    if (NEAT::multiobjective) {  //merge and filter population	
+	if(!novelty) NEAT::fitness_multiobjective=true;
 	//if using alps-style aging
 	if(pstate->max_age!=-1) 
 	for (curorg=(measure_pop.begin());curorg!=measure_pop.end();++curorg) {

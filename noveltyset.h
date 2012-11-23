@@ -156,13 +156,23 @@ public:
     }
 
     bool dominates(noveltyitem*k) {
+     if(NEAT::fitness_multiobjective) return dominates_fitness(k);
      if(NEAT::local_competition) return dominates_local(k);
      return dominates_global(k);
     }
  
     #define GDTHRESH 20.0
+    bool dominates_fitness(noveltyitem* k) {
+     if (NEAT::mo_speciation && secondary < k->secondary || fitness < k->fitness
+	 || genodiv+GDTHRESH < k->genodiv)
+        return false;
+     if (secondary > k->secondary || fitness > k->fitness)
+     //	|| genodiv > k->genodiv+GDTHRESH)
+        return true;
+
+      return false;
+     }
     bool dominates_global(noveltyitem* k) {
- 
      if (NEAT::mo_speciation && secondary < k->secondary || novelty < k->novelty
 	 || genodiv+GDTHRESH < k->genodiv)
         return false;
@@ -634,7 +644,7 @@ public:
         //genotypic diversity
         if(pop!=NULL) 
 	{
-         item->genodiv=0; //diversity_avg_nn(item,pop);
+         item->genodiv=diversity_avg_nn(item,pop);
         }
         //genotypic
 	if(neigh!=1)

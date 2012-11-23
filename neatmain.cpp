@@ -145,7 +145,12 @@ int main(int argc, char **argv) {
   NEAT::load_neat_params(settingsname,true);
   
   NEAT::gravity=grav.getValue();
+
   NEAT::mo_speciation=mo_speciation.getValue();
+  if(!NEAT::mo_speciation) {
+   cout << "speciation off" << endl;
+   NEAT::speciation=mo_speciation.getValue();
+  }
 
   if(local_switch.getValue()) 
    NEAT::local_competition=true;
