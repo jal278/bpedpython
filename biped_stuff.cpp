@@ -855,7 +855,7 @@ int biped_success_processing(population_state* pstate) {
     if(logfile!=NULL)
      (*logfile) << pstate->generation*NEAT::pop_size<< " " << best_fitness << " " << best_secondary << endl;
      //(*logfile) << best_fitness << " " << best_secondary << endl;
-
+ return 0;
 }
 
 //int biped_generational_epoch(Population **pop2,int generation,data_rec& Record, noveltyarchive& archive, bool novelty) {

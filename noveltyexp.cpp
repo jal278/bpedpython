@@ -219,7 +219,7 @@ void set_nov_measure(string m)
     cout << "Novelty measure " << novelty_measure << endl;
 }
 
-char output_dir[30]="";
+char output_dir[200]="";
 
 
 static int param=-1;
