@@ -667,13 +667,13 @@ public:
   	double u_factor=2.0 * (1.0-NEAT::gravity);
 	dReal utorque[3]={u_factor*cp[0],u_factor*cp[1],u_factor*cp[2]};
 	//cout << res[0] << " " << res[1] << " " << res[2] << endl;
-	dBodyAddTorque(bodies[torso],utorque[0],utorque[1],utorque[2]);
   	double k_factor=-0.3 * (1.0-NEAT::gravity);
 	dReal damptorque[3]={k_factor*res[0],k_factor*res[1],k_factor*res[2]};
-
+        if(NEAT::gravity!=1.0) {
+	dBodyAddTorque(bodies[torso],utorque[0],utorque[1],utorque[2]);
         dBodyAddTorque(bodies[torso],damptorque[0],damptorque[1],damptorque[2]);
         dBodyAddForce(bodies[torso],0,0,20.0*(1.0-NEAT::gravity));	
-
+        }
 
         Creature::Update(timestep);
         if (movie_play)

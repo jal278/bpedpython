@@ -32,7 +32,7 @@ plot behavior_plot;
 
 void evolvability(Organism* org,char* fn,int *a=NULL,double* b=NULL,bool recall=false);
 using namespace std;
-enum novelty_measure_type { novelty_sample, novelty_accum, novelty_sample_free };
+enum novelty_measure_type { novelty_fitness, novelty_sample, novelty_accum, novelty_sample_free };
 static novelty_measure_type novelty_measure = novelty_sample;
 
 enum fitness_measure_type { fitness_uniform,fitness_goal, fitness_drift, fitness_std,fitness_rnd,fitness_spin,fitness_changegoal,fitness_collisions,fitness_reachone ,fitness_aoi,fitness_collgoal};
@@ -210,6 +210,8 @@ void set_fit_measure(string m)
 
 void set_nov_measure(string m)
 {
+    if (m=="fitness")
+	novelty_measure=novelty_fitness;
     if (m=="std" || m=="sample")
         novelty_measure=novelty_sample;
     if (m=="accum")
@@ -1126,7 +1128,8 @@ double mazesim(Network* net, vector< vector<float> > &dc, data_record *record,En
      y=discretize(y,bins,0.0,200.0);
     }
     */
-
+    if (novelty_measure==novelty_fitness)
+	data.push_back(fitness);
     if (novelty_measure==novelty_sample || novelty_measure==novelty_sample_free)
         if (false)
         {
