@@ -388,7 +388,7 @@ double Species::estimate_average() {
 
 	//Only choose from among the top ranked orgs
 	poolsize=(elig_orgs.size() - 1) * NEAT::survival_thresh;
-
+     
 	//Compute total fitness of species for a roulette wheel
 	//Note: You don't get much advantage from a roulette here
 	// because the size of a species is relatively small.

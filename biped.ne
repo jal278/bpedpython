@@ -38,7 +38,7 @@ bias_mut_prob 0.3
 elitism 1
 speciation 1
 archive 1
-localcompetition 1
+localcompetition 0
 production 0
 Mutation_control 0
 evolvability 0

@@ -9,6 +9,7 @@
 #include "calc_evol.h"
 #include "genome.h"
 //#define DEBUG_OUTPUT 1
+
 #include <algorithm>
 #include <vector>
 #include <cstring>
@@ -661,7 +662,9 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
     if (novelty && minimal_criteria)
         for (curorg=(pop->organisms).begin(); curorg!=(pop->organisms).end(); ++curorg)
         {
-            (*curorg)->fitness = SNUM/1000.0;
+		if(!(*curorg)->noveltypoint->viable) {
+		 destroy_organism(*curorg);	
+		}
         }
 //Get ready for real-time loop
     //Rank all the organisms from best to worst in each species
@@ -724,15 +727,58 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
 double tot=0.0;    
     Organism* b;  
 	for (curorg = (pop->organisms).begin(); curorg != pop->organisms.end(); ++curorg) {
-tot+=(*curorg)->noveltypoint->fitness;
-if( (*curorg)->noveltypoint->fitness > mx) {
-mx=(*curorg)->noveltypoint->fitness; b=(*curorg); }
+double fit = (*curorg)->noveltypoint->fitness;
+tot+=fit;
+if( fit > mx) {
+mx=fit; b=(*curorg); }
 } 
            cout << "GEN" << offspring_count/NEAT::pop_size << " " << tot << " " << mx <<  endl;
             char fn[100];
             sprintf(fn,"%sdist%d",output_dir,offspring_count/NEAT::pop_size);
             if (NEAT::printdist)
                 pop->print_distribution(fn);
+
+	
+	#ifdef PLOT_ON
+	if(true) {
+	  best_fits.push_back(mx);
+	  fitness_plot.plot_data(best_fits,"lines","Fitness");
+
+	
+	vector<float> xc;
+	vector<float> yc;
+	vector<float> zc;
+        for (curorg = (pop->organisms).begin(); curorg != pop->organisms.end(); ++curorg) {
+		int sz=(*curorg)->noveltypoint->data[0].size();
+        	//xc.push_back((*curorg)->noveltypoint->data[0][sz-2]);
+		//yc.push_back((*curorg)->noveltypoint->data[0][sz-1]);
+		float _xc=(*curorg)->noveltypoint->data[0][sz-2];
+		float _yc=(*curorg)->noveltypoint->data[0][sz-1];
+		if((*curorg)->noveltypoint->viable) {
+        	xc.push_back(_xc);
+		xc.push_back(_yc);
+		}
+		else {
+        	zc.push_back(_xc);
+		zc.push_back(_yc);
+		}	
+	}
+	for(int i=0;i<archive.get_set_size();i++) {
+		noveltyitem *ni = archive.novel_items[i];
+		int sz=ni->data[0].size();
+		yc.push_back(ni->data[0][sz-2]);
+		yc.push_back(ni->data[0][sz-1]);
+	}
+	vector<vector <float> > blah;
+	blah.push_back(xc);
+	blah.push_back(yc);
+	blah.push_back(zc);
+	behavior_plot.plot_data_2d(blah);
+
+        }
+	#endif
+
+
         }
 
         //write out current generation and fittest individuals
@@ -827,16 +873,21 @@ mx=(*curorg)->noveltypoint->fitness; b=(*curorg); }
         }
         if ( !new_org->noveltypoint->viable && minimal_criteria)
         {
-            new_org->fitness = SNUM/1000.0;
+            //new_org->fitness = SNUM/1000.0;
             //new_org->novelty = 0.00000001;
             //reset behavioral characterization
-            new_org->noveltypoint->reset_behavior();
+            //new_org->noveltypoint->reset_behavior();
+            destroy_organism(new_org);
             //cout << "fail" << endl;
-            //  cout << " :( " << endl;
+	   #ifdef DEBUG_OUTPUT
+              cout << ":( " << endl;
+           #endif
         }
         else
         {
-            // cout << ":)" << new_org->noveltypoint->indiv_number << endl;
+	   #ifdef DEBUG_OUTPUT
+             cout << ":) " << new_org->noveltypoint->indiv_number << endl;
+           #endif
         }
         //add record of new indivdual to storage
         //Record.add_new(newrec);
@@ -893,8 +944,9 @@ mx=(*curorg)->noveltypoint->fitness; b=(*curorg); }
         //Remove the worst organism
         if (rand_repl || fitness_measure ==fitness_rnd)
             pop->remove_random();
-        else
+        else {
             pop->remove_worst();
+        }
 
     }
 

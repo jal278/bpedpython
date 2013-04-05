@@ -2,8 +2,9 @@ import glob
 ode_path = '/home/joel/ode-0.11.1/'
 
 #env = Environment(CCFLAGS = ' -DdTRIMESH_ENABLED -DdDOUBLE -DGRAPHICS -g -I./include')
-#env = Environment(CCFLAGS = ' -march=native -DdTRIMESH_ENABLED -DdDOUBLE -DGRAPHICS -O2 -g -I./include') #was -O2
-env = Environment(CCFLAGS = ' -march=native -O2 -DdTRIMESH_ENABLED -DdDOUBLE -DGRAPHICS -g -I./include') #was -O2
+
+env = Environment(CCFLAGS = ' -march=native -O2 -DPLOT_ON -DdTRIMESH_ENABLED -DdDOUBLE -DGRAPHICS -g -I./include') #was -O2
+
 env.AppendENVPath('CPLUS_INCLUDE_PATH', ode_path+'include')
 
 #current=['biped.cpp',"biped_stuff.cpp","ConfigFile.cpp"] 
