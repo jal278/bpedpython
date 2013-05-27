@@ -1,9 +1,44 @@
 #include "network.h"
+#include <math.h>
 #include <iostream>
 #include <cstring>
 #include <sstream>
 
 using namespace NEAT;
+using namespace std;
+
+int Network::find_node(int node_id) {
+ std::vector<NNode*>::const_iterator curnode;
+ int cnt=0;
+ for(curnode=all_nodes.begin();curnode!=all_nodes.end();++curnode) {
+  if((*curnode)->node_id==node_id)
+   return cnt;
+  cnt++;
+ }
+ return -1;
+}
+int Network::find_in_node(Link* l) {
+ return find_node(l->in_node->node_id);
+}
+int Network::find_out_node(Link* l) {
+ return find_node(l->out_node->node_id);
+}
+
+Graph* Network::to_graph(void) {
+ std::vector<NNode*>::const_iterator curnode;
+std::vector<Link*>::iterator curlink;
+ Graph* construct= new Graph(all_nodes.size()); 
+	for(curnode=all_nodes.begin();curnode!=all_nodes.end();++curnode) {
+		if (((*curnode)->type)!=SENSOR) {
+			for(curlink=((*curnode)->incoming).begin(); curlink!=((*curnode)->incoming).end(); ++curlink) {
+if(fabs((*curlink)->weight)>0.3)
+                //cout << (*curlink)->in_node->node_id << " -> " <<( *curlink)->out_node->node_id << " : " << (*curlink)->weight << std::endl;
+     add_edge(find_in_node(*curlink),find_out_node(*curlink),*construct);
+			} // end for loop on links
+		} //end if
+	} //end for loop on nodes
+ return construct;
+}
 
 void Network::ctrnn_dynamics()
 {

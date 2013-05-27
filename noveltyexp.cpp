@@ -20,6 +20,7 @@
 #include "population.h"
 #include "population_state.h"
 #include "alps.h"
+#include "modularity/modularity.hpp"
 
 static Environment* env;
 static vector<Environment*> envList;
@@ -30,7 +31,18 @@ static vector<float> best_fits;
 plot front_plot;
 plot fitness_plot;
 plot behavior_plot;
+void modularity(Organism* org,char* fn);
 
+ double modularity_score(Genome* start_genome) {
+    Network* test_net=start_genome->genesis(0);
+    Graph* g=test_net->to_graph();    
+    std::vector<std::set<Graph::vertex_descriptor> > mods;
+    float modularity = mod::h_modules(*g,mods);
+    //cout << "modularity: " << modularity << endl;
+    return modularity;
+    delete test_net;
+    delete g;
+  }
 void evolvability(Organism* org,char* fn,int *a=NULL,double* b=NULL,bool recall=false);
 using namespace std;
 enum novelty_measure_type { novelty_fitness, novelty_sample, novelty_accum, novelty_sample_free };
@@ -293,7 +305,17 @@ class passive_niche {
 	bool firstsolved;
 	bool random;
         float minx,miny,maxx,maxy;
-
+	
+        void calc_modularity(char*fn) {
+	    for(int i=0;i<nc;i++) {
+		cout << "modularity niche " << i << endl;
+		for(int j=0;j<5;j++) {	
+			int ns=niches[order[i]].size();
+		    Organism *org = niches[order[i]][randint(0,ns-1)];
+	            modularity(org,fn);
+		}
+	    }
+ 	}	
         void calc_evolvability(char*fn) {
 	    for(int i=0;i<nc;i++) {
 		cout << "evolvability niche " << i << endl;
@@ -309,7 +331,7 @@ class passive_niche {
          random=_r;
 	 density=30;
  	 niche_size=10;
-         evals=100001;
+         evals=250001;
 	 for(int i=0;i<MAX_NICHES;i++) explored[i]=false;
 	 for(int i=0;i<MAX_NICHES;i++) order[i]=false;
          nc=0;
@@ -416,7 +438,9 @@ class passive_niche {
 		if(e%upcnt==0) {
 			char fn[100];
         sprintf(fn,"%s_evolvability%d.dat",output_dir,e/upcnt);
-			calc_evolvability(fn);
+	//		calc_evolvability(fn);
+        sprintf(fn,"%s_modularity%d.dat",output_dir,e/upcnt);
+			calc_modularity(fn);
 		}
         	//}
           }
@@ -1259,8 +1283,8 @@ void mutate_genome(Genome* new_genome,bool traits)
 {
     Network* net_analogue;
     double mut_power=NEAT::weight_mut_power;
-				double inno=0;
-				int id=0;
+				static double inno=1000;
+				static int id=1000;
     new_genome->mutate_link_weights(mut_power,1.0,GAUSSIAN);
     if(traits) {
 	vector<Innovation*> innos;
@@ -1283,6 +1307,38 @@ void mutate_genome(Genome* new_genome,bool traits)
     return;
 }
 
+void modularity(Organism* org,char* fn) {
+    bool solution=false;
+    fstream file;
+    file.open(fn,ios::app|ios::out);
+    cout <<"Modularity..." << endl;
+// file << "---" <<  " " << org->winner << endl;
+    float minx,maxx,miny,maxy;
+    envList[0]->get_range(minx,miny,maxx,maxy);
+    double ox,oy,fit;
+    int nodes;
+    int connections;
+    float mod=modularity_score(org->gnome);
+        Genome *new_gene= new Genome(*org->gnome);
+        Organism *new_org= new Organism(0.0,new_gene,0);
+        noveltyitem* nov_item = maze_novelty_map(new_org);
+            fit=nov_item->fitness;
+            nodes=new_org->net->nodecount();
+            connections=new_org->net->linkcount();
+            ox=nov_item->data[0][0];
+            oy=nov_item->data[0][1];
+        if (nov_item->fitness>340) solution=true;
+
+        //HOW IT WAS:
+        //points[i*2]=(nov_item->data[0][0]-minx)/(maxx-minx);
+        //points[i*2+1]=(nov_item->data[0][1]-miny)/(maxy-miny);
+        delete new_org;
+        delete nov_item;
+        //file << endl;
+    file << mod << " " << ox << " " << oy << " " << nodes << " " <<connections << " " << fit << " " << solution << endl;
+    file.close();
+    return;
+}
 #define MUTATIONS 200
 void evolvability(Organism* org,char* fn,int* di,double* ev,bool recall) {
     bool solution=false;

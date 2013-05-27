@@ -1,12 +1,18 @@
 #ifndef _NETWORK_H_
 #define _NETWORK_H_
 
+#include <boost/graph/graph_traits.hpp>
+#include <boost/graph/adjacency_list.hpp>
+#include <boost/graph/graphviz.hpp>
+#include <boost/graph/iteration_macros.hpp>
 #include <algorithm>
 #include <vector>
 #include "neat.h"
 #include "nnode.h"
 
+using namespace boost;
 namespace NEAT {
+        typedef adjacency_list<vecS, vecS, bidirectionalS> Graph;
 	class Genome;
 	// ----------------------------------------------------------------------- 
 	// A NETWORK is a LIST of input NODEs and a LIST of output NODEs           
@@ -19,6 +25,7 @@ namespace NEAT {
 	//protected:
 	public:
 
+		Graph* to_graph(void);
 		int numnodes; // The number of nodes in the net (-1 means not yet counted)
 		int numlinks; //The number of links in the net (-1 means not yet counted)
 
@@ -115,6 +122,9 @@ namespace NEAT {
 
 		// If all output are not active then return true
 		bool outputsoff();
+ int find_node(int node_id);
+ int find_in_node(Link* l);
+ int find_out_node(Link* l);
 
 		// Just print connections weights with carriage returns
 		void print_links_tofile(char *filename);

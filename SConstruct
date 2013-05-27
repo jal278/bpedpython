@@ -15,5 +15,5 @@ current=glob.glob('*.cpp')
 allsrc=current #+rtneat
 allsrc.remove("mazeApp.cpp")
 allsrc.remove("mazeDlg.cpp")
-env.Program('mazesim', allsrc,LIBS=['tcmalloc','pthread','m','ode','profiler'],LIBPATH=['.','/usr/lib/','/usr/local/lib'])
+env.Program('mazesim', allsrc,LIBS=['gsl','blas','tcmalloc','pthread','m','ode','profiler'],LIBPATH=['.','/usr/lib/','/usr/local/lib'])
 #env.Program('mazesim', allsrc,LIBS=['pthread','tcmalloc_minimal','m','ode'],LIBPATH=['.','/usr/lib/','/usr/local/lib'])
