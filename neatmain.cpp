@@ -57,6 +57,7 @@ int main(int argc, char **argv) {
   SwitchArg biped_switch("","biped","Biped domain",false);
   cmd.add(biped_switch);
  
+
   SwitchArg remove_random("","remrand","Remove random individuak",false);
   cmd.add(remove_random); 
 
@@ -199,6 +200,9 @@ return 0;
 */
   
  set_constraint_switch(constraintSwitch.getValue());
+
+ p = classifier_generational(filename,mazename,param,startgenes,generations,noveltySwitch.getValue());
+ exit(0);
 
 if(!generationalSwitch.getValue())
 {

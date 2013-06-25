@@ -41,4 +41,4 @@ archive 1
 localcompetition 0
 production 0
 mutation_control 0
-evolvability 0
+evolvability 1

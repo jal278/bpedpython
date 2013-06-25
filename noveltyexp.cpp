@@ -1,3 +1,4 @@
+#include "classifier/read_data.h"
 #include "experiments.h"
 #include "noveltyset.h"
 
@@ -23,6 +24,8 @@
 #include "modularity/modularity.hpp"
 
 static Environment* env;
+static vector<vector<float> > classifier_train_data;
+static vector<vector<float> > classifier_test_data;
 static vector<Environment*> envList;
 static vector<Environment*> mcList;
 static ofstream *logfile=NULL;
@@ -607,8 +610,9 @@ Population *maze_novelty_realtime(char* outputdir,const char* mazefile,int par,c
         if (evaluate_switch) {
             int dist=0;
             double evol=0.0;
-            evolvability(pop->organisms[0],"dummyfile",&dist,&evol,true);
-            cout << endl << dist << " " << evol << endl;
+            //evolvability(pop->organisms[0],"dummyfile",&dist,&evol,true);
+            //cout << endl << dist << " " << evol << endl;
+            cout << "MOD:" <<modularity_score(pop->organisms[0]->gnome) << endl;
             return 0;
         }
 
@@ -663,7 +667,9 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
         compat_adjust_frequency = 1;
 
     char sol_evo_fn[100];
+    char sol_mod_fn[100];
     sprintf(sol_evo_fn,"%s_solution_evolvability.dat",output_dir);
+    sprintf(sol_mod_fn,"%s_solution_modularity.dat",output_dir);
 
 //activity stat log file
     char asfn[100];
@@ -714,9 +720,12 @@ int maze_novelty_realtime_loop(Population *pop,bool novelty) {
         int evolveupdate=6250;
         if (NEAT::evolvabilitytest && offspring_count % evolveupdate ==0) {
             char fn[100];
+            char fn2[100];
             sprintf(fn,"%s_evolvability%d.dat",output_dir,offspring_count/evolveupdate);
+            sprintf(fn,"%s_modularity%d.dat",output_dir,offspring_count/evolveupdate);
             for (curorg = (pop->organisms).begin(); curorg != pop->organisms.end(); ++curorg) {
-                evolvability(*curorg,fn);
+                //evolvability(*curorg,fn);
+		modularity(*curorg,fn2);
             }
         }
 
@@ -931,10 +940,11 @@ mx=fit; b=(*curorg); }
         //if solution, do evolvability
         
         if (newrec->ToRec[3]>=envList.size() && newrec->ToRec[4]>=envList.size()) {
-            if (false) //NEAT::evolvabilitytest)
+            if (NEAT::evolvabilitytest)  
             {
                 cout << "solution found" << endl;
-                evolvability(new_org,sol_evo_fn);
+                //evolvability(new_org,sol_evo_fn);
+                modularity(new_org,sol_mod_fn);
             }
         }
         
@@ -1006,6 +1016,7 @@ Environment* mazesimIni(Environment* tocopy,Network *net, vector< vector<float> 
     //create neural net inputs
     newenv->generate_neural_inputs(inputs);
     //load into neural net
+    
     net->load_sensors(inputs);
 
     //propogate input through net
@@ -1392,6 +1403,146 @@ void evolvability(Organism* org,char* fn,int* di,double* ev,bool recall) {
     return;
 }
 
+int classify(vector<float>& results,vector<vector<float> >& data,Network* net,bool debug=false) {
+    int correct=0;
+    results.clear();
+    for(int i=0;i<data.size();i++) {
+     vector<float> line=data[i];
+     float c_output = line[line.size()-1];
+     double inputs[50];
+
+     for(int j=0;j<line.size()-1;j++) {
+      inputs[j]=line[j];
+     }     
+
+     net->flush();
+     net->load_sensors(inputs);
+
+      for (int z=0; z<10; z++)
+        net->activate();
+      float output=net->outputs[0]->activation;
+      if (output>0.5) output=1.0;
+      else output=0.0;
+     
+	 if(debug)
+	 cout << output << endl;
+
+      if (output==c_output)
+	correct+=1;
+
+       results.push_back(output);
+    }
+ if(debug)
+   net->print_links_tofile("outy.dat");
+ return correct;
+}
+void accum_vect(vector<float>& acc,vector<float>& add) {
+vector<float>::iterator it1=acc.begin();
+vector<float>::iterator it2=add.begin();
+while(it1!=acc.end()) {
+//cout << (*it2) <<endl;
+(*it1)+=(*it2);
+//cout << (*it2) <<endl;
+it1++;
+it2++;
+}
+
+}
+
+void scale_vect(vector<float>& v,float factor) {
+ vector<float>::iterator it=v.begin();
+ while(it!=v.end()) {
+  (*it)*=factor;
+  it++;
+ }
+}
+
+int classify_ensemble(vector<float>& results,vector<vector<float> >& data, vector<Organism*> p) {
+
+
+ vector<float> r_temp;
+ vector<float> r_accum;
+
+ float weight_total=0;
+
+ for(int i=0;i<p.size();i++) {
+  float weight = pow(p[i]->noveltypoint->fitness,2);
+//  cout << weight << endl;
+  Network *newnet = p[i]->gnome->genesis(0);
+  if(i==0) {
+   classify(r_accum,data,newnet,false);
+   //for (int k=0;k<data.size();k++)
+    //cout << r_accum[k] << endl;
+   scale_vect(r_accum,weight);
+  }
+  else {
+   r_temp.clear();
+   classify(r_temp,data,newnet,false);
+   scale_vect(r_temp,weight);
+   accum_vect(r_accum,r_temp);  
+  }
+  weight_total+=weight;
+  delete(newnet);
+ }
+
+ scale_vect(r_accum,1.0/weight_total);
+
+ float c_index = data[0].size()-1;
+ int correct=1;
+ 
+ results.clear();
+ for(int i=0;i<r_accum.size();i++) {
+  float c_output=data[i][c_index];
+  float output=r_accum[i];
+  if(output>0.5) output=1.0;
+  else output=0.0;
+  
+  //cout << output << endl;
+
+  if(output==c_output)
+   correct+=1;
+  results.push_back(output);
+
+ }
+
+ return correct;
+}
+
+noveltyitem* classifier_novelty_map(Organism *org,data_record* record) {
+    static int best = 0;
+    noveltyitem *new_item = new noveltyitem;
+    Network* net = org->net;
+    new_item->genotype=new Genome(*org->gnome);
+    new_item->phenotype=new Network(*org->net);
+    vector< vector<float> > gather;
+
+    double fitness=1.0;
+    static float highest_fitness=0.0;
+
+    new_item->viable=true;
+
+
+    gather.clear();
+ 
+    //todo: optimize
+    vector<float> classifications;
+    vector<float> classifications_gen;
+    fitness= classify(classifications,classifier_train_data,net);
+    int generalization = classify(classifications_gen,classifier_test_data,net);
+    gather.push_back(classifications);
+
+    if (fitness>highest_fitness)
+        highest_fitness=fitness;
+
+        for (int i=0; i<gather.size(); i++)
+            new_item->data.push_back(gather[i]);
+
+    new_item->fitness=fitness;
+    new_item->secondary=fitness;
+    org->fitness=fitness;
+
+    return new_item;
+}
 
 //evaluates an individual and stores the novelty point
 noveltyitem* maze_novelty_map(Organism *org,data_record* record)
@@ -1517,6 +1668,69 @@ noveltyitem* maze_novelty_map(Organism *org,data_record* record)
 
 
 static int maxgens;
+
+population_state* create_classifier_popstate(char* outputdir,const char* classfile,int param,const char *genes, int gens,bool novelty) {
+
+    maxgens=gens;
+    float archive_thresh=3.0;
+    noveltyarchive *archive= new noveltyarchive(archive_thresh,*maze_novelty_metric,true,push_back_size,minimal_criteria,true);
+
+//if doing multiobjective, turn off speciation, TODO:maybe turn off elitism
+    if (NEAT::multiobjective) NEAT::speciation=false;
+
+    Population *pop;
+
+    Genome *start_genome;
+    char curword[20];
+    int id;
+
+    ostringstream *fnamebuf;
+    int gen;
+
+    if (!seed_mode)
+        strcpy(seed_name,genes);
+    if(seed_mode)
+	cout << "READING IN SEED" << endl;
+    ifstream iFile(seed_name,ios::in);
+ 
+    char trainfile[200];
+    char testfile[200];
+    sprintf(trainfile,"%s_train.dat",classfile);
+    sprintf(testfile,"%s_test.dat",classfile);
+     
+    classifier_train_data = read_classifier_data(trainfile);
+    classifier_test_data = read_classifier_data(testfile);
+
+    if (outputdir!=NULL) strcpy(output_dir,outputdir);
+    cout<<"START GENERATIONAL MAZE EVOLUTION"<<endl;
+
+    cout<<"Reading in the start genome"<<endl;
+//Read in the start Genome
+    iFile>>curword;
+    iFile>>id;
+    cout<<"Reading in Genome id "<<id<<endl;
+    start_genome=new Genome(id,iFile);
+    iFile.close();
+
+    cout<<"Start Genome: "<<start_genome<<endl;
+
+//Spawn the Population
+    cout<<"Spawning Population off Genome"<<endl;
+    cout << "Start genomes node: " << start_genome->nodes.size() << endl;
+   if(!seed_mode) 
+   pop=new Population(start_genome,NEAT::pop_size);
+else
+     pop=new Population(start_genome,NEAT::pop_size,0.0);
+    cout<<"Verifying Spawned Pop"<<endl;
+    pop->verify();
+   
+//set evaluator
+    pop->set_evaluator(&classifier_novelty_map);
+    pop->evaluate_all();
+    delete start_genome;
+   return new population_state(pop,novelty,archive);
+
+}
 population_state* create_maze_popstate(char* outputdir,const char* mazefile,int param,const char *genes, int gens,bool novelty) {
 
     maxgens=gens;
@@ -1582,6 +1796,32 @@ Population *maze_alps(char* output_dir,const char* mazefile,int param, const cha
     alps k(4,20,p_state->pop->start_genome,p_state,maze_success_processing,output_dir,gens*NEAT::pop_size);
     k.do_alps();
 }
+Population *classifier_generational(char* output_dir,const char* classfile,int param, const char *genes, int gens, bool novelty) {
+    char logname[100];
+    char fname[100];
+    sprintf(logname,"%s_log.txt",output_dir);
+    logfile=new ofstream(logname);
+  //pop->set_compatibility(&behavioral_compatibility);    
+    population_state* p_state = create_classifier_popstate(output_dir,classfile,param,genes,gens,novelty);
+    
+    for (int gen=0; gen<=maxgens; gen++)  { //WAS 1000
+        cout<<"Generation "<<gen<<endl;
+        bool win = classifier_generational_epoch(p_state,gen);
+        p_state->pop->epoch(gen);
+
+        if (win)
+        {
+	break;
+        }
+
+    }
+
+    sprintf(fname,"%s_final",output_dir);
+    p_state->pop->print_to_file_by_species(fname);
+    delete logfile;
+    delete p_state;
+    return NULL;
+}
 
 Population *maze_generational(char* outputdir,const char* mazefile,int param,const char *genes, int gens,bool novelty)
 {
@@ -1616,6 +1856,52 @@ void destroy_organism(Organism* curorg) {
             curorg->fitness = SNUM/1000.0;
             curorg->noveltypoint->reset_behavior();
 	    curorg->destroy=true;
+}
+
+int classifier_success_processing(population_state* pstate) {
+    double& best_fitness = pstate->best_fitness;
+    double& best_secondary = pstate->best_secondary;
+
+    vector<Organism*>::iterator curorg;
+    Population* pop = pstate->pop;
+    //Evaluate each organism on a test
+    int indiv_counter=0;
+ 
+    Organism* cur_champ=NULL;
+    float high_fit=0.0;
+
+    for (curorg=(pop->organisms).begin(); curorg!=(pop->organisms).end(); ++curorg) {
+
+        if ((*curorg)->noveltypoint->fitness > high_fit) {
+	 cur_champ=*curorg;
+	 high_fit=((*curorg)->noveltypoint->fitness);
+	}
+
+        if ((*curorg)->noveltypoint->fitness > best_fitness)
+        {
+            best_fitness = (*curorg)->noveltypoint->fitness;
+            cout << "NEW BEST " << best_fitness << endl;
+        }
+
+        if (!pstate->novelty)
+            (*curorg)->fitness = (*curorg)->noveltypoint->fitness;
+    }
+
+    if(logfile!=NULL)
+     (*logfile) << pstate->generation*NEAT::pop_size<< " " << best_fitness << " " << best_secondary << endl;
+
+   //vector<Organism*>& orgs=pstate->measure_pop;
+   vector<Organism*>& orgs=pop->organisms;
+    vector<float> ens_results;
+
+    cout << "CHAMP TRAIN PERF: " << classify(ens_results,classifier_train_data,cur_champ->gnome->genesis(0)) << endl;
+    cout << "CHAMP TEST PERF: " << classify(ens_results,classifier_test_data,cur_champ->gnome->genesis(0)) << endl;
+    cout << "ENSEMBLE TRAIN PERF: "  << classify_ensemble(ens_results,classifier_train_data,orgs) << endl;
+
+    cout << "ENSEMBLE TEST PERF: "  << 
+    classify_ensemble(ens_results,classifier_test_data,orgs) << endl;
+
+return 0;
 }
 
 int maze_success_processing(population_state* pstate) {
@@ -1712,6 +1998,12 @@ int maze_generational_epoch(population_state* pstate,int generation) {
  return 
   generalized_generational_epoch(pstate,generation,&maze_success_processing);
 }
+int classifier_generational_epoch(population_state* pstate,int generation) {
+ return 
+  generalized_generational_epoch(pstate,generation,&classifier_success_processing);
+}
+
+
 
 int generalized_generational_epoch(population_state* pstate,int generation,successfunc success_processing) {
 	pstate->generation++;

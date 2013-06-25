@@ -53,6 +53,10 @@ Population *maze_generational(char* output_dir,const char* mazefile,int param, c
 typedef int (*successfunc)(population_state* ps);
 typedef int (*epochfunc)(population_state* ps,int generation,successfunc sf);
 
+Population *classifier_generational(char* output_dir,const char* classfile,int param, const char *genes, int gens, bool novelty); 
+int classifier_success_processing(population_state* pstate);
+int classifier_generational_epoch(population_state* pstate,int generation);
+
 int maze_generational_epoch(population_state *ps,int generation);
 int maze_success_processing(population_state* pstate);
 int generalized_generational_epoch(population_state* pstate,int generation,successfunc success_processing);
@@ -63,6 +67,7 @@ void destroy_organism(Organism* curorg);
 //Walker novelty steady-state 
 int maze_novelty_realtime_loop(Population *pop,bool novelty=false);
 Population *maze_novelty_realtime(char* output_dir=NULL,const char* mazefile="maze.txt",int param=-1,const char* genes=NULL,bool novelty=false);
+noveltyitem* classifier_novelty_map(Organism *org,data_record* record=NULL);
 noveltyitem* maze_novelty_map(Organism *org,data_record* record=NULL);
 
 double mazesimStep(Environment* newenv,Network *net,vector< vector<float> > &dc);
