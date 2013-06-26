@@ -772,7 +772,7 @@ mx=fit; b=(*curorg); }
                 pop->print_distribution(fn);
 
 	
-	#ifdef PLOT_ON
+	#ifdef PLOT_ON11
 	if(true) {
 	  best_fits.push_back(mx);
 	  fitness_plot.plot_data(best_fits,"lines","Fitness");
