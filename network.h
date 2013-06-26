@@ -11,6 +11,7 @@
 #include "nnode.h"
 
 using namespace boost;
+using namespace std;
 namespace NEAT {
         typedef adjacency_list<vecS, vecS, bidirectionalS> Graph;
 	class Genome;
@@ -33,6 +34,7 @@ namespace NEAT {
 
 		std::vector<NNode*>::iterator input_iter;  // For GUILE network inputting  
 
+                void listening_nodes(vector<int>& nodes);
 		void destroy();  // Kills all nodes and links within
 		void destroy_helper(NNode *curnode,std::vector<NNode*> &seenlist); // helper for above
 

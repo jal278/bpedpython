@@ -167,6 +167,19 @@ bool Network::outputsoff() {
 	return false;
 }
 
+
+void Network::listening_nodes(vector<int>& nodes) {
+	std::vector<NNode*>::iterator curnode;
+	std::vector<Link*>::iterator curlink;
+
+	for(curnode=all_nodes.begin();curnode!=all_nodes.end();++curnode) {
+		if (((*curnode)->type)==SENSOR) {
+			if((*curnode)->outgoing.size()>0)
+                         nodes.push_back((*curnode)->node_id);
+		} //end if
+	} //end for loop on nodes
+
+}
 // Print the connections weights to a file separated by only carriage returns
 void Network::print_links_tofile(char *filename) {
 	std::vector<NNode*>::iterator curnode;

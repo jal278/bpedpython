@@ -1528,8 +1528,21 @@ noveltyitem* classifier_novelty_map(Organism *org,data_record* record) {
     vector<float> classifications;
     vector<float> classifications_gen;
     fitness= classify(classifications,classifier_train_data,net);
-    int generalization = classify(classifications_gen,classifier_test_data,net);
-    gather.push_back(classifications);
+    //int generalization = classify(classifications_gen,classifier_test_data,net);
+    //gather.push_back(classifications);
+
+    vector<float> listening;
+    vector<int> l_nodes;
+
+    for(int i=0;i<40;i++) 
+     listening.push_back(0.0);
+
+    net->listening_nodes(l_nodes); 
+    float val=1.0/l_nodes.size();
+    for(int i=0;i<l_nodes.size();i++) {
+     listening[l_nodes[i]]=val;
+    }
+    gather.push_back(listening);
 
     if (fitness>highest_fitness)
         highest_fitness=fitness;
@@ -1859,7 +1872,8 @@ void destroy_organism(Organism* curorg) {
 }
 
 int classifier_success_processing(population_state* pstate) {
-    double& best_fitness = pstate->best_fitness;
+   static int gen=0; 
+   double& best_fitness = pstate->best_fitness;
     double& best_secondary = pstate->best_secondary;
 
     vector<Organism*>::iterator curorg;
@@ -1890,8 +1904,12 @@ int classifier_success_processing(population_state* pstate) {
     if(logfile!=NULL)
      (*logfile) << pstate->generation*NEAT::pop_size<< " " << best_fitness << " " << best_secondary << endl;
 
-   //vector<Organism*>& orgs=pstate->measure_pop;
    vector<Organism*>& orgs=pop->organisms;
+  
+   // if (NEAT::multiobjective && pstate->novelty && gen>2)
+   //   orgs=pstate->measure_pop;
+    gen++;
+
     vector<float> ens_results;
 
     cout << "CHAMP TRAIN PERF: " << classify(ens_results,classifier_train_data,cur_champ->gnome->genesis(0)) << endl;
