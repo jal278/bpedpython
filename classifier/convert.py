@@ -23,6 +23,7 @@ for r in rows:
  nn_rows.append(nn_row)
 
 col_count=len(nn_rows[0])
+print col_count
 #normalize inputs between 0 and 1
 for x in range(col_count):
  minval = min([row[x] for row in nn_rows])
@@ -45,7 +46,7 @@ def write_out(fn,data):
 
 for k in range(20):
  random.shuffle(nn_rows)
- split=len(nn_rows)/4
+ split=len(nn_rows)/2
  train=nn_rows[:split]
  test=nn_rows[split:]
  write_out("aust%d_train.dat"%k,train)
