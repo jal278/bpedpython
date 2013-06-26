@@ -1403,7 +1403,7 @@ void evolvability(Organism* org,char* fn,int* di,double* ev,bool recall) {
     return;
 }
 
-int classify(vector<float>& results,vector<vector<float> >& data,Network* net,bool debug=false) {
+float classify(vector<float>& results,vector<vector<float> >& data,Network* net,bool debug=false,bool real_val=false) {
     int correct=0;
     results.clear();
     for(int i=0;i<data.size();i++) {
@@ -1420,8 +1420,9 @@ int classify(vector<float>& results,vector<vector<float> >& data,Network* net,bo
 
       for (int z=0; z<10; z++)
         net->activate();
-      float output=net->outputs[0]->activation;
-      if (output>0.5) output=1.0;
+      float routput=net->outputs[0]->activation;
+      float output;
+      if (routput>0.5) output=1.0;
       else output=0.0;
      
 	 if(debug)
@@ -1429,12 +1430,12 @@ int classify(vector<float>& results,vector<vector<float> >& data,Network* net,bo
 
       if (output==c_output)
 	correct+=1;
-
+       if (real_val) output=routput;
        results.push_back(output);
     }
  if(debug)
    net->print_links_tofile("outy.dat");
- return correct;
+ return ((float)correct)/data.size();
 }
 void accum_vect(vector<float>& acc,vector<float>& add) {
 vector<float>::iterator it1=acc.begin();
@@ -1457,30 +1458,29 @@ void scale_vect(vector<float>& v,float factor) {
  }
 }
 
-int classify_ensemble(vector<float>& results,vector<vector<float> >& data, vector<Organism*> p) {
+float classify_ensemble(vector<float>& results,vector<vector<float> >& data, vector<Organism*> p) {
 
 
  vector<float> r_temp;
  vector<float> r_accum;
 
- float weight_total=0;
+ for(int i=0;i<data.size();i++)
+  r_accum.push_back(0.0);
+
+ float weight_total=0.0;
 
  for(int i=0;i<p.size();i++) {
-  float weight = pow(p[i]->noveltypoint->fitness,2);
+  float weight = p[i]->noveltypoint->fitness;
+  if(weight<0.5 && !((weight_total==0.0 && i==(p.size()-1))))
+   continue;
 //  cout << weight << endl;
   Network *newnet = p[i]->gnome->genesis(0);
-  if(i==0) {
-   classify(r_accum,data,newnet,false);
-   //for (int k=0;k<data.size();k++)
-    //cout << r_accum[k] << endl;
-   scale_vect(r_accum,weight);
-  }
-  else {
-   r_temp.clear();
-   classify(r_temp,data,newnet,false);
-   scale_vect(r_temp,weight);
-   accum_vect(r_accum,r_temp);  
-  }
+
+  r_temp.clear();
+  classify(r_temp,data,newnet,false,true);
+  scale_vect(r_temp,weight);
+  accum_vect(r_accum,r_temp);  
+
   weight_total+=weight;
   delete(newnet);
  }
@@ -1505,7 +1505,7 @@ int classify_ensemble(vector<float>& results,vector<vector<float> >& data, vecto
 
  }
 
- return correct;
+ return ((float)correct)/data.size();
 }
 
 noveltyitem* classifier_novelty_map(Organism *org,data_record* record) {
@@ -1516,7 +1516,7 @@ noveltyitem* classifier_novelty_map(Organism *org,data_record* record) {
     new_item->phenotype=new Network(*org->net);
     vector< vector<float> > gather;
 
-    double fitness=1.0;
+    double fitness=0.0001;
     static float highest_fitness=0.0;
 
     new_item->viable=true;
@@ -1527,20 +1527,25 @@ noveltyitem* classifier_novelty_map(Organism *org,data_record* record) {
     //todo: optimize
     vector<float> classifications;
     vector<float> classifications_gen;
-    fitness= classify(classifications,classifier_train_data,net);
+    fitness= classify(classifications,classifier_train_data,net) + 0.0001;
     //int generalization = classify(classifications_gen,classifier_test_data,net);
-    //gather.push_back(classifications);
 
+    scale_vect(classifications,1.0/classifications.size());
+    gather.push_back(classifications);
+  
+    //measure novelty by which inputs the ANN is listening to
     vector<float> listening;
     vector<int> l_nodes;
-
+    
     for(int i=0;i<40;i++) 
      listening.push_back(0.0);
-
+    
     net->listening_nodes(l_nodes); 
+    
     float val=1.0/l_nodes.size();
     for(int i=0;i<l_nodes.size();i++) {
-     listening[l_nodes[i]]=val;
+      int node=l_nodes[i]-1;
+      listening[node]=val;
     }
     gather.push_back(listening);
 
@@ -1906,8 +1911,6 @@ int classifier_success_processing(population_state* pstate) {
 
    vector<Organism*>& orgs=pop->organisms;
   
-   // if (NEAT::multiobjective && pstate->novelty && gen>2)
-   //   orgs=pstate->measure_pop;
     gen++;
 
     vector<float> ens_results;
@@ -2125,7 +2128,7 @@ int generalized_generational_epoch(population_state* pstate,int generation,succe
     
 
 	
-	#ifdef PLOT_ON
+	#ifdef PLOT_ON11
 	if(true) {
 	vector<float> x,y,z;
 	pop->gather_objectives(&x,&y,&z);
