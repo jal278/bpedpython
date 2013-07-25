@@ -44,10 +44,12 @@ def write_out(fn,data):
   a.write(" ".join([str(x) for x in k])+"\n")
  a.close()
 
-for k in range(20):
- random.shuffle(nn_rows)
- split=len(nn_rows)/2
- train=nn_rows[:split]
- test=nn_rows[split:]
+random.shuffle(nn_rows)
+splits=10
+for k in range(splits):
+ split=int(float(len(nn_rows))/splits*k)
+ split2=int(float(len(nn_rows))/splits*(k+1))
+ train=nn_rows[:split]+nn_rows[split2:]
+ test=nn_rows[split:split2]
  write_out("aust%d_train.dat"%k,train)
  write_out("aust%d_test.dat"%k,test)

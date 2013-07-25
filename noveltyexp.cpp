@@ -25,6 +25,7 @@
 
 static Environment* env;
 static vector<vector<float> > classifier_train_data;
+static vector<vector<float> > classifier_valid_data;
 static vector<vector<float> > classifier_test_data;
 static vector<Environment*> envList;
 static vector<Environment*> mcList;
@@ -57,6 +58,8 @@ static bool mc_no_collision=false;
 static bool mc_reach_onepoint=false;
 bool age_objective=false;
 bool population_dirty=false;
+
+static bool regression=true;
 
 static bool extinction=true;
 bool set_no_collision(bool no) { mc_no_collision=no; }
@@ -1404,7 +1407,8 @@ void evolvability(Organism* org,char* fn,int* di,double* ev,bool recall) {
 }
 
 float classify(vector<float>& results,vector<vector<float> >& data,Network* net,bool debug=false,bool real_val=false) {
-    int correct=0;
+    float correct=0;
+
     results.clear();
     for(int i=0;i<data.size();i++) {
      vector<float> line=data[i];
@@ -1421,22 +1425,33 @@ float classify(vector<float>& results,vector<vector<float> >& data,Network* net,
       for (int z=0; z<10; z++)
         net->activate();
       float routput=net->outputs[0]->activation;
-      float output;
-      if (routput>0.5) output=1.0;
-      else output=0.0;
+      float output=routput;
+      
+      if(!regression) {
+       if (routput>0.5) output=1.0;
+       else output=0.0;
+      }
      
 	 if(debug)
 	 cout << output << endl;
 
-      if (output==c_output)
-	correct+=1;
+      //if (output==c_output)
+      //	correct+=1;
+
+       float error=c_output-output;
+       error*=error;
+       correct+=error;
+
        if (real_val) output=routput;
        results.push_back(output);
     }
  if(debug)
    net->print_links_tofile("outy.dat");
- return ((float)correct)/data.size();
+
+ return 1.0 - (correct/data.size());
+
 }
+
 void accum_vect(vector<float>& acc,vector<float>& add) {
 vector<float>::iterator it1=acc.begin();
 vector<float>::iterator it2=add.begin();
@@ -1458,8 +1473,7 @@ void scale_vect(vector<float>& v,float factor) {
  }
 }
 
-float classify_ensemble(vector<float>& results,vector<vector<float> >& data, vector<Organism*> p) {
-
+float classify_ensemble(vector<float>& results,vector<vector<float> >& data, vector<Organism*> p,bool print_out=false) {
 
  vector<float> r_temp;
  vector<float> r_accum;
@@ -1468,16 +1482,17 @@ float classify_ensemble(vector<float>& results,vector<vector<float> >& data, vec
   r_accum.push_back(0.0);
 
  float weight_total=0.0;
-
+ 
  for(int i=0;i<p.size();i++) {
-  float weight = p[i]->noveltypoint->fitness;
-  if(weight<0.5 && !((weight_total==0.0 && i==(p.size()-1))))
-   continue;
+  float weight = 1.0; //p[i]->noveltypoint->fitness;
+ //  if(weight<0.9 && !((weight_total==0.0 && i==(p.size()-1))))
+ //  continue;
+  //weight=1.0;
 //  cout << weight << endl;
   Network *newnet = p[i]->gnome->genesis(0);
 
   r_temp.clear();
-  classify(r_temp,data,newnet,false,true);
+  classify(r_temp,data,newnet,false,false);
   scale_vect(r_temp,weight);
   accum_vect(r_accum,r_temp);  
 
@@ -1488,25 +1503,61 @@ float classify_ensemble(vector<float>& results,vector<vector<float> >& data, vec
  scale_vect(r_accum,1.0/weight_total);
 
  float c_index = data[0].size()-1;
- int correct=1;
+ float correct=0;
  
  results.clear();
+ float disagree=0.0f;
  for(int i=0;i<r_accum.size();i++) {
+
   float c_output=data[i][c_index];
   float output=r_accum[i];
-  if(output>0.5) output=1.0;
-  else output=0.0;
+
+  float t_disagree=1.0-output;
+  if(output<t_disagree)
+   t_disagree=output;
+  disagree+=t_disagree;
+
+  if(!regression) {
+   if(output>0.5) output=1.0;
+   else output=0.0;
+  }
   
   //cout << output << endl;
 
-  if(output==c_output)
-   correct+=1;
+       float error=c_output-output;
+       error*=error;
+       correct+=error;
+  //if(output==c_output)
+  // correct+=1;
   results.push_back(output);
 
  }
-
- return ((float)correct)/data.size();
+ if(print_out)
+ cout << "disagreement: " << disagree/data.size() << endl;
+ return 1.0- ((float)correct)/data.size();
 }
+
+
+void choose_ensemble(vector<vector<float> >& data,vector<Organism*> orgs,vector<Organism*>& ens) {
+ int orgs_size=orgs.size();
+ for(int i=0;i<5;i++) {
+   int best_index=0;
+   float best_perf=0;
+  for(int j=0;j<orgs_size;j++) {
+   vector<float> res;
+   ens.push_back(orgs[j]);
+   float perf=classify_ensemble(res,data,ens);
+   if(perf>best_perf) {
+	best_perf=perf;
+        best_index=j;
+   }
+   ens.pop_back(); 
+  }
+ ens.push_back(orgs[best_index]);
+}
+
+}
+
 
 noveltyitem* classifier_novelty_map(Organism *org,data_record* record) {
     static int best = 0;
@@ -1528,11 +1579,11 @@ noveltyitem* classifier_novelty_map(Organism *org,data_record* record) {
     vector<float> classifications;
     vector<float> classifications_gen;
     fitness= classify(classifications,classifier_train_data,net) + 0.0001;
-    //int generalization = classify(classifications_gen,classifier_test_data,net);
+    float generalization = classify(classifications_gen,classifier_valid_data,net);
 
-    scale_vect(classifications,1.0/classifications.size());
-    gather.push_back(classifications);
+    gather.push_back(classifications_gen);
   
+/*
     //measure novelty by which inputs the ANN is listening to
     vector<float> listening;
     vector<int> l_nodes;
@@ -1548,6 +1599,7 @@ noveltyitem* classifier_novelty_map(Organism *org,data_record* record) {
       listening[node]=val;
     }
     gather.push_back(listening);
+*/
 
     if (fitness>highest_fitness)
         highest_fitness=fitness;
@@ -1713,11 +1765,14 @@ population_state* create_classifier_popstate(char* outputdir,const char* classfi
  
     char trainfile[200];
     char testfile[200];
+    char validfile[200];
     sprintf(trainfile,"%s_train.dat",classfile);
     sprintf(testfile,"%s_test.dat",classfile);
+    sprintf(validfile,"%s_valid.dat",classfile);
      
     classifier_train_data = read_classifier_data(trainfile);
     classifier_test_data = read_classifier_data(testfile);
+    classifier_valid_data = read_classifier_data(validfile);
 
     if (outputdir!=NULL) strcpy(output_dir,outputdir);
     cout<<"START GENERATIONAL MAZE EVOLUTION"<<endl;
@@ -1908,19 +1963,21 @@ int classifier_success_processing(population_state* pstate) {
 
     if(logfile!=NULL)
      (*logfile) << pstate->generation*NEAT::pop_size<< " " << best_fitness << " " << best_secondary << endl;
-
+   
+   //vector<Organism*> orgs;
    vector<Organism*>& orgs=pop->organisms;
-  
+   vector<Organism*> ensemble;
     gen++;
 
     vector<float> ens_results;
+   choose_ensemble(classifier_valid_data,orgs,ensemble);
 
     cout << "CHAMP TRAIN PERF: " << classify(ens_results,classifier_train_data,cur_champ->gnome->genesis(0)) << endl;
     cout << "CHAMP TEST PERF: " << classify(ens_results,classifier_test_data,cur_champ->gnome->genesis(0)) << endl;
-    cout << "ENSEMBLE TRAIN PERF: "  << classify_ensemble(ens_results,classifier_train_data,orgs) << endl;
+    cout << "ENSEMBLE TRAIN PERF: "  << classify_ensemble(ens_results,classifier_train_data,ensemble,true) << endl;
 
     cout << "ENSEMBLE TEST PERF: "  << 
-    classify_ensemble(ens_results,classifier_test_data,orgs) << endl;
+    classify_ensemble(ens_results,classifier_test_data,ensemble,true) << endl;
 
 return 0;
 }
