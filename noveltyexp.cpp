@@ -1424,6 +1424,7 @@ float classify(vector<float>& results,vector<vector<float> >& data,Network* net,
 
       for (int z=0; z<10; z++)
         net->activate();
+
       float routput=net->outputs[0]->activation;
       float output=routput;
       
@@ -1970,14 +1971,14 @@ int classifier_success_processing(population_state* pstate) {
     gen++;
 
     vector<float> ens_results;
-   choose_ensemble(classifier_valid_data,orgs,ensemble);
+   //choose_ensemble(classifier_valid_data,orgs,ensemble);
 
     cout << "CHAMP TRAIN PERF: " << classify(ens_results,classifier_train_data,cur_champ->gnome->genesis(0)) << endl;
     cout << "CHAMP TEST PERF: " << classify(ens_results,classifier_test_data,cur_champ->gnome->genesis(0)) << endl;
-    cout << "ENSEMBLE TRAIN PERF: "  << classify_ensemble(ens_results,classifier_train_data,ensemble,true) << endl;
+//    cout << "ENSEMBLE TRAIN PERF: "  << classify_ensemble(ens_results,classifier_train_data,ensemble,true) << endl;
 
-    cout << "ENSEMBLE TEST PERF: "  << 
-    classify_ensemble(ens_results,classifier_test_data,ensemble,true) << endl;
+//    cout << "ENSEMBLE TEST PERF: "  << 
+//    classify_ensemble(ens_results,classifier_test_data,ensemble,true) << endl;
 
 return 0;
 }

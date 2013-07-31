@@ -107,7 +107,7 @@ void mazeDlg::OnTimer(wxTimerEvent& event)
 }
 void mazeDlg::OnPaint(wxPaintEvent& event)
 {
-  float scale=2.5;
+  float scale=1.5;
   wxPaintDC dc(this);
   float rad = env->hero.heading/180.0*3.1415926;
   dc.SetPen(*wxBLACK_PEN);

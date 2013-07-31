@@ -2,7 +2,7 @@
 CC = g++ 
 
 
-LIBS = -lm
+LIBS = -lm -lgsl -lblas
 #LIBS = -L/usr/lib /usr/lib/libqthreads.so.0 -lguile -ldl -lreadline -ltermcap -lm
 
 INCLUDES = -I ./include
