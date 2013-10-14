@@ -13,9 +13,12 @@ env.AppendENVPath('CPLUS_INCLUDE_PATH', ode_path+'include')
 #rtneat=glob.glob('rtneat/*.cpp')
 
 current=glob.glob('*.cpp')
-
 allsrc=current #+rtneat
 allsrc.remove("mazeApp.cpp")
 allsrc.remove("mazeDlg.cpp")
 env.Program('mazesim', allsrc,LIBS=['gsl','blas','tcmalloc','pthread','m','ode','profiler'],LIBPATH=['.','/usr/lib/','/usr/local/lib'])
+
+allsrc.remove("neatmain.cpp")
+allsrc.append("ensembletool.cxx")
+env.Program('enstool', allsrc,LIBS=['gsl','blas','tcmalloc','pthread','m','ode','profiler'],LIBPATH=['.','/usr/lib/','/usr/local/lib'])
 #env.Program('mazesim', allsrc,LIBS=['pthread','tcmalloc_minimal','m','ode'],LIBPATH=['.','/usr/lib/','/usr/local/lib'])

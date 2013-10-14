@@ -1415,9 +1415,13 @@ float classify(vector<float>& results,vector<vector<float> >& data,Network* net,
      float c_output = line[line.size()-1];
      double inputs[50];
 
+     
      for(int j=0;j<line.size()-1;j++) {
       inputs[j]=line[j];
+      if(debug)
+       cout << inputs[j] << " ";
      }     
+
 
      net->flush();
      net->load_sensors(inputs);
@@ -1427,14 +1431,15 @@ float classify(vector<float>& results,vector<vector<float> >& data,Network* net,
 
       float routput=net->outputs[0]->activation;
       float output=routput;
+     
+     if(debug)
+       cout << output << " " << c_output << endl;
       
       if(!regression) {
        if (routput>0.5) output=1.0;
        else output=0.0;
       }
      
-	 if(debug)
-	 cout << output << endl;
 
       //if (output==c_output)
       //	correct+=1;
@@ -1446,8 +1451,8 @@ float classify(vector<float>& results,vector<vector<float> >& data,Network* net,
        if (real_val) output=routput;
        results.push_back(output);
     }
- if(debug)
-   net->print_links_tofile("outy.dat");
+ //if(debug)
+ //  net->print_links_tofile("outy.dat");
 
  return 1.0 - (correct/data.size());
 
@@ -1474,7 +1479,63 @@ void scale_vect(vector<float>& v,float factor) {
  }
 }
 
+void precalc_outputs(vector<vector<float> > &outputs, vector<vector<float> > data, vector<Organism*> orgs) {
+
+int orgs_size = orgs.size();
+
+for(int i=0;i<orgs_size;i++) {
+ vector<float> results;
+ float perf=classify(results,data,orgs[i]->gnome->genesis(0));
+ outputs.push_back(results);
+}
+
+}
+
+//todo:optimize
+float classify_ensemble_precalc(vector<float>& results,vector<vector<float> >& outputs, vector<vector <float> > data, vector<int> p,bool print_out=false) {
+
+ int c_ind = data[0].size()-1;
+ float err=0.0;
+ float var=0.0;
+
+ for(int i=0;i<data.size();i++) {
+  float ans = data[i][c_ind];
+  float accum = 0.0f; 
+
+  vector<float> one_row;
+  for(int j=0;j<p.size();j++) {
+   float out = outputs[p[j]][i];
+   one_row.push_back(out);
+   accum+=out;
+  }
+
+  float prediction=accum/p.size();
+  for(int j=0;j<p.size();j++) {
+   float delta=one_row[j]-prediction;
+   var+=delta*delta;
+  }
+
+
+  results.push_back(prediction);
+  float delta=ans-prediction;
+  err+= (1.0-delta*delta);
+ }
+ if(print_out)
+	cout << "variance:" << var/data.size() << endl;
+ return err/data.size();
+}
+
 float classify_ensemble(vector<float>& results,vector<vector<float> >& data, vector<Organism*> p,bool print_out=false) {
+
+ vector<vector<float> > outputs;
+ precalc_outputs(outputs,data,p);
+ vector<int> seq;
+
+ for(int i=0;i<p.size();i++)
+  seq.push_back(i);
+
+ return classify_ensemble_precalc(results,outputs,data,seq,print_out);
+
 
  vector<float> r_temp;
  vector<float> r_accum;
@@ -1541,19 +1602,27 @@ float classify_ensemble(vector<float>& results,vector<vector<float> >& data, vec
 
 void choose_ensemble(vector<vector<float> >& data,vector<Organism*> orgs,vector<Organism*>& ens) {
  int orgs_size=orgs.size();
- for(int i=0;i<5;i++) {
+
+vector<int> ens_ind;
+vector< vector< float> > outputs;
+
+precalc_outputs(outputs,data,orgs);
+
+ for(int i=0;i<10;i++) {
    int best_index=0;
    float best_perf=0;
   for(int j=0;j<orgs_size;j++) {
    vector<float> res;
-   ens.push_back(orgs[j]);
-   float perf=classify_ensemble(res,data,ens);
+   ens_ind.push_back(j);
+   float perf=classify_ensemble_precalc(res,outputs,data,ens_ind);
    if(perf>best_perf) {
 	best_perf=perf;
         best_index=j;
    }
-   ens.pop_back(); 
+   ens_ind.pop_back(); 
   }
+ cout << i << " " << best_index << endl;
+ ens_ind.push_back(best_index);
  ens.push_back(orgs[best_index]);
 }
 
@@ -1734,10 +1803,76 @@ noveltyitem* maze_novelty_map(Organism *org,data_record* record)
     new_item->fitness=fitness;
     org->fitness=fitness;
 
+    if(org->gnome->genes.size() > 250) {
+    new_item->viable=false;
+    new_item->secondary=-1000000;
+    destroy_organism(org);
+   }
+
     return new_item;
 }
 
+void test_ensemble(const char* classname) {
 
+    Population *p;
+
+    char trainfile[200];
+    char testfile[200];
+    char validfile[200];
+   
+    sprintf(trainfile,"%s_train.dat",classname);
+    sprintf(testfile,"%s_test.dat",classname);
+    sprintf(validfile,"%s_valid.dat",classname);
+    classifier_train_data = read_classifier_data(trainfile);
+    classifier_test_data = read_classifier_data(testfile);
+    classifier_valid_data = read_classifier_data(validfile);
+
+ p=new Population(mc_mazes); //"nuke_res/fit_ensemble.dat");
+ p->set_evaluator(&classifier_novelty_map);
+ p->verify();
+ p->evaluate_all();
+ vector<float> ens_results;
+
+ float best_test=0.0;
+ int bestind=0;
+ 
+ ofstream fitout("fits.dat");
+ ofstream distout("dists.dat");
+ 
+ for(int i=0;i<p->organisms.size();i++) {  
+  float fit=   classify(ens_results,classifier_train_data,p->organisms[i]->gnome->genesis(0));
+  float avgdist=0.0;
+  if (fit>best_test) { bestind=i; best_test=fit; } 
+
+ 
+ for(int j=0;j<p->organisms.size();j++) {
+    float d =  maze_novelty_metric(p->organisms[i]->noveltypoint,p->organisms[j]->noveltypoint);
+    distout << d << " "; 
+    avgdist+=d;
+  }
+
+  distout << endl;  
+  fitout << fit << " " << avgdist/p->organisms.size() << endl; 
+ }
+
+ classify(ens_results,classifier_train_data,p->organisms[bestind]->gnome->genesis(0),true);
+
+   cout << endl << "CHAMP TRAIN: " << best_test << endl;
+   cout << "CHAMP TEST: " << classify(ens_results,classifier_test_data,p->organisms[bestind]->gnome->genesis(0)) << endl;
+ 
+   vector<Organism*>& orgs=p->organisms;
+   vector<Organism*> ensemble;
+
+  bool ensemble_test=true;
+  if(ensemble_test) {
+   choose_ensemble(classifier_train_data,orgs,ensemble);
+  
+   cout << "ENSEMBLE TRAIN: "  << classify_ensemble(ens_results,classifier_train_data,ensemble,true) << endl;
+
+   cout << "ENSEMBLE TEST:" <<  classify_ensemble(ens_results,classifier_test_data,ensemble,true) << endl;
+
+ }
+}
 static int maxgens;
 
 population_state* create_classifier_popstate(char* outputdir,const char* classfile,int param,const char *genes, int gens,bool novelty) {
@@ -1963,7 +2098,7 @@ int classifier_success_processing(population_state* pstate) {
     }
 
     if(logfile!=NULL)
-     (*logfile) << pstate->generation*NEAT::pop_size<< " " << best_fitness << " " << best_secondary << endl;
+     (*logfile) << pstate->generation*NEAT::pop_size<< " " << best_fitness << " " << best_secondary << " " << time(0) << endl;
    
    //vector<Organism*> orgs;
    vector<Organism*>& orgs=pop->organisms;
@@ -2256,6 +2391,9 @@ int generalized_generational_epoch(population_state* pstate,int generation,succe
         archive.Serialize(fname);
         sprintf(fname,"%sgen_%d",output_dir,generation);
         pop->print_to_file_by_species(fname);
+        
+	sprintf(fname,"%sfittest_%d",output_dir,generation);
+        archive.serialize_fittest(fname);
     }
 
     if (NEAT::multiobjective) {

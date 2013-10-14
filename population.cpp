@@ -514,7 +514,7 @@ Population::Population(const char *filename) {
 
 	else {
 		bool md = false;
-		char metadata[4024];
+		char metadata[15024];
 		//Loop until file is finished, parsing each line
 		while (!iFile.eof()) 
 		{

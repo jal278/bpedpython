@@ -23,6 +23,8 @@
 using namespace std;
 using namespace NEAT;
 
+void test_ensemble(const char* classfile);
+
 void enumerate_behaviors(const char* name,long long parm,const char* outname,int count);
 void mutate_genome(Genome* new_genome,bool traits=false);
 
