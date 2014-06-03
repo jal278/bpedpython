@@ -20,7 +20,7 @@ class Controller;
 class Creature;
 void create_world(Controller* controller,bool log=false,bool b=false);
 void destroy_world();
-
+void initialize_biped(const char* nefile);
 
 float walker_novelty_metric(noveltyitem* x,noveltyitem* y);
 

@@ -6,7 +6,7 @@ def fitness(robot):
  return abs(robot.get_x())+abs(robot.get_y())
 
 #initialize maze stuff with "medium maze" 
-bipedsim.initmaze("hard_maze_list.txt")
+bipedsim.initmaze("biped.ne")
 bipedsim.random_seed()
 
 #create initial genome

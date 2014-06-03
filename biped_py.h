@@ -47,11 +47,11 @@ class bipedsim {
   }
 
   static void initmaze(const char* mazefile) {
-   //initialize_maze(mazefile);
+   initialize_biped(mazefile);
   }
 
   void init_rand() {
-	g=new Genome(11,2,0,0);
+	g=new Genome(2,6,0,0);
   }
 
   void make_random() {

@@ -38,6 +38,11 @@ static ofstream *logfile;
 int novelty_function = NF_COGSAMPSQ;
 vector<dGeomID> geoms;
 vector<Creature*> creatures;
+
+void initialize_biped(const char* nefile) {
+NEAT::load_neat_params(nefile,true);
+}
+
 //NEAT + NS stuff
 inline float dist(float x1, float y1, float x2, float y2)
 {
