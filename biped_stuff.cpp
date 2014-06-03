@@ -239,7 +239,7 @@ void update_behavior(vector<float> &k, Creature* c,bool good=true,float time=0.0
         dVector3 delta;
         c->CenterOfMass(com);
         calculate_delta(o_com,com,delta);
-        calculate_power(delta,2);
+        //calculate_power(delta,2);
 
         if (good)
         {

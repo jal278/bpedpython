@@ -1302,6 +1302,12 @@ void mutate_genome(Genome* new_genome,bool traits)
     new_genome->mutate_link_weights(mut_power,1.0,GAUSSIAN);
     if(traits) {
 	vector<Innovation*> innos;
+ if (randfloat()<NEAT::mutate_node_trait_prob) {
+                                        //cout<<"mutate_node_trait"<<endl;
+                                        new_genome->mutate_node_parameters(NEAT::time_const_mut_power,NEAT::time_const_mut_prob,
+                                                                           NEAT::bias_mut_power,NEAT::bias_mut_prob);
+ }
+
     if (randfloat()<NEAT::mutate_add_node_prob) 
 				new_genome->mutate_add_node(innos,id,inno);
     else if (randfloat()<NEAT::mutate_add_link_prob) {
@@ -1312,9 +1318,9 @@ void mutate_genome(Genome* new_genome,bool traits)
     }
 
 
-	if(randfloat()<0.05)
+	if(randfloat()<0.5)
 	new_genome->mutate_random_trait();
-	if(randfloat()<0.05)
+	if(randfloat()<0.2)
 	new_genome->mutate_link_trait(1);
     }
 
