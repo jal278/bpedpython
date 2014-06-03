@@ -297,6 +297,8 @@ Genome::Genome(int new_id,int i, int o, int n,int nmax, bool r, double linkprob)
 
 	//Create a dummy trait (this is for future expansion of the system)
 	newtrait=new Trait(1,0,0,0,0,0,0,0,0,0);
+    newtrait=new Trait(2,0,0,0,0,0,0,0,0,0);
+    newtrait=new Trait(3,0,0,0,0,0,0,0,0,0);
 	traits.push_back(newtrait);
 
 	//Build the input nodes
@@ -595,7 +597,7 @@ Genome::Genome(int num_in,int num_out,int num_hidden,int type) {
 	}//end type 2
 }
 
-Genome* Genome::new_Genome_load(char *filename) {
+Genome* Genome::new_Genome_load(const char *filename) {
 	Genome *newgenome;
 
 	int id;
@@ -948,7 +950,7 @@ outFile << std::scientific
 	//outFile.write(strlen(tempbuf4), tempbuf4);
 }
 
-void Genome::print_to_filename(char *filename) {
+void Genome::print_to_filename(const char *filename) {
 	std::ofstream oFile(filename);
 	//oFile.open(filename, std::ostream::Write);
 	print_to_file(oFile);
