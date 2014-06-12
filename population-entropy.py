@@ -127,7 +127,6 @@ if(__name__=='__main__'):
    repop-=1
 
   if extinction and evals>60000 and (evals-1)%(40000)==0:
-   eflag=True
    xc=random.randint(0,grid_sz)
    yc=random.randint(0,grid_sz)
    rad=grid_sz*0.45
@@ -137,23 +136,17 @@ if(__name__=='__main__'):
     for y in range(grid_sz):
      dx=abs(x-xc)
      dy=abs(y-yc)
-     #if min(dx,grid_sz-dx)**2+min(dy,grid_sz-dy)**2 < rad**2:
-     niches_to_kill.append((x,y))
+     if min(dx,grid_sz-dx)**2+min(dy,grid_sz-dy)**2 < rad**2:
+      niches_to_kill.append((x,y))
 
-   survivors=random.sample(population.keys(),10)
-   survivor_orgs=[random.choice(population[x]) for x in survivors]
-
-   #for k in survivors:
-   #  niches_to_kill.remove(k)
 
    repop=0
    for niche in niches_to_kill:
     orgs=population[niche][:]
     repop+=len(orgs)
     for x in orgs:
-      if x not in survivor_orgs:
        killbot(x,niche,population,whole_population)
-    if niche in population and niche not in survivors:
+    if niche in population:
      population.pop(niche)
 
 
