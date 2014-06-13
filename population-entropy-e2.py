@@ -2,7 +2,7 @@ import sys
 import random
 
 
-test=True
+test=False
 
 calc_evo=True
 extinction=True
@@ -93,6 +93,9 @@ if(__name__=='__main__'):
  child=None
  max_evals=1500001
  best_fit=0.0
+ best_fit_org=None
+ best_evo=0
+ best_evo_org=None
  while evals < max_evals: #not solved:
   keys=population.keys()
   if(disp and eflag):
@@ -114,6 +117,7 @@ if(__name__=='__main__'):
   child.map()
   if(fitness(child)>best_fit):
    best_fit=fitness(child)
+   best_fit_org=child.copy()
   if(child.solution()):
    solved=True
 
@@ -126,7 +130,7 @@ if(__name__=='__main__'):
   else:
    repop-=1
 
-  if extinction and evals>60000 and (evals-1)%(40000)==0:
+  if extinction and evals>60000 and (evals-1)%(50000)==0:
    eflag=True
    xc=random.randint(0,grid_sz)
    yc=random.randint(0,grid_sz)
@@ -162,12 +166,18 @@ if(__name__=='__main__'):
    print "EVO-CALC"
    for org in random.sample(whole_population,200): 
     evo=evo_fnc(org,1000)
+    if evo>best_evo:
+     best_evo=evo
+     best_evo_org=org.copy()
     print "evolvability:", evo
     evo_file.write(str(evals)+" "+str(evo)+"\n")
    print "EVO-CALC END"
    evo_file.flush()
   evals+=1
-
+ best_evo_org.save(outfile+"_bestevo.dat") 
+ best_fit_org.save(outfile+"_bestfit.dat") 
+ if solved:
+  best_fit_org.save(outfile+"_solution.dat")
  """
  robot=mazepy.mazenav()
  robot.init_rand()
