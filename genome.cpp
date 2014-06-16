@@ -433,6 +433,8 @@ Genome::Genome(int num_in,int num_out,int num_hidden,int type) {
 
 	//Create a dummy trait (this is for future expansion of the system)
 	newtrait=new Trait(1,0,0,0,0,0,0,0,0,0);
+	newtrait=new Trait(2,0,0,0,0,0,0,0,0,0);
+	newtrait=new Trait(3,0,0,0,0,0,0,0,0,0);
 	traits.push_back(newtrait);
 
 	//Adjust hidden number
@@ -445,7 +447,7 @@ Genome::Genome(int num_in,int num_out,int num_hidden,int type) {
 
 	//Build the input nodes
 	for(ncount=1;ncount<=num_in;ncount++) {
-		if (ncount>1) //(ncount<num_in)
+		if (ncount>0) //(ncount<num_in)  //no bias necessary for biped
 			newnode=new NNode(SENSOR,ncount,INPUT);
 		else { 
 			newnode=new NNode(SENSOR,ncount,BIAS);
