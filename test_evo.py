@@ -1,7 +1,6 @@
 import sys
 import random
 
-
 test=False
 
 calc_evo=True
@@ -42,7 +41,6 @@ def render(pop):
  for robot in pop:
   x=clamp(robot.get_x(),16.0)*SZX
   y=clamp(robot.get_y(),16.0)*SZY 
-  #y=mazepy.feature_detector.endy(robot)*SZY
   rect=(int(x),int(y),5,5)
   pygame.draw.rect(screen,(255,0,0),rect,0)
  pygame.display.flip()
@@ -68,23 +66,23 @@ if(__name__=='__main__'):
  robot=None
 
  whole_population=[]
- psize=2000
+ psize=500
  repop=0
 
- robot=bipedpy.bipedsim()
- robot.load_new(fname)
-
+ init=bipedpy.bipedsim()
+ init.load_new(fname)
  for k in range(psize):
-  robot=bipedpy.bipedsim()
-  robot.init_rand()
+  robot=init.copy() 
   robot.mutate()
   robot.map()
   whole_population.append(robot)
+  if k%50==0:
+   render(whole_population)
  solved=False
-
- render(whole_population)
- evo=evo_fnc(robot,1000)
- print evo
+ grids=population_to_grids(whole_population)
+ evo=len(grids.keys())
+ evo2=evo_fnc(robot,500)
+ print evo,evo2
 
  """
  robot=mazepy.mazenav()

@@ -51,22 +51,25 @@ def population_to_grids(pop):
   grids[key]+=1
  return grids 
 
-def mutations_to_grids(robot,mutations):
+def population_to_grids(pop):
  grids=defaultdict(float)
-
+ for x in pop:
+  key=map_into_grid(x)
+  grids[key]+=1
+ return grids
+ 
+def mutations_to_grids(robot,mutations):
  robot.map()
  #x1=mazepy.feature_detector.endx(robot)
-
+ pop=[]
  for x in range(mutations):
   mutant=robot.copy()
   mutant.mutate()
   mutant.map()
-  #if(mutant.solution()): 
-  # print "solved"
-  key=map_into_grid(mutant)
-  grids[key]+=1
+  pop.append(mutant)
+ return population_to_grids(pop)
 
- robot.map()
+ #robot.map()
  #x2=mazepy.feature_detector.endx(robot)
  #print x1,x2
 
