@@ -66,7 +66,7 @@ if(__name__=='__main__'):
  robot=None
 
  whole_population=[]
- psize=500
+ psize=1000
  repop=0
 
  init=bipedpy.bipedsim()
@@ -81,8 +81,8 @@ if(__name__=='__main__'):
  solved=False
  grids=population_to_grids(whole_population)
  evo=len(grids.keys())
- evo2=evo_fnc(robot,500)
- print evo,evo2
+ #evo2=evo_fnc(robot,500)
+ print evo #,evo2
 
  """
  robot=mazepy.mazenav()
