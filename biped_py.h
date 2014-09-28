@@ -54,6 +54,9 @@ class bipedsim {
 	g=new Genome(2,6,0,0);
   }
 
+  bool viable() {
+   return nov_item->viable;
+  }
   void make_random() {
          int new_nodes = randint(0,6);
          int new_links = randint(0,10);

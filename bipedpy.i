@@ -42,6 +42,7 @@ public:
   void clear();
   double distance(bipedsim* other);
   void init_rand();
+  bool viable();
  
   void save(const char *fname);
   void load_new(const char *fname);
