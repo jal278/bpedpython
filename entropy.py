@@ -5,7 +5,7 @@ import numpy
 from collections import defaultdict
 
 def fitness(robot):
- return abs(robot.get_x())+abs(robot.get_y())
+ return robot.get_x()**2+robot.get_y()**2
 
 grid_sz=40
 clamp_sz=8.0
