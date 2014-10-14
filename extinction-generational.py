@@ -120,9 +120,9 @@ if(__name__=='__main__'):
    quant=evals,len(keys),calc_population_entropy(whole_population),complexity(whole_population),best_fit,gen,succ/(evals+1.0)
    if(gen%100==0):
     print quant
-    log_file.write(str(quant)+"\n")
+   log_file.write(str(quant)+"\n")
 
-    log_file.flush()
+   log_file.flush()
    if(disp):
     render(whole_population)
    sys.stdout.flush()

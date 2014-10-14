@@ -1,5 +1,5 @@
 import glob
-ode_path = '/home/joel/ode-0.11.1/'
+ode_path = '/home/joel/ode/'
 
 #env = Environment(CCFLAGS = ' -DdTRIMESH_ENABLED -DdDOUBLE -DGRAPHICS -g -I./include')
 
@@ -19,6 +19,6 @@ allsrc.remove("mazeApp.cpp")
 allsrc.remove("mazeDlg.cpp")
 allsrc.remove("neatmain.cpp")
 
-env.SharedLibrary('_bipedpy', source=allsrc,SHLIBPREFIX='',LIBS=['gsl','blas','tcmalloc','pthread','m','ode','python2.7'],LIBPATH=['.','/usr/lib/','/usr/local/lib'])
+env.SharedLibrary('_bipedpy', source=allsrc,SHLIBPREFIX='',LIBS=['gsl','blas','pthread','m','zode','python2.7'],LIBPATH=['.','/usr/lib/','/usr/local/lib'])
 
 #env.Program('mazesim', allsrc,LIBS=['pthread','tcmalloc_minimal','m','ode'],LIBPATH=['.','/usr/lib/','/usr/local/lib'])
