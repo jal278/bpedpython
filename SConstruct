@@ -19,6 +19,6 @@ allsrc.remove("mazeApp.cpp")
 allsrc.remove("mazeDlg.cpp")
 allsrc.remove("neatmain.cpp")
 
-env.SharedLibrary('_bipedpy', source=allsrc,SHLIBPREFIX='',LIBS=['gsl','blas','pthread','m','zode','python2.7'],LIBPATH=['.','/usr/lib/','/usr/local/lib'])
+env.SharedLibrary('_bipedpy', source=allsrc,SHLIBPREFIX='',LIBS=['gsl','blas','pthread','m','ode','python2.7'],LIBPATH=['.','/usr/lib/','/usr/local/lib'])
 
 #env.Program('mazesim', allsrc,LIBS=['pthread','tcmalloc_minimal','m','ode'],LIBPATH=['.','/usr/lib/','/usr/local/lib'])

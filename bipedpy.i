@@ -1,3 +1,4 @@
+%include "std_vector.i"
 %include "carrays.i"
 %array_class(float,floatArray);
 
@@ -7,22 +8,10 @@
 #include "biped_py.h"
 %}
 
-/*
-class feature_detector {
-public:
-static float end_goal(mazenav* mn);
-static float start_dist(mazenav* mn);
-static float closest_goal(mazenav* mn);
-static float endx(mazenav* mn);
-static float endy(mazenav* mn);
-static float midx(mazenav* mn);
-static float midy(mazenav* mn);
-static float spd(mazenav* mn);
-static float coll(mazenav* mn);
-static float turn(mazenav* mn);
-static float state_entropy(mazenav* mn);
+namespace std {
+ %template(vectorf) vector<float>;
 };
-*/
+using namespace std;
 
 class bipedsim {
 public: 
@@ -32,7 +21,9 @@ public:
  static void random_seed();
  bipedsim();
 
-  bipedsim* copy();
+  vector<float> get_behavior();
+
+  bipedsim* copy(bool z=false);
   int complexity();
 
   void map();

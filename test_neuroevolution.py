@@ -1,3 +1,4 @@
+import numpy
 from bipedpy import bipedsim 
 
 #simple fitness function -- how close do we get to the goal at the end of
@@ -38,6 +39,8 @@ while not robot.solution():
  if(new_fitness>cur_fitness):
   print "New best fitness: " , new_fitness
   cur_fitness=new_fitness
+  behavior=newrobot.get_behavior()
+  print numpy.array(behavior)
   robot=newrobot
 
  iterations+=1

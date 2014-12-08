@@ -22,7 +22,7 @@ def map_into_grid(robot):
 
  x_grid=int(x*(grid_sz-1))
  y_grid=int(y*(grid_sz-1))
- robot.behavior=numpy.array([x,y])
+ robot.behavior=numpy.array(robot.get_behavior())
  return (x_grid,y_grid)
 
 def distr_entropy(grids,samples):

@@ -10,10 +10,10 @@ calc_evo=True
 extinction=True
 seed=-1
 outfile="out"
-nefile="neat.ne"
+nefile="biped-mut.ne"
 disp=False
 #was 40000
-interval=2000
+interval=100000
 
 if test:
  calc_evo=False
@@ -38,8 +38,6 @@ NS_K = 20
 ELITE = 3
 screen = None
 
-def fitness_end(robot):
- return -mazepy.feature_detector.end_goal(robot)
 
 
 def d_score(rset,z):
@@ -129,7 +127,7 @@ class ss_evolve:
   if copy==None:
    print "regen.."
    for k in range(self.psize):
-    robot=mazepy.mazenav(collision)
+    robot=bipedpy.bipedsim()
     robot.init_rand()
     robot.mutate()
     robot.map()
@@ -160,7 +158,7 @@ class ss_evolve:
 
  def eval_ind_k(self,art):
   global best_evo,best_evo_org,best_fit,best_fit_org
-  raw_fitness = fitness_end(art)
+  raw_fitness = fitness(art)
   if raw_fitness > self.highest_fitness:
    self.highest_fitness=raw_fitness
    best_fit=self.highest_fitness
@@ -279,14 +277,14 @@ def render(pop,arc,bd=None):
    pygame.draw.rect(screen,(0,0,col),rect,0)
 
  for robot in pop:
-  x=mazepy.feature_detector.endx(robot)*SZX
-  y=mazepy.feature_detector.endy(robot)*SZY
+  x=clamp(robot.get_x(),16.0)*SZX
+  y=clamp(robot.get_y(),16.0)*SZY 
   rect=(int(x),int(y),5,5)
   pygame.draw.rect(screen,(255,0,0),rect,0)
 
  for robot in arc:
-  x=mazepy.feature_detector.endx(robot)*SZX
-  y=mazepy.feature_detector.endy(robot)*SZY
+  x=clamp(robot.get_x(),16.0)*SZX
+  y=clamp(robot.get_y(),16.0)*SZY 
   rect=(int(x),int(y),5,5)
   pygame.draw.rect(screen,(0,255,0),rect,0)
  pygame.display.flip()
@@ -356,15 +354,14 @@ if(__name__=='__main__'):
  log_file=open(outfile+".log","w")
  evo_file=open(outfile+".evo","w")
 
- #mazepy.mazenav.initmaze("medium_maze_list.txt","neat.ne")
- mazepy.mazenav.initmaze("hard_maze_list.txt",nefile)
- #mazepy.mazenav.initmaze("medium_maze_list.txt")
+ bipedpy.bipedsim.initmaze(nefile) #"biped.ne")
+
 
  if(seed==-1):
-  mazepy.mazenav.random_seed()
+  bipedpy.bipedsim.random_seed()
  else:
   random.seed(seed)
-  mazepy.mazenav.seed(seed)
+  bipedpy.bipedsim.seed(seed)
 
 
  robot=None

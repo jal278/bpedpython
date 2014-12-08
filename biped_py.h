@@ -32,11 +32,19 @@ class bipedsim {
    return g->compatibility(other->g);
   }
 
-  bipedsim* copy() {
+  bipedsim* copy(bool all=false) {
     bipedsim* ret = new bipedsim();
+    if(nov_item!=NULL && all)
+     ret->nov_item= new noveltyitem(*nov_item);
     ret->g = g->duplicate(0);
     return ret;
   }
+
+vector<float> get_behavior() {
+   vector<float> ret(nov_item->data[0]);
+   return ret;
+  }
+
  
   void save(const char *fname) {
    g->print_to_filename(fname);
