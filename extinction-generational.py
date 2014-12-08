@@ -2,8 +2,9 @@ import sys
 import random
 
 import operator
+import os.path
+test=os.path.isfile("visualize")
 
-test=False
 
 calc_evo=True
 extinction=True
@@ -13,7 +14,12 @@ nefile="biped.ne"
 interval=50000
 
 interval=40000
+rand_interval=False
 niche_capacity=10
+
+def set_rand_interval():
+ global interval
+ interval=random.randint(300,900)
 
 if(len(sys.argv)>1):
  extinction = sys.argv[1]=='e'
@@ -22,7 +28,11 @@ if(len(sys.argv)>1):
  nefile=sys.argv[4]
  if(len(sys.argv)>5):
   interval=int(sys.argv[5])
+ if interval==-1:
+  rand_interval=True
+  set_rand_interval()
 
+n_interval=interval
 disp=False
 SZX=SZY=400
 screen = None
@@ -183,7 +193,12 @@ if(__name__=='__main__'):
     else:
      del k
 
-  if extinction and gen>10 and (gen-1)%(interval)==0:
+
+  if extinction and gen>10 and (gen-1)==n_interval: #(gen-1)%(interval)==0:
+   if rand_interval:
+    set_rand_interval()
+   n_interval+=interval
+
    eflag=True
    niches_to_kill=[]
 

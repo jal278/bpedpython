@@ -95,7 +95,7 @@ if(__name__=='__main__'):
 
  evals=0 #psize
  child=None
- max_evals=3000001
+ max_evals=6000001
  best_fit=0.0
  best_fit_org=None
  best_evo=0
@@ -134,6 +134,20 @@ if(__name__=='__main__'):
   else:
    repop-=1
 
+  if(calc_evo and evals%250000==0):
+   #run genome in the maze simulator
+   print "EVO-CALC"
+   for org in random.sample(whole_population,200): 
+    evo=evo_fnc(org,1000)
+    if evo>best_evo:
+     best_evo=evo
+     best_evo_org=org.copy()
+    print "evolvability:", evo
+    evo_file.write(str(evals)+" "+str(evo)+"\n")
+   print "EVO-CALC END"
+   evo_file.flush()
+
+
   if extinction and evals>10 and (evals-1)%(interval)==0:
    eflag=True
    xc=random.randint(0,grid_sz)
@@ -165,18 +179,7 @@ if(__name__=='__main__'):
      population.pop(niche)
 
 
-  if(calc_evo and evals%250000==0):
-   #run genome in the maze simulator
-   print "EVO-CALC"
-   for org in random.sample(whole_population,200): 
-    evo=evo_fnc(org,1000)
-    if evo>best_evo:
-     best_evo=evo
-     best_evo_org=org.copy()
-    print "evolvability:", evo
-    evo_file.write(str(evals)+" "+str(evo)+"\n")
-   print "EVO-CALC END"
-   evo_file.flush()
+  
   evals+=1
  best_evo_org.save(outfile+"_bestevo.dat") 
  best_fit_org.save(outfile+"_bestfit.dat") 
